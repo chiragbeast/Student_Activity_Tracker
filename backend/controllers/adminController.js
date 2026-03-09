@@ -258,4 +258,45 @@ const deleteFaculty = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Faculty deleted successfully' });
 });
 
-module.exports = { getDashboard, getStudents, createStudent, getStudentById, updateStudent, deleteStudent, getFaculty, createFaculty, getFacultyById, updateFaculty, deleteFaculty };
+// @desc    Get unassigned + assigned students for a faculty assignment page
+// @route   GET /api/admin/faculty/:id/students
+// @access  Private/Admin
+const getFacultyStudents = asyncHandler(async (req, res) => {
+    const faculty = await User.findOne({ _id: req.params.id, role: 'Faculty' }).select('-password');
+    if (!faculty) {
+        res.status(404);
+        throw new Error('Faculty member not found');
+    }
+    const [assigned, unassigned] = await Promise.all([
+        User.find({ role: 'Student', facultyAdvisor: req.params.id })
+            .select('name rollNumber department isActive')
+            .sort({ name: 1 }),
+        User.find({ role: 'Student', facultyAdvisor: null })
+            .select('name rollNumber department isActive')
+            .sort({ name: 1 }),
+    ]);
+    res.status(200).json({ faculty, assigned, unassigned });
+});
+
+// @desc    Bulk assign/unassign students to a faculty
+// @route   PUT /api/admin/faculty/:id/assign
+// @access  Private/Admin
+const assignStudents = asyncHandler(async (req, res) => {
+    const { toAssign, toUnassign } = req.body;
+    const facultyId = req.params.id;
+    if (toAssign?.length > 0) {
+        await User.updateMany(
+            { _id: { $in: toAssign }, role: 'Student' },
+            { $set: { facultyAdvisor: facultyId } }
+        );
+    }
+    if (toUnassign?.length > 0) {
+        await User.updateMany(
+            { _id: { $in: toUnassign }, role: 'Student' },
+            { $set: { facultyAdvisor: null } }
+        );
+    }
+    res.status(200).json({ message: 'Assignments updated successfully' });
+});
+
+module.exports = { getDashboard, getStudents, createStudent, getStudentById, updateStudent, deleteStudent, getFaculty, createFaculty, getFacultyById, updateFaculty, deleteFaculty, getFacultyStudents, assignStudents };

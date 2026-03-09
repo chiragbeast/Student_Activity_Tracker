@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getDashboard, getStudents, createStudent, getStudentById, updateStudent, deleteStudent, getFaculty, createFaculty, getFacultyById, updateFaculty, deleteFaculty } = require('../controllers/adminController');
+const { getDashboard, getStudents, createStudent, getStudentById, updateStudent, deleteStudent, getFaculty, createFaculty, getFacultyById, updateFaculty, deleteFaculty, getFacultyStudents, assignStudents } = require('../controllers/adminController');
 const { protect, role } = require('../middleware/authMiddleware');
 
 router.get('/dashboard', protect, role('Admin'), getDashboard);
@@ -14,5 +14,7 @@ router.post('/faculty', protect, role('Admin'), createFaculty);
 router.get('/faculty/:id', protect, role('Admin'), getFacultyById);
 router.put('/faculty/:id', protect, role('Admin'), updateFaculty);
 router.delete('/faculty/:id', protect, role('Admin'), deleteFaculty);
+router.get('/faculty/:id/students', protect, role('Admin'), getFacultyStudents);
+router.put('/faculty/:id/assign', protect, role('Admin'), assignStudents);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import api from '../api';
 
 const AssignStudents = () => {
   const navigate = useNavigate();
@@ -21,43 +22,54 @@ const AssignStudents = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Mock faculty data - would be fetched based on id
-  const facultyAdvisor = {
-    id: 1,
-    name: 'Dr. Elena Rodriguez',
-    department: 'Department of Computer Science',
-    position: 'Senior Academic Advisor',
-    email: 'e.rodriguez@university.edu',
-    currentStudents: 24,
-    avatar: 'https://i.pravatar.cc/150?img=20'
+  const [faculty, setFaculty] = useState(null);
+  const [unassignedStudents, setUnassignedStudents] = useState([]);
+  const [assignedStudents, setAssignedStudents] = useState([]);
+  const [originalAssignedIds, setOriginalAssignedIds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const deptAbbr = (dept) => {
+    if (!dept) return '';
+    const map = {
+      'computer science': 'CSE', 'computer science and engineering': 'CSE',
+      'electronics': 'ECE', 'electronics and communication': 'ECE',
+      'electronics & communication': 'ECE', 'electronics and communication engineering': 'ECE',
+      'electrical': 'EEE', 'electrical engineering': 'EEE',
+      'mechanical': 'ME', 'mechanical engineering': 'ME',
+      'civil': 'CE', 'civil engineering': 'CE',
+      'information technology': 'IT', 'chemical': 'CHE', 'chemical engineering': 'CHE',
+    };
+    return map[dept.toLowerCase().trim()] || dept.toUpperCase();
   };
 
-  // Mock unassigned students
-  const unassignedStudents = [
-    { id: 1, name: 'Marcus Chen', rollNumber: '2024-8891', year: 'Senior', avatar: 'https://i.pravatar.cc/150?img=33' },
-    { id: 2, name: 'Sarah Jenkins', rollNumber: '2024-1102', year: 'Junior', avatar: null },
-    { id: 3, name: 'Julian Thorne', rollNumber: '2024-5542', year: 'Freshman', avatar: 'https://i.pravatar.cc/150?img=12' },
-    { id: 4, name: 'Maya Patel', rollNumber: '2024-2219', year: 'Sophomore', avatar: 'https://i.pravatar.cc/150?img=25' },
-    { id: 5, name: 'Alex Rivera', rollNumber: '2024-3345', year: 'Junior', avatar: 'https://i.pravatar.cc/150?img=15' },
-    { id: 6, name: 'Emma Wilson', rollNumber: '2024-6678', year: 'Senior', avatar: 'https://i.pravatar.cc/150?img=10' },
-  ];
-
-  // Mock assigned students
-  const assignedStudents = [
-    { id: 101, name: 'Leo Vance', rollNumber: '2023-4412', year: 'Senior', verified: true, avatar: 'https://i.pravatar.cc/150?img=1' },
-    { id: 102, name: 'Chloe Winters', rollNumber: '2023-9003', year: 'Senior', verified: false, avatar: 'https://i.pravatar.cc/150?img=5' },
-    { id: 103, name: 'David Brooks', rollNumber: '2023-1128', year: 'Junior', verified: false, avatar: null },
-    { id: 104, name: 'Imani Reed', rollNumber: '2023-7741', year: 'Senior', verified: false, avatar: 'https://i.pravatar.cc/150?img=30' },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/admin/faculty/${id}/students`);
+        setFaculty(res.data.faculty);
+        setAssignedStudents(res.data.assigned);
+        setUnassignedStudents(res.data.unassigned);
+        setOriginalAssignedIds(res.data.assigned.map(s => s._id));
+      } catch (err) {
+        setFetchError(err.response?.data?.message || 'Failed to load data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
 
   const filteredUnassigned = unassignedStudents.filter(student =>
     student.name.toLowerCase().includes(unassignedSearchQuery.toLowerCase()) ||
-    student.rollNumber.includes(unassignedSearchQuery)
+    (student.rollNumber || '').toLowerCase().includes(unassignedSearchQuery.toLowerCase())
   );
 
   const filteredAssigned = assignedStudents.filter(student =>
     student.name.toLowerCase().includes(assignedSearchQuery.toLowerCase()) ||
-    student.rollNumber.includes(assignedSearchQuery)
+    (student.rollNumber || '').toLowerCase().includes(assignedSearchQuery.toLowerCase())
   );
 
   const handleCheckUnassigned = (studentId) => {
@@ -80,27 +92,40 @@ const AssignStudents = () => {
     if (selectedUnassigned.length === filteredUnassigned.length) {
       setSelectedUnassigned([]);
     } else {
-      setSelectedUnassigned(filteredUnassigned.map(s => s.id));
+      setSelectedUnassigned(filteredUnassigned.map(s => s._id));
     }
   };
 
   const handleAssignStudents = () => {
-    console.log('Assigning students:', selectedUnassigned);
-    // Handle assignment logic
+    const toMove = unassignedStudents.filter(s => selectedUnassigned.includes(s._id));
+    setAssignedStudents(prev => [...prev, ...toMove]);
+    setUnassignedStudents(prev => prev.filter(s => !selectedUnassigned.includes(s._id)));
+    setSelectedUnassigned([]);
   };
 
   const handleUnassignStudents = () => {
-    console.log('Unassigning students:', selectedAssigned);
-    // Handle unassignment logic
+    const toMove = assignedStudents.filter(s => selectedAssigned.includes(s._id));
+    setUnassignedStudents(prev => [...prev, ...toMove]);
+    setAssignedStudents(prev => prev.filter(s => !selectedAssigned.includes(s._id)));
+    setSelectedAssigned([]);
   };
 
   const handleDiscardChanges = () => {
     navigate('/faculty_advisor_management');
   };
 
-  const handleFinalizeAssignments = () => {
-    console.log('Finalizing assignments');
-    navigate('/faculty_advisor_management');
+  const handleFinalizeAssignments = async () => {
+    try {
+      setSaving(true);
+      const currentAssignedIds = assignedStudents.map(s => s._id);
+      const currentUnassignedIds = unassignedStudents.map(s => s._id);
+      const toAssign = currentAssignedIds.filter(sid => !originalAssignedIds.includes(sid));
+      const toUnassign = currentUnassignedIds.filter(sid => originalAssignedIds.includes(sid));
+      await api.put(`/admin/faculty/${id}/assign`, { toAssign, toUnassign });
+      navigate('/faculty_advisor_management');
+    } catch (err) {
+      setSaving(false);
+    }
   };
 
   return (
@@ -252,38 +277,22 @@ const AssignStudents = () => {
         {/* Dashboard Body */}
         <div className="p-8 flex flex-col gap-8">
         <h2 className="text-3xl font-bold" style={{color: '#1a1a2e'}}>Assign Students</h2>
-        
+
+        {loading ? (
+          <div className="flex items-center justify-center py-20" style={{color: '#6b7280'}}>Loading...</div>
+        ) : fetchError ? (
+          <div className="flex items-center justify-center py-20" style={{color: '#ef4444'}}>{fetchError}</div>
+        ) : (<>
         {/* Advisor Profile Header */}
         <section className="bg-primary/5 rounded-xl border border-primary/20 p-6 flex flex-col md:flex-row items-center gap-6 shadow-[0_0_20px_-5px_rgba(154,40,235,0.4)]">
-          <div className="relative">
-            <img 
-              alt="Advisor" 
-              className="w-24 h-24 rounded-xl object-cover border-2 border-primary" 
-              src={facultyAdvisor.avatar}
-            />
-            <div className="absolute -bottom-2 -right-2 bg-primary text-white text-[10px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">
-              Faculty
-            </div>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0" style={{background: 'linear-gradient(135deg, #f5a623, #f7b731)', color: '#1a1a2e'}}>
+            {faculty?.name?.charAt(0).toUpperCase()}
           </div>
           <div className="flex-grow text-center md:text-left">
-            <h2 className={`text-2xl font-bold mb-1`} style={{color: '#1a1a2e'}}>{facultyAdvisor.name}</h2>
-            <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm" style={{color: '#6b7280'}}>
-              <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-primary text-sm">business</span> 
-                {facultyAdvisor.department}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-primary text-sm">school</span> 
-                {facultyAdvisor.position}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-primary text-sm">email</span> 
-                {facultyAdvisor.email}
-              </span>
-            </div>
+            <h2 className="text-2xl font-bold" style={{color: '#1a1a2e'}}>{faculty?.name}</h2>
           </div>
           <div className="flex flex-col items-center md:items-end gap-1 px-8 py-3 bg-white/5 rounded-lg border border-white/10">
-            <span className="text-3xl font-bold text-primary">{facultyAdvisor.currentStudents}</span>
+            <span className="text-3xl font-bold text-primary">{assignedStudents.length}</span>
             <span className="text-xs uppercase tracking-wider text-slate-500 font-bold">Current Students</span>
           </div>
         </section>
@@ -321,34 +330,30 @@ const AssignStudents = () => {
               <div className="space-y-1">
                 {filteredUnassigned.map((student) => (
                   <div 
-                    key={student.id}
+                    key={student._id}
                     className={`flex items-center gap-4 p-3 rounded-lg transition-colors group cursor-pointer border ${
-                      selectedUnassigned.includes(student.id)
+                      selectedUnassigned.includes(student._id)
                         ? 'border-primary/20'
                         : 'border-transparent hover:border-primary/20'
                     }`}
                     style={{
-                      backgroundColor: selectedUnassigned.includes(student.id) ? '#fff4e6' : '#fafaf8'
+                      backgroundColor: selectedUnassigned.includes(student._id) ? '#fff4e6' : '#fafaf8'
                     }}
-                    onClick={() => handleCheckUnassigned(student.id)}
+                    onClick={() => handleCheckUnassigned(student._id)}
                   >
                     <input 
                       className="w-5 h-5 rounded bg-transparent text-primary focus:ring-primary cursor-pointer"
                       style={{borderColor: '#d1d5db'}}
                       type="checkbox"
-                      checked={selectedUnassigned.includes(student.id)}
+                      checked={selectedUnassigned.includes(student._id)}
                       onChange={() => {}}
                     />
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-primary font-bold overflow-hidden" style={{backgroundColor: '#e5e1d8'}}>
-                      {student.avatar ? (
-                        <img alt="Student" className="w-full h-full object-cover" src={student.avatar} />
-                      ) : (
-                        <span className="text-sm">{student.name.split(' ').map(n => n[0]).join('')}</span>
-                      )}
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold overflow-hidden" style={{backgroundColor: '#e5e1d8', color: '#1a1a2e'}}>
+                      <span className="text-sm">{student.name.split(' ').map(n => n[0]).join('')}</span>
                     </div>
                     <div className="flex-grow min-w-0">
                       <p className={`font-medium text-sm truncate`} style={{color: '#1a1a2e'}}>{student.name}</p>
-                      <p className="text-xs truncate" style={{color: '#6b7280'}}>ID: {student.rollNumber} • {student.year}</p>
+                      <p className="text-xs truncate" style={{color: '#6b7280'}}>{deptAbbr(student.department)} • {student.rollNumber || '—'}</p>
                     </div>
                   </div>
                 ))}
@@ -396,7 +401,7 @@ const AssignStudents = () => {
           <div className={`rounded-xl flex flex-col overflow-hidden shadow-xl border`} style={{backgroundColor: '#ffffff', borderColor: '#e5e1d8'}}>
             <div className="p-5 border-b" style={{borderColor: '#e5e1d8', backgroundColor: '#fafaf8'}}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className={`font-bold text-lg`} style={{color: '#1a1a2e'}}>Assigned to {facultyAdvisor.name.split(' ')[1]}</h3>
+                <h3 className={`font-bold text-lg`} style={{color: '#1a1a2e'}}>Assigned to {faculty?.name}</h3>
                 <span className="text-xs px-2 py-1 rounded font-bold" style={{backgroundColor: '#fff4e6', color: '#f5a623'}}>{assignedStudents.length} Active</span>
               </div>
               <div className="relative group">
@@ -423,40 +428,31 @@ const AssignStudents = () => {
               <div className="space-y-1">
                 {filteredAssigned.map((student) => (
                   <div 
-                    key={student.id}
+                    key={student._id}
                     className={`flex items-center gap-4 p-3 rounded-lg transition-colors group cursor-pointer border ${
-                      selectedAssigned.includes(student.id)
+                      selectedAssigned.includes(student._id)
                         ? 'border-primary/20'
                         : 'border-transparent hover:border-primary/20'
                     }`}
                     style={{
-                      backgroundColor: selectedAssigned.includes(student.id) ? '#fff4e6' : '#fafaf8'
+                      backgroundColor: selectedAssigned.includes(student._id) ? '#fff4e6' : '#fafaf8'
                     }}
-                    onClick={() => handleCheckAssigned(student.id)}
+                    onClick={() => handleCheckAssigned(student._id)}
                   >
                     <input 
                       className="w-5 h-5 rounded bg-transparent text-primary focus:ring-primary cursor-pointer"
                       style={{borderColor: '#d1d5db'}}
                       type="checkbox"
-                      checked={selectedAssigned.includes(student.id)}
+                      checked={selectedAssigned.includes(student._id)}
                       onChange={() => {}}
                     />
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-primary font-bold overflow-hidden" style={{backgroundColor: '#e5e1d8'}}>
-                      {student.avatar ? (
-                        <img alt="Student" className="w-full h-full object-cover" src={student.avatar} />
-                      ) : (
-                        <span className="text-sm">{student.name.split(' ').map(n => n[0]).join('')}</span>
-                      )}
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold overflow-hidden" style={{backgroundColor: '#e5e1d8', color: '#1a1a2e'}}>
+                      <span className="text-sm">{student.name.split(' ').map(n => n[0]).join('')}</span>
                     </div>
                     <div className="flex-grow min-w-0">
                       <p className={`font-medium text-sm truncate`} style={{color: '#1a1a2e'}}>{student.name}</p>
-                      <p className="text-xs truncate" style={{color: '#6b7280'}}>ID: {student.rollNumber} • {student.year}</p>
+                      <p className="text-xs truncate" style={{color: '#6b7280'}}>{deptAbbr(student.department)} • {student.rollNumber || '—'}</p>
                     </div>
-                    {student.verified && (
-                      <div className="text-emerald-500">
-                        <span className="material-symbols-outlined text-sm">verified</span>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -471,17 +467,10 @@ const AssignStudents = () => {
         <footer className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
           <div className="flex items-center gap-6">
             <div className="flex -space-x-3 overflow-hidden">
-              {selectedUnassigned.slice(0, 2).map((id) => {
-                const student = unassignedStudents.find(s => s.id === id);
-                return student?.avatar ? (
-                  <img 
-                    key={id}
-                    alt="" 
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-black object-cover" 
-                    src={student.avatar}
-                  />
-                ) : (
-                  <div key={id} className="inline-block h-8 w-8 rounded-full ring-2 ring-black bg-slate-800 flex items-center justify-center text-[10px] font-bold">
+              {selectedUnassigned.slice(0, 2).map((_id) => {
+                const student = unassignedStudents.find(s => s._id === _id);
+                return (
+                  <div key={_id} className="inline-block h-8 w-8 rounded-full ring-2 ring-black bg-slate-800 flex items-center justify-center text-[10px] font-bold text-white">
                     {student?.name.split(' ').map(n => n[0]).join('')}
                   </div>
                 );
@@ -504,14 +493,16 @@ const AssignStudents = () => {
               Discard Changes
             </button>
             <button 
-              className="flex-1 sm:flex-none px-8 py-2.5 bg-primary text-white rounded-lg font-bold shadow-[0_0_30px_-2px_rgba(154,40,235,0.6)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="flex-1 sm:flex-none px-8 py-2.5 bg-primary text-white rounded-lg font-bold shadow-[0_0_30px_-2px_rgba(154,40,235,0.6)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               onClick={handleFinalizeAssignments}
+              disabled={saving}
             >
               <span className="material-symbols-outlined text-sm">check_circle</span>
-              Finalize Assignments
+              {saving ? 'Saving...' : 'Finalize Assignments'}
             </button>
           </div>
         </footer>
+        </>)}
         </div>
       </main>
 
