@@ -60,7 +60,7 @@ const getStudents = asyncHandler(async (req, res) => {
 // @route   POST /api/admin/students
 // @access  Private/Admin
 const createStudent = asyncHandler(async (req, res) => {
-    const { name, email, rollNumber, department, phone } = req.body;
+    const { name, email, rollNumber, department, batch, semester, phone } = req.body;
 
     if (!name || !email || !rollNumber) {
         res.status(400);
@@ -83,6 +83,8 @@ const createStudent = asyncHandler(async (req, res) => {
         role: 'Student',
         rollNumber,
         department: department || undefined,
+        batch: batch || undefined,
+        semester: semester || undefined,
         phone: phone || undefined,
     });
 
@@ -103,13 +105,13 @@ const createStudent = asyncHandler(async (req, res) => {
 const getStudentById = asyncHandler(async (req, res) => {
     const student = await User.findOne({ _id: req.params.id, role: 'Student' })
         .select('-password')
-        .populate('facultyAdvisor', 'name department');
+        .populate('facultyAdvisor', 'name department office');
     if (!student) {
         res.status(404);
         throw new Error('Student not found');
     }
     const facultyList = await User.find({ role: 'Faculty' })
-        .select('name department')
+        .select('name department office')
         .sort({ name: 1 });
     res.status(200).json({ student, facultyList });
 });
@@ -123,10 +125,12 @@ const updateStudent = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error('Student not found');
     }
-    const { name, rollNumber, department, phone, isActive, facultyAdvisorId } = req.body;
+    const { name, rollNumber, department, batch, semester, phone, isActive, facultyAdvisorId } = req.body;
     if (name) student.name = name;
     if (rollNumber !== undefined) student.rollNumber = rollNumber;
     if (department !== undefined) student.department = department;
+    if (batch !== undefined) student.batch = batch;
+    if (semester !== undefined) student.semester = semester;
     if (phone !== undefined) student.phone = phone;
     if (typeof isActive === 'boolean') student.isActive = isActive;
     if (facultyAdvisorId !== undefined) student.facultyAdvisor = facultyAdvisorId || null;
@@ -170,7 +174,7 @@ const getFaculty = asyncHandler(async (req, res) => {
         { $addFields: { assignedStudents: { $size: '$assignedStudentsList' } } },
         {
             $project: {
-                name: 1, email: 1, department: 1, phone: 1, rollNumber: 1,
+                name: 1, email: 1, department: 1, phone: 1, office: 1, rollNumber: 1,
                 isActive: 1, lastLogin: 1, createdAt: 1, assignedStudents: 1,
             },
         },
@@ -183,7 +187,7 @@ const getFaculty = asyncHandler(async (req, res) => {
 // @route   POST /api/admin/faculty
 // @access  Private/Admin
 const createFaculty = asyncHandler(async (req, res) => {
-    const { name, email, department, phone, employeeId } = req.body;
+    const { name, email, department, phone, employeeId, office } = req.body;
     if (!name || !email || !employeeId) {
         res.status(400);
         throw new Error('Name, email and employee ID are required');
@@ -204,6 +208,7 @@ const createFaculty = asyncHandler(async (req, res) => {
         role: 'Faculty',
         department: department || undefined,
         phone: phone || undefined,
+        office: office || undefined,
         rollNumber: employeeId,
     });
     res.status(201).json({
@@ -211,6 +216,7 @@ const createFaculty = asyncHandler(async (req, res) => {
         name: faculty.name,
         email: faculty.email,
         department: faculty.department,
+        office: faculty.office,
         isActive: faculty.isActive,
         assignedStudents: 0,
     });
@@ -237,11 +243,12 @@ const updateFaculty = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error('Faculty member not found');
     }
-    const { name, email, department, phone, isActive } = req.body;
+    const { name, email, department, phone, office, isActive } = req.body;
     if (name) faculty.name = name;
     if (email) faculty.email = email.toLowerCase();
     if (department !== undefined) faculty.department = department;
     if (phone !== undefined) faculty.phone = phone;
+    if (office !== undefined) faculty.office = office;
     if (typeof isActive === 'boolean') faculty.isActive = isActive;
     await faculty.save();
     res.status(200).json({ message: 'Faculty updated successfully' });

@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+if [ ! -f "backend/.env" ]; then
+	echo "Error: backend/.env is missing. Restore it before committing."
+	exit 1
+fi
+
 cd frontend
 npx lint-staged

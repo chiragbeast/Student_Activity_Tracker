@@ -12,6 +12,8 @@ const AddNewStudentUser = () => {
     email: '',
     rollNumber: '',
     department: '',
+    batch: '',
+    semester: '',
     phone: '',
   })
   const [submitting, setSubmitting] = useState(false)
@@ -41,6 +43,8 @@ const AddNewStudentUser = () => {
         email: form.email,
         rollNumber: form.rollNumber || undefined,
         department: form.department || undefined,
+        batch: form.batch || undefined,
+        semester: form.semester || undefined,
         phone: form.phone || undefined,
       })
       navigate('/admin_student_management')
@@ -478,6 +482,85 @@ const AddNewStudentUser = () => {
                       >
                         Engineering Physics (EP)
                       </option>
+                    </select>
+                    <span
+                      className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: '#f5a623' }}
+                    >
+                      expand_more
+                    </span>
+                  </div>
+                </div>
+
+                {/* Mobile Number */}
+                <div className="flex flex-col gap-2">
+                  <label
+                    className="text-xs font-bold uppercase tracking-widest ml-1"
+                    style={{ color: '#1a1a2e' }}
+                  >
+                    Batch
+                  </label>
+                  <div className="relative group">
+                    <span
+                      className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-xl"
+                      style={{ color: '#9ca3af' }}
+                    >
+                      groups
+                    </span>
+                    <input
+                      className="w-full border rounded-lg py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 transition-all"
+                      style={{
+                        backgroundColor: '#fafaf8',
+                        borderColor: '#e5e1d8',
+                        color: '#1a1a2e',
+                      }}
+                      placeholder="2023-2027"
+                      type="text"
+                      value={form.batch}
+                      onChange={(e) => setForm({ ...form, batch: e.target.value })}
+                      onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                      onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label
+                    className="text-xs font-bold uppercase tracking-widest ml-1"
+                    style={{ color: '#1a1a2e' }}
+                  >
+                    Semester
+                  </label>
+                  <div className="relative group">
+                    <span
+                      className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-xl z-10 pointer-events-none"
+                      style={{ color: '#9ca3af' }}
+                    >
+                      calendar_month
+                    </span>
+                    <select
+                      className="w-full appearance-none border rounded-lg py-3.5 pl-12 pr-10 focus:outline-none focus:ring-2 transition-all cursor-pointer"
+                      style={{
+                        backgroundColor: '#fafaf8',
+                        borderColor: '#e5e1d8',
+                        color: '#1a1a2e',
+                      }}
+                      value={form.semester}
+                      onChange={(e) => setForm({ ...form, semester: e.target.value })}
+                      onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                      onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                    >
+                      <option value="" style={{ backgroundColor: '#ffffff', color: '#6b7280' }}>
+                        Select Semester
+                      </option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6</option>
+                      <option value="7">7</option>
+                      <option value="8">8</option>
                     </select>
                     <span
                       className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"

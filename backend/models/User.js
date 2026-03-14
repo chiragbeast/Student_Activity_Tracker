@@ -40,6 +40,18 @@ const userSchema = new mongoose.Schema({
         type: String,
         trim: true,
     },
+    batch: {
+        type: String,
+        trim: true,
+    },
+    semester: {
+        type: String,
+        trim: true,
+    },
+    office: {
+        type: String,
+        trim: true,
+    },
 
     // ── Faculty Advisor Assignment (BR-03, BR-04) ──
     facultyAdvisor: {

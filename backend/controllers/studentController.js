@@ -46,7 +46,7 @@ const getDashboard = asyncHandler(async (req, res) => {
 // @access  Private/Student
 const getProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id)
-        .populate('facultyAdvisor', 'name email department phone');
+        .populate('facultyAdvisor', 'name email department phone office');
 
     if (user) {
         res.status(200).json({

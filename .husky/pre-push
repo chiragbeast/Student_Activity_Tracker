@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+if [ ! -f "backend/.env" ]; then
+  echo "Error: backend/.env is missing. Restore it before pushing."
+  exit 1
+fi
