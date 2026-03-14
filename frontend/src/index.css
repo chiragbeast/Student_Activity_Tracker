@@ -26,7 +26,7 @@
   --red: #e05252;
   --blue: #4a90d9;
   --blue-light: rgba(74, 144, 217, 0.08);
-  --pink: #E391C8;
+  --pink: #e391c8;
   --pink-light: rgba(227, 145, 200, 0.08);
 }
 
@@ -40,4 +40,17 @@ body {
 
 #root {
   height: 100vh;
+}
+
+/* Fallback icon sizing for dashboard sidebar icons when utility CSS is not applied */
+.w-5.h-5.flex-shrink-0 {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.w-\[18px\].h-\[18px\].flex-shrink-0 {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }

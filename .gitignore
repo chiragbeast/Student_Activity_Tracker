@@ -10,7 +10,8 @@ lerna-debug.log*
 # UI images folder
 ui images/
 
-node_modules
+/node_modules/
+**/node_modules/
 dist
 dist-ssr
 *.local
