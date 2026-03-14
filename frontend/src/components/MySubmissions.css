@@ -148,6 +148,7 @@
 .sub-table-wrapper {
     background: #fff;
     border-radius: 16px;
+    border: 1px solid #f0ede5;
     overflow: hidden;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
@@ -184,6 +185,10 @@
 
 .sub-table-row:last-child {
     border-bottom: none;
+}
+
+.sub-table-row:hover {
+    background: #fffbf2;
 }
 
 /* ========== Category Badges ========== */

@@ -62,9 +62,9 @@ const getStudents = asyncHandler(async (req, res) => {
 const createStudent = asyncHandler(async (req, res) => {
     const { name, email, rollNumber, department, phone } = req.body;
 
-    if (!name || !email) {
+    if (!name || !email || !rollNumber) {
         res.status(400);
-        throw new Error('Name and email are required');
+        throw new Error('Name, email and roll number are required');
     }
 
     const existing = await User.findOne({ email: email.toLowerCase() });
@@ -73,14 +73,15 @@ const createStudent = asyncHandler(async (req, res) => {
         throw new Error('A user with this email already exists');
     }
 
-    const tempPassword = 'Temp@' + Math.random().toString(36).slice(-8);
+    // Initial student password is roll number; User model pre-save hook hashes it.
+    const initialPassword = String(rollNumber);
 
     const student = await User.create({
         name,
         email,
-        password: tempPassword,
+        password: initialPassword,
         role: 'Student',
-        rollNumber: rollNumber || undefined,
+        rollNumber,
         department: department || undefined,
         phone: phone || undefined,
     });
@@ -183,24 +184,27 @@ const getFaculty = asyncHandler(async (req, res) => {
 // @access  Private/Admin
 const createFaculty = asyncHandler(async (req, res) => {
     const { name, email, department, phone, employeeId } = req.body;
-    if (!name || !email) {
+    if (!name || !email || !employeeId) {
         res.status(400);
-        throw new Error('Name and email are required');
+        throw new Error('Name, email and employee ID are required');
     }
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) {
         res.status(400);
         throw new Error('A user with this email already exists');
     }
-    const tempPassword = 'Temp@' + Math.random().toString(36).slice(-8);
+
+    // Initial faculty password is employee ID; User model pre-save hook hashes it.
+    const initialPassword = String(employeeId);
+
     const faculty = await User.create({
         name,
         email,
-        password: tempPassword,
+        password: initialPassword,
         role: 'Faculty',
         department: department || undefined,
         phone: phone || undefined,
-        rollNumber: employeeId || undefined,
+        rollNumber: employeeId,
     });
     res.status(201).json({
         _id: faculty._id,

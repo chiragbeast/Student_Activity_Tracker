@@ -128,6 +128,7 @@
 .tableWrapper {
   background: white;
   border-radius: 14px;
+  border: 1px solid var(--border);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -162,7 +163,7 @@
 }
 
 .table tbody tr:hover {
-  background: #fdfaf5;
+  background: #fffbf2;
 }
 
 .table tbody tr td {

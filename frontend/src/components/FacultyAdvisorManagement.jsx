@@ -231,7 +231,7 @@ const FacultyAdvisorManagement = () => {
               <div className="flex items-center justify-between mb-8">
                 <h4 className="text-2xl font-bold text-[#111827]">Faculty Advisors ({loading ? '…' : filteredFaculty.length})</h4>
               </div>
-              <div className="overflow-hidden rounded-[10px]">
+              <div className="overflow-hidden rounded-[10px]" style={{ border: '1px solid #f3f4f6' }}>
                 <table className="w-full text-left">
                   <thead>
                     <tr className="text-white text-[10px] font-bold uppercase tracking-widest" style={{backgroundColor: '#14213D'}}>
@@ -251,7 +251,7 @@ const FacultyAdvisorManagement = () => {
                     ) : filteredFaculty.length === 0 ? (
                       <tr><td colSpan={6} className="py-8 text-center text-sm text-gray-400">No faculty members found.</td></tr>
                     ) : filteredFaculty.map((faculty) => (
-                      <tr key={faculty._id} className="border-b last:border-0" style={{borderColor: '#f3f4f6'}}>
+                      <tr key={faculty._id} className="border-b last:border-0 transition-colors hover:bg-[#fffbf2]" style={{borderColor: '#f3f4f6'}}>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0" style={{background: 'linear-gradient(135deg, #f5a623, #f7b731)', color: '#1a1a2e'}}>

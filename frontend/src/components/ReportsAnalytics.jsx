@@ -487,7 +487,7 @@ const ReportsAnalytics = () => {
               <div className="flex items-center justify-between mb-8">
                 <h4 className="text-2xl font-bold text-[#111827]">Top Performers</h4>
               </div>
-              <div className="overflow-hidden rounded-[10px]">
+              <div className="overflow-hidden rounded-[10px]" style={{ border: '1px solid #f3f4f6' }}>
                 <table className="w-full text-left">
                   <thead>
                     <tr className="text-white text-[10px] font-bold uppercase tracking-widest" style={{backgroundColor: '#14213D'}}>
@@ -500,7 +500,7 @@ const ReportsAnalytics = () => {
                   </thead>
                   <tbody className="text-sm">
                     {students.map((student) => (
-                      <tr key={student.id} className="border-b last:border-0" style={{borderColor: '#f3f4f6'}}>
+                      <tr key={student.id} className="border-b last:border-0 transition-colors hover:bg-[#fffbf2]" style={{borderColor: '#f3f4f6'}}>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
                             <div 

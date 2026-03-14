@@ -280,6 +280,10 @@
     border-bottom: none;
 }
 
+.recent-row:hover {
+    background: #fffbf2;
+}
+
 .recent-activity-info {
     display: flex;
     flex-direction: column;

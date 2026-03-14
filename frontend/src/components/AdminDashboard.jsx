@@ -254,7 +254,7 @@ export default function AdminDashboard() {
               </div>
               
               {/* Table Rows */}
-              <div>
+              <div style={{ border: '1px solid #f0ede5', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
                 {loading ? (
                   <div style={{padding: '32px', textAlign: 'center', color: '#6b7280'}}>Loading...</div>
                 ) : error ? (
@@ -264,6 +264,7 @@ export default function AdminDashboard() {
                 ) : admins.map((admin, index) => (
                   <div 
                     key={admin._id} 
+                    className="transition-colors hover:bg-[#fffbf2]"
                     style={{
                       display: 'grid',
                       gridTemplateColumns: '2fr 1fr 1fr 1fr',
