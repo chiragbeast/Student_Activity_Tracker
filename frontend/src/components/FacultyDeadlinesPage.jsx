@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Plus, Calendar, Trash2, Users, Bell, Search, CheckSquare, Square } from 'lucide-react'
 import styles from './FacultyDeadlinesPage.module.css'
 import { deadlineApi, facultyApi } from '../services/api'
