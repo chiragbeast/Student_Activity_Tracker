@@ -67,7 +67,7 @@ export default function MFAPage() {
   const handleSubmit = (e) => {
     e.preventDefault()
     const enteredOTP = otp.join('')
-    
+
     // Hardcoded MFA pin
     if (enteredOTP === '123456') {
       // Redirect to admin dashboard after successful MFA
@@ -86,16 +86,16 @@ export default function MFAPage() {
   }
 
   return (
-    <div className="font-body min-h-screen overflow-x-hidden" style={{backgroundColor: '#fdf8f0'}}>
-      
+    <div className="font-body min-h-screen overflow-x-hidden" style={{ backgroundColor: '#fdf8f0' }}>
+
       <div className="relative flex min-h-screen w-full flex-col items-center justify-center px-4 py-12">
         <div className="layout-content-container flex flex-col w-full max-w-[520px]">
-          <div className="rounded-[2rem] p-10 md:p-12 border shadow-lg" style={{backgroundColor: '#fff', borderColor: '#e5e1d8'}}>
+          <div className="rounded-[2rem] p-10 md:p-12 border shadow-lg" style={{ backgroundColor: '#fff', borderColor: '#e5e1d8' }}>
             <div className="text-center mb-10">
-              <h1 className="font-display text-3xl font-bold leading-tight mb-3 tracking-tight" style={{color: '#1a1a2e'}}>
+              <h1 className="font-display text-3xl font-bold leading-tight mb-3 tracking-tight" style={{ color: '#1a1a2e' }}>
                 Secure Verification
               </h1>
-              <p className="text-base max-w-[320px] mx-auto" style={{color: '#6b7280'}}>
+              <p className="text-base max-w-[320px] mx-auto" style={{ color: '#6b7280' }}>
                 Enter the 6-digit code sent to your faculty/admin email
               </p>
             </div>
@@ -107,7 +107,7 @@ export default function MFAPage() {
                     key={index}
                     ref={(el) => (inputRefs.current[index] = el)}
                     className="otp-input w-12 h-16 md:w-14 md:h-20 border-2 rounded-[16px] text-center text-2xl font-bold transition-all focus:outline-none focus:ring-2 focus:ring-primary/40"
-                    style={{backgroundColor: '#fff', borderColor: '#e5e1d8', color: '#1a1a2e'}}
+                    style={{ backgroundColor: '#fff', borderColor: '#e5e1d8', color: '#1a1a2e' }}
                     maxLength="1"
                     placeholder="·"
                     type="text"
@@ -120,10 +120,10 @@ export default function MFAPage() {
                 ))}
               </div>
 
-              <button 
-                className="w-full text-white font-bold py-5 rounded-2xl text-lg tracking-wide transition-all transform active:scale-[0.98] flex items-center justify-center gap-3" 
+              <button
+                className="w-full text-white font-bold py-5 rounded-2xl text-lg tracking-wide transition-all transform active:scale-[0.98] flex items-center justify-center gap-3"
                 type="submit"
-                style={{background: 'linear-gradient(135deg, #f5a623 0%, #f7b731 50%, #f5a623 100%)', boxShadow: '0 4px 14px rgba(245, 166, 35, 0.35)'}}
+                style={{ background: 'linear-gradient(135deg, #f5a623 0%, #f7b731 50%, #f5a623 100%)', boxShadow: '0 4px 14px rgba(245, 166, 35, 0.35)' }}
                 onMouseOver={(e) => {
                   e.target.style.transform = 'translateY(-1px)';
                   e.target.style.boxShadow = '0 6px 20px rgba(245, 166, 35, 0.45)';
@@ -139,18 +139,18 @@ export default function MFAPage() {
             </form>
 
             <div className="mt-10 text-center space-y-4">
-              <p className="text-sm" style={{color: '#6b7280'}}>
-                Didn't receive the code? 
-                <button 
+              <p className="text-sm" style={{ color: '#6b7280' }}>
+                Didn't receive the code?
+                <button
                   className="ml-1 font-bold hover:underline"
-                  style={{color: timeLeft > 0 ? '#9ca3af' : '#f5a623', cursor: timeLeft > 0 ? 'not-allowed' : 'pointer'}}
+                  style={{ color: timeLeft > 0 ? '#9ca3af' : '#f5a623', cursor: timeLeft > 0 ? 'not-allowed' : 'pointer' }}
                   onClick={handleResend}
                   disabled={timeLeft > 0}
                 >
                   Resend Code
                 </button>
               </p>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border" style={{backgroundColor: '#fef3e2', borderColor: '#f5a623'}}>
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border" style={{ backgroundColor: '#fef3e2', borderColor: '#f5a623' }}>
                 <span className="material-symbols-outlined text-primary text-sm">timer</span>
                 <span className="text-primary/90 text-xs font-mono font-bold uppercase tracking-widest">
                   {timeLeft > 0 ? `Resend available in ${formatTime(timeLeft)}` : 'Code ready to resend'}
@@ -160,12 +160,12 @@ export default function MFAPage() {
           </div>
 
           <div className="mt-8 flex justify-center items-center gap-6">
-            <a className="flex items-center gap-2 text-sm font-medium transition-colors" style={{color: '#6b7280'}} href="#" onMouseOver={(e) => e.currentTarget.style.color = '#f5a623'} onMouseOut={(e) => e.currentTarget.style.color = '#6b7280'}>
+            <a className="flex items-center gap-2 text-sm font-medium transition-colors" style={{ color: '#6b7280' }} href="#" onMouseOver={(e) => e.currentTarget.style.color = '#f5a623'} onMouseOut={(e) => e.currentTarget.style.color = '#6b7280'}>
               <span className="material-symbols-outlined text-lg">contact_support</span>
               IT Support
             </a>
-            <span className="w-1 h-1 rounded-full" style={{backgroundColor: '#d1d5db'}}></span>
-            <Link to="/login" className="flex items-center gap-2 text-sm font-medium transition-colors" style={{color: '#6b7280'}} onMouseOver={(e) => e.currentTarget.style.color = '#f5a623'} onMouseOut={(e) => e.currentTarget.style.color = '#6b7280'}>
+            <span className="w-1 h-1 rounded-full" style={{ backgroundColor: '#d1d5db' }}></span>
+            <Link to="/" className="flex items-center gap-2 text-sm font-medium transition-colors" style={{ color: '#6b7280' }} onMouseOver={(e) => e.currentTarget.style.color = '#f5a623'} onMouseOut={(e) => e.currentTarget.style.color = '#6b7280'}>
               <span className="material-symbols-outlined text-lg">logout</span>
               Back to Login
             </Link>

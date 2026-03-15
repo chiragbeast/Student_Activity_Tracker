@@ -118,7 +118,7 @@ const UserProfileSettings = () => {
                 View Profile
               </button>
               <button
-                onClick={(e) => { e.stopPropagation(); setShowProfileMenu(false); localStorage.clear(); navigate('/login'); }}
+                onClick={(e) => { e.stopPropagation(); setShowProfileMenu(false); localStorage.clear(); navigate('/'); }}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '10px 12px', backgroundColor: 'transparent', border: 'none',

@@ -148,7 +148,7 @@ export default function AdminDashboard() {
                   e.stopPropagation()
                   setShowProfileMenu(false)
                   localStorage.clear()
-                  navigate('/login')
+                  navigate('/')
                 }}
                 style={{
                   width: '100%',

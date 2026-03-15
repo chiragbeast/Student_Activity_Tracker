@@ -228,7 +228,7 @@ const AddFacultyAdvisor = () => {
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowProfileMenu(false)
-                  navigate('/login')
+                  navigate('/')
                 }}
                 style={{
                   width: '100%',

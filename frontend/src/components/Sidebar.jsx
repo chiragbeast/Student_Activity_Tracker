@@ -231,7 +231,7 @@ export default function Sidebar() {
                 e.stopPropagation()
                 setShowMenu(false)
                 localStorage.clear()
-                navigate('/login')
+                navigate('/')
               }}
               style={{
                 width: '100%',
