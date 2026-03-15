@@ -35,7 +35,7 @@
   color: var(--amber-dark);
 }
 
-/* ── Search Group ── */
+/* -- Search Group -- */
 .searchGroup {
   display: flex;
   gap: 12px;

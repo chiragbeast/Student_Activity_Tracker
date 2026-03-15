@@ -1,68 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './FacultyPendingSubmissions.module.css'
 import { User, Mail } from 'lucide-react'
 import MailModal from './FacultyMailModal'
-
-const submissions = [
-  {
-    id: 1,
-    name: 'Aditi Sharma',
-    avatarBg: '#6aab7a',
-    initials: 'AS',
-    studentId: 'B260001CS',
-    department: 'Computer Science Dept.',
-    activity: 'National Hackathon 2026',
-    description: 'Participated in a national-level hackathon and developed an AI-based solution for waste management.',
-    category: 'Institute',
-    categoryType: 'institute',
-    points: 50,
-    date: 'Feb 12, 2026',
-    submittedOn: 'Feb 12, 2026',
-    fileName: 'Hackathon_Certificate_JD.pdf',
-    fileSize: '2.1 MB',
-    lastUpdated: 'Oct 13, 2023 9:00 AM',
-  },
-  {
-    id: 2,
-    name: 'Rahul Verma',
-    avatarBg: '#e8a87c',
-    initials: 'RV',
-    studentId: 'B260005CS',
-    department: 'Computer Science Dept.',
-    activity: 'Campus Clean Drive',
-    description: 'Organized and led a campus-wide cleanliness drive with over 80 student volunteers.',
-    category: 'Department',
-    categoryType: 'department',
-    points: 20,
-    date: 'Feb 11, 2026',
-    submittedOn: 'Feb 11, 2026',
-    fileName: 'CleanDrive_Cert_SW.pdf',
-    fileSize: '1.4 MB',
-    lastUpdated: 'Oct 12, 2023 11:00 AM',
-  },
-  {
-    id: 3,
-    name: 'Sneha Kapoor',
-    avatarBg: '#7aabcc',
-    initials: 'SK',
-    studentId: 'B260012CS',
-    department: 'Computer Science Dept.',
-    activity: 'Inter-College Debate',
-    description: 'Represented the college at an inter-collegiate debate competition and secured 2nd place.',
-    category: 'Institute',
-    categoryType: 'institute',
-    points: 15,
-    date: 'Jan 10, 2026',
-    submittedOn: 'Jan 10, 2026',
-    fileName: 'Debate_Certificate_MC.pdf',
-    fileSize: '0.9 MB',
-    lastUpdated: 'Oct 11, 2023 3:30 PM',
-  },
-]
+import { facultyApi } from '../services/api'
 
 export default function PendingSubmissions({ onReviewClick }) {
+  const [submissions, setSubmissions] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [mailTarget, setMailTarget] = useState(null)
+
+  useEffect(() => {
+    fetchSubmissions()
+  }, [])
+
+  const fetchSubmissions = async () => {
+    try {
+      setLoading(true)
+      const res = await facultyApi.getPendingSubmissions()
+      if (res.data.success) {
+        const mapped = res.data.data.map(s => ({
+          id: s._id,
+          name: s.student?.name || 'Unknown Student',
+          avatarBg: '#6aab7a',
+          initials: s.student?.name?.split(' ').map(n => n[0]).join('') || '?',
+          studentId: s.student?.rollNumber || 'N/A',
+          department: s.student?.department || 'N/A',
+          activity: s.activityName || 'Unnamed Activity',
+          description: s.description || '',
+          category: s.activityLevel || 'N/A',
+          categoryType: (s.activityLevel || 'institute').toLowerCase(),
+          points: s.pointsRequested || 0,
+          date: s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'N/A',
+          submittedOn: s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'N/A',
+          fileName: s.documents?.[0]?.fileName || 'No File',
+          fileSize: s.documents?.[0]?.fileSize ? `${(s.documents[0].fileSize / 1024).toFixed(1)} KB` : '0 KB',
+          lastUpdated: s.updatedAt ? new Date(s.updatedAt).toLocaleString() : 'N/A',
+          ...s // Keep original data for review detail
+        }))
+        setSubmissions(mapped)
+      }
+    } catch (err) {
+      console.error('Error fetching pending submissions:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filtered = submissions.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -102,7 +85,7 @@ export default function PendingSubmissions({ onReviewClick }) {
               <th>CATEGORY</th>
               <th>POINTS</th>
               <th>DATE</th>
-              <th style={{textAlign: 'right'}}>ACTION</th>
+              <th style={{ textAlign: 'right' }}>ACTION</th>
             </tr>
           </thead>
           <tbody>

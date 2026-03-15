@@ -1,29 +1,59 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Mail } from 'lucide-react'
 import MailModal from './FacultyMailModal'
+import { facultyApi } from '../services/api'
 import styles from './FacultyAssignedStudentsPage.module.css'
-
-const allStudents = [
-  { id: 1, name: 'Aditi Sharma', studentId: 'B260001CS', institutePoints: 45, deptPoints: 30, total: 75 },
-  { id: 2, name: 'Rahul Verma', studentId: 'B260005CS', institutePoints: 50, deptPoints: 20, total: 70 },
-  { id: 3, name: 'Sneha Kapoor', studentId: 'B260012CS', institutePoints: 35, deptPoints: 40, total: 75 },
-  { id: 4, name: 'Arjun Das', studentId: 'B260008CS', institutePoints: 60, deptPoints: 15, total: 75 },
-  { id: 5, name: 'Priya Nair', studentId: 'B260022CS', institutePoints: 42, deptPoints: 50, total: 92 },
-  { id: 6, name: 'Karan Mehta', studentId: 'B260031CS', institutePoints: 38, deptPoints: 25, total: 63 },
-  { id: 7, name: 'Divya Iyer', studentId: 'B260044CS', institutePoints: 55, deptPoints: 35, total: 90 },
-  { id: 8, name: 'Rohan Gupta', studentId: 'B260017CS', institutePoints: 20, deptPoints: 45, total: 65 },
-  { id: 9, name: 'Ananya Rao', studentId: 'B260039CS', institutePoints: 70, deptPoints: 10, total: 80 },
-  { id: 10, name: 'Vikram Singh', studentId: 'B260055CS', institutePoints: 48, deptPoints: 32, total: 80 },
-  { id: 11, name: 'Meera Pillai', studentId: 'B260061CS', institutePoints: 33, deptPoints: 55, total: 88 },
-  { id: 12, name: 'Suresh Babu', studentId: 'B260072CS', institutePoints: 62, deptPoints: 18, total: 80 },
-]
 
 const PAGE_SIZE = 5
 
 export default function AssignedStudentsPage() {
+  const [allStudents, setAllStudents] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [mailTarget, setMailTarget] = useState(null)
+
+  useEffect(() => {
+    fetchStudents()
+  }, [])
+
+  const fetchStudents = async () => {
+    try {
+      setLoading(true)
+      const res = await facultyApi.getStudents()
+      if (res.data.success) {
+        const mapped = res.data.data.map(s => ({
+          id: s._id,
+          name: s.name,
+          studentId: s.rollNumber || 'N/A',
+          institutePoints: s.stats?.institutePoints || 0,
+          deptPoints: s.stats?.departmentPoints || 0,
+          total: s.stats?.totalPoints || 0
+        }))
+        setAllStudents(mapped)
+      }
+    } catch (err) {
+      console.error('Error fetching assigned students:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleExportCSV = async () => {
+    try {
+      const res = await facultyApi.exportCSV()
+      const blob = new Blob([res.data], { type: 'text/csv' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'students_export.csv'
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Error exporting CSV:', err)
+      alert('Failed to export CSV')
+    }
+  }
 
   const filtered = allStudents.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -36,7 +66,7 @@ export default function AssignedStudentsPage() {
   return (
     <div className={styles.page}>
 
-      {/* ── Page Header ── */}
+      {/* -- Page Header -- */}
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Assigned Students</h1>
@@ -62,7 +92,7 @@ export default function AssignedStudentsPage() {
       </div>
 
 
-      {/* ── Table ── */}
+      {/* -- Table -- */}
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -91,7 +121,7 @@ export default function AssignedStudentsPage() {
                     >
                       <Mail size={16} />
                     </button>
-                    <button className={styles.exportBtn}>
+                    <button className={styles.exportBtn} onClick={handleExportCSV}>
                       <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
                         <path d="M12 3v13M7 11l5 5 5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M5 21h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
@@ -110,7 +140,7 @@ export default function AssignedStudentsPage() {
         </table>
       </div>
 
-      {/* ── Pagination ── */}
+      {/* -- Pagination -- */}
       <div className={styles.pagination}>
         <span className={styles.paginationInfo}>
           Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} students
@@ -137,7 +167,7 @@ export default function AssignedStudentsPage() {
         </div>
       </div>
 
-      {/* ── Mail Modal ── */}
+      {/* -- Mail Modal -- */}
       <MailModal
         isOpen={!!mailTarget}
         onClose={() => setMailTarget(null)}
