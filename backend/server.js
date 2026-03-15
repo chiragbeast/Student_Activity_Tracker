@@ -25,6 +25,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/student', require('./routes/studentRoutes'));
 app.use('/api/submissions', require('./routes/submissionRoutes'));
 app.use('/api/faculty', require('./routes/facultyRoutes'));
+app.use('/api/deadlines', require('./routes/deadlineRoutes'));
 app.use('/api', require('./routes/notificationRoutes'));
 
 // Error Handling Middleware

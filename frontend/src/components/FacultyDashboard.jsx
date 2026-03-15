@@ -7,6 +7,7 @@ import PendingSubmissionsPage from './FacultyPendingSubmissionsPage'
 import AssignedStudentsPage from './FacultyAssignedStudentsPage'
 import ReviewDetailPage from './FacultyReviewDetailPage'
 import ProfilePage from './FacultyProfilePage'
+import DeadlinesPage from './FacultyDeadlinesPage'
 import { facultyApi, notificationApi } from '../services/api'
 import styles from './FacultyDashboard.module.css'
 
@@ -89,6 +90,8 @@ export default function Dashboard() {
         return <AssignedStudentsPage />
       case 'Pending Submissions':
         return <PendingSubmissionsPage onReview={openReview} />
+      case 'Manage Deadlines':
+        return <DeadlinesPage />
       case 'Profile':
         return <ProfilePage />
       case 'Dashboard':

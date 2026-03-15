@@ -4,24 +4,28 @@ const deadlineSchema = new mongoose.Schema({
     // ── Deadline Details (FR-2.11, FR-8.4) ──
     title: {
         type: String,
-        required: [true, 'Deadline title is required'],
+        required: [false, 'Deadline title'], // Made optional for simplified faculty deadlines
         trim: true,
         maxlength: 200,
     },
     description: {
         type: String,
-        default: '',
+        required: [true, 'Description is required'],
         maxlength: 500,
     },
     date: {
         type: Date,
-        required: [true, 'Deadline date is required'],
+        default: Date.now,
     },
     category: {
         type: String,
         enum: ['Institute', 'Department', 'General'],
-        required: [true, 'Category is required'],
+        default: 'General',
     },
+    assignedStudents: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
 
     // ── Visibility ──
     visibleToRoles: {
