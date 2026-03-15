@@ -132,10 +132,10 @@ const updateSubmission = asyncHandler(async (req, res) => {
         throw new Error('Not authorized to update this submission');
     }
 
-    // Only allow update if status is Draft, Returned, or Modified
-    if (!['Draft', 'Returned', 'Modified'].includes(submission.status)) {
+    // Only allow update if status is Draft, Returned, Modified, or Pending
+    if (!['Draft', 'Returned', 'Modified', 'Pending'].includes(submission.status)) {
         res.status(400);
-        throw new Error('Cannot edit a submission that is Pending, Approved, or Denied');
+        throw new Error('Cannot edit a submission that is Approved or Denied');
     }
 
     // Update text fields
