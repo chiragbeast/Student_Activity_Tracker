@@ -1,94 +1,47 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Mail } from 'lucide-react'
 import MailModal from './FacultyMailModal'
+import { facultyApi } from '../services/api'
 import styles from './FacultyPendingSubmissionsPage.module.css'
 
-const submissionsData = [
-  {
-    id: 1,
-    name: 'Aditi Sharma',
-    initials: 'AS',
-    avatarBg: '#6aab7a',
-    activity: 'National Hackathon 2024',
-    category: 'Institute',
-    categoryType: 'institute',
-    points: 50,
-    date: 'Feb 12, 2026',
-  },
-  {
-    id: 2,
-    name: 'Rahul Verma',
-    initials: 'RV',
-    avatarBg: '#e8a87c',
-    activity: 'Campus Clean Drive',
-    category: 'Department',
-    categoryType: 'department',
-    points: 20,
-    date: 'Feb 11, 2026',
-  },
-  {
-    id: 3,
-    name: 'Sneha Kapoor',
-    initials: 'SK',
-    avatarBg: '#7aabcc',
-    activity: 'Inter-College Debate',
-    category: 'Institute',
-    categoryType: 'institute',
-    points: 15,
-    date: 'Jan 10, 2026',
-  },
-  {
-    id: 4,
-    name: 'Arjun Das',
-    initials: 'AD',
-    avatarBg: '#b0b8cc',
-    activity: 'Research Paper Publication',
-    category: 'Department',
-    categoryType: 'department',
-    points: 100,
-    date: 'Jan 09, 2026',
-  },
-  {
-    id: 5,
-    name: 'Priya Nair',
-    initials: 'PN',
-    avatarBg: '#a3c4e8',
-    activity: 'Workshop on AI',
-    category: 'Institute',
-    categoryType: 'institute',
-    points: 30,
-    date: 'Jan 08, 2026',
-  },
-  {
-    id: 6,
-    name: 'Karan Mehta',
-    initials: 'KM',
-    avatarBg: '#f0a8c0',
-    activity: 'Cultural Fest Coordination',
-    category: 'Department',
-    categoryType: 'department',
-    points: 45,
-    date: 'Jan 08, 2026',
-  },
-  {
-    id: 7,
-    name: 'Lakshya Gupta',
-    initials: 'LG',
-    avatarBg: '#c0c0f0',
-    activity: 'IoT Workshop',
-    category: 'Institute',
-    categoryType: 'institute',
-    points: 25,
-    date: 'Jan 07, 2026',
-  }
-]
-
 export default function PendingSubmissionsPage({ onReview }) {
+  const [submissionsData, setSubmissionsData] = useState([])
+  const [loading, setLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState([])
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('All')
-  const [sortOrder, setSortOrder] = useState('newest') // newest, oldest
+  const [sortOrder, setSortOrder] = useState('newest')
   const [mailTarget, setMailTarget] = useState(null)
+
+  useEffect(() => {
+    fetchSubmissions()
+  }, [])
+
+  const fetchSubmissions = async () => {
+    try {
+      setLoading(true)
+      const res = await facultyApi.getPendingSubmissions()
+      if (res.data.success) {
+        const mapped = res.data.data.map(s => ({
+          id: s._id,
+          name: s.student?.name || 'Unknown Student',
+          initials: s.student?.name?.split(' ').map(n => n[0]).join('') || '?',
+          avatarBg: '#6aab7a',
+          activity: s.activityName || 'Unnamed Activity',
+          category: s.activityLevel || 'N/A',
+          categoryType: (s.activityLevel || 'institute').toLowerCase(),
+          points: s.pointsRequested || 0,
+          date: s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'N/A',
+          ...s 
+        }))
+        setSubmissionsData(mapped)
+      }
+    } catch (err) {
+      console.error('Error fetching pending submissions:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredAndSorted = submissionsData
     .filter(s => {
@@ -109,14 +62,34 @@ export default function PendingSubmissionsPage({ onReview }) {
     )
   }
 
-  const handleBulkApprove = () => {
-    alert(`Approved ${selectedIds.length} submissions`)
-    setSelectedIds([])
+  const handleBulkApprove = async () => {
+    try {
+      await facultyApi.bulkReviewSubmissions({
+        submissionIds: selectedIds,
+        status: 'Approved',
+        feedback: 'Approved via bulk action'
+      })
+      alert(`Approved ${selectedIds.length} submissions`)
+      setSelectedIds([])
+      fetchSubmissions()
+    } catch (err) {
+      alert('Failed to bulk approve')
+    }
   }
 
-  const handleBulkReject = () => {
-    alert(`Rejected ${selectedIds.length} submissions`)
-    setSelectedIds([])
+  const handleBulkReject = async () => {
+    try {
+      await facultyApi.bulkReviewSubmissions({
+        submissionIds: selectedIds,
+        status: 'Denied',
+        feedback: 'Rejected via bulk action'
+      })
+      alert(`Rejected ${selectedIds.length} submissions`)
+      setSelectedIds([])
+      fetchSubmissions()
+    } catch (err) {
+      alert('Failed to bulk reject')
+    }
   }
 
   return (
@@ -130,15 +103,11 @@ export default function PendingSubmissionsPage({ onReview }) {
       <div className={styles.statsGrid}>
         <div className={styles.statsCard}>
           <span className={styles.statsLabel}>TOTAL PENDING</span>
-          <span className={styles.statsValue}>28</span>
-        </div>
-        <div className={styles.statsCard}>
-          <span className={styles.statsLabel}>REVIEWS COMPLETED TODAY</span>
-          <span className={styles.statsValue}>12</span>
+          <span className={styles.statsValue}>{submissionsData.length}</span>
         </div>
       </div>
 
-      {/* Filter & Search Area - Moved just above the table */}
+      {/* Filter & Search Area */}
       <div className={styles.filterRow}>
         <div className={styles.searchGroup}>
           <div className={styles.searchWrapper}>

@@ -25,6 +25,7 @@
   --blue-light: rgba(74, 144, 217, 0.08);
   --pink: #e391c8;
   --pink-light: rgba(227, 145, 200, 0.08);
+  --amber-light: rgba(245, 166, 35, 0.1);
 }
 
 body {
