@@ -26,6 +26,131 @@ const getDashboard = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Get reports analytics summary and top performers
+// @route   GET /api/admin/reports
+// @access  Private/Admin
+const getReportsAnalytics = asyncHandler(async (req, res) => {
+    const [pointsAgg, activeStudents, approvedActivities, topPerformers, studentsWithPoints] = await Promise.all([
+        ActivityPoints.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalPointsAwarded: { $sum: '$totalPoints' },
+                },
+            },
+        ]),
+        User.countDocuments({ role: 'Student', isActive: true }),
+        Submission.countDocuments({ status: 'Approved' }),
+        ActivityPoints.aggregate([
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'student',
+                    foreignField: '_id',
+                    as: 'student',
+                },
+            },
+            { $unwind: '$student' },
+            { $match: { 'student.role': 'Student' } },
+            { $sort: { totalPoints: -1 } },
+            { $limit: 10 },
+            {
+                $project: {
+                    _id: '$student._id',
+                    name: '$student.name',
+                    email: '$student.email',
+                    department: '$student.department',
+                    isActive: '$student.isActive',
+                    totalPoints: '$totalPoints',
+                },
+            },
+        ]),
+        User.aggregate([
+            { $match: { role: 'Student' } },
+            {
+                $lookup: {
+                    from: 'activitypoints',
+                    localField: '_id',
+                    foreignField: 'student',
+                    as: 'points',
+                },
+            },
+            {
+                $addFields: {
+                    studentTotalPoints: { $ifNull: [{ $arrayElemAt: ['$points.totalPoints', 0] }, 0] },
+                    semesterNum: {
+                        $convert: {
+                            input: '$semester',
+                            to: 'int',
+                            onError: null,
+                            onNull: null,
+                        },
+                    },
+                },
+            },
+            {
+                $project: {
+                    department: 1,
+                    studentTotalPoints: 1,
+                    semesterNum: 1,
+                },
+            },
+        ]),
+    ]);
+
+    const totalPointsAwarded = pointsAgg[0]?.totalPointsAwarded || 0;
+    const avgPointsPerStudent = activeStudents > 0 ? Number((totalPointsAwarded / activeStudents).toFixed(2)) : 0;
+
+    const departmentTotalsMap = new Map();
+    const yearTotalsByDepartment = new Map();
+    const yearCountsByDepartment = new Map();
+
+    for (const student of studentsWithPoints) {
+        const department = student.department || 'Unspecified';
+        const points = Number(student.studentTotalPoints || 0);
+        const semesterNum = Number(student.semesterNum);
+
+        departmentTotalsMap.set(department, (departmentTotalsMap.get(department) || 0) + points);
+
+        if (Number.isFinite(semesterNum) && semesterNum >= 1 && semesterNum <= 8) {
+            const yearIndex = Math.ceil(semesterNum / 2); // 1-2 => Year 1, 3-4 => Year 2, etc.
+            if (!yearTotalsByDepartment.has(department)) {
+                yearTotalsByDepartment.set(department, [0, 0, 0, 0]);
+                yearCountsByDepartment.set(department, [0, 0, 0, 0]);
+            }
+            const totals = yearTotalsByDepartment.get(department);
+            const counts = yearCountsByDepartment.get(department);
+            totals[yearIndex - 1] += points;
+            counts[yearIndex - 1] += 1;
+        }
+    }
+
+    const departmentDistribution = Array.from(departmentTotalsMap.entries())
+        .map(([department, totalPoints]) => ({ department, totalPoints }))
+        .sort((a, b) => b.totalPoints - a.totalPoints);
+
+    const yearWiseAverages = {};
+    for (const [department, totals] of yearTotalsByDepartment.entries()) {
+        const counts = yearCountsByDepartment.get(department);
+        yearWiseAverages[department] = totals.map((sum, index) => {
+            const count = counts[index] || 0;
+            return count > 0 ? Number((sum / count).toFixed(2)) : 0;
+        });
+    }
+
+    res.status(200).json({
+        stats: {
+            totalPointsAwarded,
+            activeStudents,
+            avgPointsPerStudent,
+            approvedActivities,
+        },
+        departmentDistribution,
+        yearWiseAverages,
+        topPerformers,
+    });
+});
+
 // @desc    Get all students with total points
 // @route   GET /api/admin/students
 // @access  Private/Admin
@@ -148,6 +273,7 @@ const deleteStudent = asyncHandler(async (req, res) => {
         throw new Error('Student not found');
     }
     await User.deleteOne({ _id: req.params.id });
+    await Submission.deleteMany({ student: req.params.id });
     await ActivityPoints.deleteMany({ student: req.params.id });
     res.status(200).json({ message: 'Student deleted successfully' });
 });
@@ -171,11 +297,44 @@ const getFaculty = asyncHandler(async (req, res) => {
                 as: 'assignedStudentsList',
             },
         },
-        { $addFields: { assignedStudents: { $size: '$assignedStudentsList' } } },
+        {
+            $lookup: {
+                from: 'submissions',
+                let: { facultyId: '$_id' },
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'student',
+                            foreignField: '_id',
+                            as: 'studentDoc',
+                        },
+                    },
+                    { $unwind: '$studentDoc' },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$status', 'Pending'] },
+                                    { $eq: ['$studentDoc.facultyAdvisor', '$$facultyId'] },
+                                ],
+                            },
+                        },
+                    },
+                ],
+                as: 'pendingSubmissionsList',
+            },
+        },
+        {
+            $addFields: {
+                assignedStudents: { $size: '$assignedStudentsList' },
+                pendingSubmissions: { $size: '$pendingSubmissionsList' },
+            },
+        },
         {
             $project: {
                 name: 1, email: 1, department: 1, phone: 1, office: 1, rollNumber: 1,
-                isActive: 1, lastLogin: 1, createdAt: 1, assignedStudents: 1,
+                isActive: 1, lastLogin: 1, createdAt: 1, assignedStudents: 1, pendingSubmissions: 1,
             },
         },
         { $sort: { createdAt: -1 } },
@@ -310,4 +469,4 @@ const assignStudents = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Assignments updated successfully' });
 });
 
-module.exports = { getDashboard, getStudents, createStudent, getStudentById, updateStudent, deleteStudent, getFaculty, createFaculty, getFacultyById, updateFaculty, deleteFaculty, getFacultyStudents, assignStudents };
+module.exports = { getDashboard, getReportsAnalytics, getStudents, createStudent, getStudentById, updateStudent, deleteStudent, getFaculty, createFaculty, getFacultyById, updateFaculty, deleteFaculty, getFacultyStudents, assignStudents };
