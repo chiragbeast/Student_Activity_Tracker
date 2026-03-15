@@ -58,6 +58,7 @@ export default function MySubmissions() {
     const [submissions, setSubmissions] = useState([]);
     const [confirmWithdraw, setConfirmWithdraw] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [previewDocUrl, setPreviewDocUrl] = useState(null);
 
     useEffect(() => {
         fetchSubmissions();
@@ -123,6 +124,22 @@ export default function MySubmissions() {
                             <button className="withdraw-cancel-btn" onClick={() => setConfirmWithdraw(null)}>Cancel</button>
                             <button className="withdraw-confirm-btn" onClick={() => handleWithdraw(confirmWithdraw)}>Yes, Withdraw</button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Document Preview Modal */}
+            {previewDocUrl && (
+                <div className="preview-modal-overlay" onClick={() => setPreviewDocUrl(null)}>
+                    <div className="preview-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="preview-close-btn" onClick={() => setPreviewDocUrl(null)}>
+                            <FiXCircle size={24} />
+                        </button>
+                        <iframe
+                            src={previewDocUrl}
+                            title="Document Preview"
+                            className="preview-iframe"
+                        />
                     </div>
                 </div>
             )}
@@ -225,24 +242,22 @@ export default function MySubmissions() {
                                                 <h4 style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.5rem' }}>Attached Documents</h4>
                                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                                                     {sub.documents.map((doc) => (
-                                                        <a
+                                                        <button
                                                             key={doc._id}
-                                                            href={doc.fileUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
+                                                            onClick={() => setPreviewDocUrl(doc.fileUrl)}
                                                             style={{
                                                                 display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
                                                                 padding: '0.4rem 0.8rem', borderRadius: '6px',
                                                                 background: '#f0f4ff', color: '#4C9AFF',
-                                                                fontSize: '0.8rem', textDecoration: 'none',
-                                                                border: '1px solid #dbeafe', transition: 'background 0.2s',
+                                                                fontSize: '0.8rem', border: '1px solid #dbeafe',
+                                                                transition: 'background 0.2s', cursor: 'pointer'
                                                             }}
                                                             onMouseEnter={(e) => e.currentTarget.style.background = '#dbeafe'}
                                                             onMouseLeave={(e) => e.currentTarget.style.background = '#f0f4ff'}
                                                         >
                                                             <FiFileText size={14} />
                                                             {doc.fileName}
-                                                        </a>
+                                                        </button>
                                                     ))}
                                                 </div>
                                             </div>
