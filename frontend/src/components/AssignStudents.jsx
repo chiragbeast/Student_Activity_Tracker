@@ -9,8 +9,12 @@ const AssignStudents = () => {
   const profileMenuRef = useRef(null)
   const [unassignedSearchQuery, setUnassignedSearchQuery] = useState('')
   const [assignedSearchQuery, setAssignedSearchQuery] = useState('')
+  const [unassignedBranchFilter, setUnassignedBranchFilter] = useState('ALL')
+  const [assignedBranchFilter, setAssignedBranchFilter] = useState('ALL')
   const [selectedUnassigned, setSelectedUnassigned] = useState([])
   const [selectedAssigned, setSelectedAssigned] = useState([])
+
+  const branchOptions = ['ALL', 'CSE', 'ECE', 'EEE', 'CH', 'ME', 'CE', 'BT', 'MSE', 'PE', 'EP']
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -35,19 +39,29 @@ const AssignStudents = () => {
     const map = {
       'computer science': 'CSE',
       'computer science and engineering': 'CSE',
+      'computer science & engineering (cse)': 'CSE',
       electronics: 'ECE',
       'electronics and communication': 'ECE',
       'electronics & communication': 'ECE',
       'electronics and communication engineering': 'ECE',
+      'electronics & communication engineering (ece)': 'ECE',
       electrical: 'EEE',
       'electrical engineering': 'EEE',
+      'electrical & electronics engineering (eee)': 'EEE',
       mechanical: 'ME',
       'mechanical engineering': 'ME',
+      'mechanical engineering (me)': 'ME',
       civil: 'CE',
       'civil engineering': 'CE',
+      'civil engineering (ce)': 'CE',
       'information technology': 'IT',
-      chemical: 'CHE',
-      'chemical engineering': 'CHE',
+      chemical: 'CH',
+      'chemical engineering': 'CH',
+      'chemical engineering (ch)': 'CH',
+      'biotechnology (bt)': 'BT',
+      'materials science & engineering (mse)': 'MSE',
+      'production engineering (pe)': 'PE',
+      'engineering physics (ep)': 'EP',
     }
     return map[dept.toLowerCase().trim()] || dept.toUpperCase()
   }
@@ -70,17 +84,23 @@ const AssignStudents = () => {
     fetchData()
   }, [id])
 
-  const filteredUnassigned = unassignedStudents.filter(
-    (student) =>
+  const filteredUnassigned = unassignedStudents.filter((student) => {
+    const matchesSearch =
       student.name.toLowerCase().includes(unassignedSearchQuery.toLowerCase()) ||
       (student.rollNumber || '').toLowerCase().includes(unassignedSearchQuery.toLowerCase())
-  )
+    const matchesBranch =
+      unassignedBranchFilter === 'ALL' || deptAbbr(student.department) === unassignedBranchFilter
+    return matchesSearch && matchesBranch
+  })
 
-  const filteredAssigned = assignedStudents.filter(
-    (student) =>
+  const filteredAssigned = assignedStudents.filter((student) => {
+    const matchesSearch =
       student.name.toLowerCase().includes(assignedSearchQuery.toLowerCase()) ||
       (student.rollNumber || '').toLowerCase().includes(assignedSearchQuery.toLowerCase())
-  )
+    const matchesBranch =
+      assignedBranchFilter === 'ALL' || deptAbbr(student.department) === assignedBranchFilter
+    return matchesSearch && matchesBranch
+  })
 
   const handleCheckUnassigned = (studentId) => {
     setSelectedUnassigned((prev) =>
@@ -446,27 +466,49 @@ const AssignStudents = () => {
                         {unassignedStudents.length} Total
                       </span>
                     </div>
-                    <div className="relative group">
-                      <span
-                        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 transition-colors"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        search
-                      </span>
-                      <input
-                        className="w-full border rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 transition-all"
-                        style={{
-                          backgroundColor: '#ffffff',
-                          borderColor: '#e5e1d8',
-                          color: '#1a1a2e',
-                        }}
-                        placeholder="Search by name or ID..."
-                        type="text"
-                        value={unassignedSearchQuery}
-                        onChange={(e) => setUnassignedSearchQuery(e.target.value)}
-                        onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
-                        onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
-                      />
+                    <div className="flex justify-end gap-3">
+                      <div className="relative group" style={{ width: '72%' }}>
+                        <span
+                          className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 transition-colors"
+                          style={{ color: '#9ca3af' }}
+                        >
+                          search
+                        </span>
+                        <input
+                          className="w-full border rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 transition-all"
+                          style={{
+                            backgroundColor: '#ffffff',
+                            borderColor: '#e5e1d8',
+                            color: '#1a1a2e',
+                          }}
+                          placeholder="Search by name or ID..."
+                          type="text"
+                          value={unassignedSearchQuery}
+                          onChange={(e) => setUnassignedSearchQuery(e.target.value)}
+                          onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                          onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                        />
+                      </div>
+                      <div style={{ width: '25%' }}>
+                        <select
+                          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-all cursor-pointer"
+                          style={{
+                            backgroundColor: '#ffffff',
+                            borderColor: '#e5e1d8',
+                            color: '#1a1a2e',
+                          }}
+                          value={unassignedBranchFilter}
+                          onChange={(e) => setUnassignedBranchFilter(e.target.value)}
+                          onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                          onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                        >
+                          {branchOptions.map((branch) => (
+                            <option key={branch} value={branch}>
+                              {branch === 'ALL' ? 'All Branches' : branch}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
                   <div className="flex-grow overflow-y-auto p-0 custom-scrollbar">
@@ -588,27 +630,49 @@ const AssignStudents = () => {
                         {assignedStudents.length} Active
                       </span>
                     </div>
-                    <div className="relative group">
-                      <span
-                        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 transition-colors"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        search
-                      </span>
-                      <input
-                        className="w-full border rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 transition-all"
-                        style={{
-                          backgroundColor: '#ffffff',
-                          borderColor: '#e5e1d8',
-                          color: '#1a1a2e',
-                        }}
-                        placeholder="Filter assigned students..."
-                        type="text"
-                        value={assignedSearchQuery}
-                        onChange={(e) => setAssignedSearchQuery(e.target.value)}
-                        onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
-                        onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
-                      />
+                    <div className="flex justify-end gap-3">
+                      <div className="relative group" style={{ width: '72%' }}>
+                        <span
+                          className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 transition-colors"
+                          style={{ color: '#9ca3af' }}
+                        >
+                          search
+                        </span>
+                        <input
+                          className="w-full border rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 transition-all"
+                          style={{
+                            backgroundColor: '#ffffff',
+                            borderColor: '#e5e1d8',
+                            color: '#1a1a2e',
+                          }}
+                          placeholder="Filter assigned students..."
+                          type="text"
+                          value={assignedSearchQuery}
+                          onChange={(e) => setAssignedSearchQuery(e.target.value)}
+                          onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                          onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                        />
+                      </div>
+                      <div style={{ width: '25%' }}>
+                        <select
+                          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-all cursor-pointer"
+                          style={{
+                            backgroundColor: '#ffffff',
+                            borderColor: '#e5e1d8',
+                            color: '#1a1a2e',
+                          }}
+                          value={assignedBranchFilter}
+                          onChange={(e) => setAssignedBranchFilter(e.target.value)}
+                          onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                          onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                        >
+                          {branchOptions.map((branch) => (
+                            <option key={branch} value={branch}>
+                              {branch === 'ALL' ? 'All Branches' : branch}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
                   <div className="flex-grow overflow-y-auto p-0 custom-scrollbar">
