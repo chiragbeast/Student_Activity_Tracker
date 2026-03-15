@@ -1,39 +1,37 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 // Student components
-import LoginPage from './components/LoginPage';
-import DashboardLayout from './components/DashboardLayout';
-import StudentDashboard from './components/StudentDashboard';
-import MySubmissions from './components/MySubmissions';
-import ActivitySubmissionForm from './components/ActivitySubmissionForm';
-import ProfilePage from './components/ProfilePage';
-import RegisterPage from './components/RegisterPage';
+import LoginPage from './components/LoginPage'
+import DashboardLayout from './components/DashboardLayout'
+import StudentDashboard from './components/StudentDashboard'
+import MySubmissions from './components/MySubmissions'
+import ActivitySubmissionForm from './components/ActivitySubmissionForm'
+import ProfilePage from './components/ProfilePage'
+import RegisterPage from './components/RegisterPage'
 
 // Admin components
-import LandingPage from './components/LandingPage';
-import AdminLoginPage from './components/AdminLoginPage';
-import MFAPage from './components/MFAPage';
-import AdminDashboard from './components/AdminDashboard';
-import AdminUserManagement from './components/AdminUserManagement';
-import FacultyAdvisorManagement from './components/FacultyAdvisorManagement';
-import ReportsAnalytics from './components/ReportsAnalytics';
-import AddNewStudentUser from './components/AddNewStudentUser';
-import AddFacultyAdvisor from './components/AddFacultyAdvisor';
-import UserProfileSettings from './components/UserProfileSettings';
-import EditStudent from './components/EditStudent';
-import EditFaculty from './components/EditFaculty';
-import AssignStudents from './components/AssignStudents';
+import AdminLoginPage from './components/AdminLoginPage'
+import MFAPage from './components/MFAPage'
+import AdminDashboard from './components/AdminDashboard'
+import AdminUserManagement from './components/AdminUserManagement'
+import FacultyAdvisorManagement from './components/FacultyAdvisorManagement'
+import ReportsAnalytics from './components/ReportsAnalytics'
+import AddNewStudentUser from './components/AddNewStudentUser'
+import AddFacultyAdvisor from './components/AddFacultyAdvisor'
+import UserProfileSettings from './components/UserProfileSettings'
+import EditStudent from './components/EditStudent'
+import EditFaculty from './components/EditFaculty'
+import AssignStudents from './components/AssignStudents'
 
 // Faculty components
-import FacultyDashboard from './components/FacultyDashboard';
+import FacultyDashboard from './components/FacultyDashboard'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Landing & Auth */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<LoginPage />} />
         <Route path="/mfa" element={<MFAPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -62,7 +60,7 @@ function App() {
         <Route path="/faculty_dashboard" element={<FacultyDashboard />} />
       </Routes>
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App
