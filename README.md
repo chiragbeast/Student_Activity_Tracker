@@ -8,6 +8,7 @@ A full-stack authentication portal with Google OAuth and password reset function
 - Google OAuth authentication
 - Password reset via email
 - Role-based access (Student, Faculty, Admin)
+- Two-factor authentication for Admin users
 
 ## Setup
 
@@ -86,3 +87,4 @@ A full-stack authentication portal with Google OAuth and password reset function
 - Register/Login at http://localhost:3000
 - Use "Sign in with Google" for OAuth
 - Use "Forgot Password" to reset password via email
+- Admin users will receive a 2FA code via email after entering credentials

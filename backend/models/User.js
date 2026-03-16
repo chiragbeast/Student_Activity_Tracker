@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
   googleId: { type: String },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
+  twoFactorCode: { type: String },
+  twoFactorExpires: { type: Date },
 }, { timestamps: true });
 
 userSchema.pre('save', async function(next) {
