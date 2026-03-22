@@ -609,10 +609,15 @@ const AdminUserManagement = () => {
                             </div>
                           </td>
                           <td className="py-4 px-6">
-                            <span className="text-lg font-bold text-[#111827]">
-                              {student.totalPoints ?? 0}
+                            <span className="text-lg font-bold" style={{ color: '#e391c8' }}>
+                              {student.institutePoints ?? 0}
                             </span>
-                            <span className="text-xs ml-1 text-gray-500">pts</span>
+                            <span className="text-lg font-bold mx-1" style={{ color: '#000000' }}>
+                              /
+                            </span>
+                            <span className="text-lg font-bold" style={{ color: '#5990d9' }}>
+                              {student.departmentPoints ?? 0}
+                            </span>
                           </td>
                           <td className="py-4 px-6">
                             <span className="text-sm font-medium text-gray-700">
@@ -649,28 +654,6 @@ const AdminUserManagement = () => {
                           </td>
                           <td className="py-4 px-6 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() =>
-                                  console.log('Download transcript for student:', student._id)
-                                }
-                                className="inline-block p-1.5 hover:opacity-70 transition-colors"
-                                style={{ color: '#F4AD39' }}
-                                title="Download Transcript"
-                              >
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                  ></path>
-                                </svg>
-                              </button>
                               <Link
                                 to={`/edit_student/${student._id}`}
                                 className="inline-block p-1.5 hover:opacity-70 transition-colors"
