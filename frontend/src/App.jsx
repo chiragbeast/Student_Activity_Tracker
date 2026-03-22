@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 // Student components
 import LoginPage from './components/LoginPage'
@@ -10,7 +10,6 @@ import ProfilePage from './components/ProfilePage'
 import RegisterPage from './components/RegisterPage'
 
 // Admin components
-import LandingPage from './components/LandingPage'
 import AdminLoginPage from './components/AdminLoginPage'
 import MFAPage from './components/MFAPage'
 import AdminDashboard from './components/AdminDashboard'
@@ -33,7 +32,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Landing & Auth */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/mfa" element={<MFAPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
@@ -64,6 +63,9 @@ function App() {
         {/* Faculty routes */}
         <Route path="/faculty_dashboard" element={<FacultyDashboard />} />
         <Route path="/faculty_notifications" element={<NotificationCenter />} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   )
