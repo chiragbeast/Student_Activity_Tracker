@@ -16,6 +16,11 @@ const AdminUserManagement = () => {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showTranscriptModal, setShowTranscriptModal] = useState(false)
+  const [selectedSemester, setSelectedSemester] = useState('')
+  const [selectedBranch, setSelectedBranch] = useState('')
+  const [transcriptError, setTranscriptError] = useState('')
+  const [transcriptDownloading, setTranscriptDownloading] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
   const [isDraggingFile, setIsDraggingFile] = useState(false)
   const [importRows, setImportRows] = useState([])
@@ -206,6 +211,87 @@ const AdminUserManagement = () => {
       s.department?.toLowerCase().includes(q)
     )
   })
+
+  const semesterOptions = ['1', '2', '3', '4', '5', '6', '7', '8']
+  const branchOptions = [
+    ...new Set(students.map((s) => (s.department || '').trim()).filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b))
+
+  const resetTranscriptModal = () => {
+    setShowTranscriptModal(false)
+    setSelectedSemester('')
+    setSelectedBranch('')
+    setTranscriptError('')
+    setTranscriptDownloading(false)
+  }
+
+  const handleDownloadTranscript = async () => {
+    if (!selectedSemester || !selectedBranch) return
+
+    try {
+      setTranscriptDownloading(true)
+      setTranscriptError('')
+
+      const { data } = await api.get('/admin/students/transcript', {
+        params: {
+          semester: selectedSemester,
+          branch: selectedBranch,
+        },
+      })
+
+      const exportRows = (data.students || []).map((student, index) => {
+        const institutePoints = Number(student.institutePoints || 0)
+        const departmentPoints = Number(student.departmentPoints || 0)
+        const computedTotal = institutePoints + departmentPoints
+
+        return {
+          'S.No.': index + 1,
+          'Full Name': student.name || '',
+          'Roll Number': student.rollNumber || '',
+          Batch: student.batch || '',
+          Semester: student.semester || selectedSemester,
+          Branch: student.branch || selectedBranch,
+          'Mobile Number': student.phone || '',
+          'Institute points': institutePoints,
+          'Department points': departmentPoints,
+          'Total points':
+            student.totalPoints !== undefined && student.totalPoints !== null
+              ? Number(student.totalPoints)
+              : computedTotal,
+          'Faculty Advisor': student.facultyAdvisorName || '',
+          'Faculty Advisor email': student.facultyAdvisorEmail || '',
+        }
+      })
+
+      const headers = [
+        'S.No.',
+        'Full Name',
+        'Roll Number',
+        'Batch',
+        'Semester',
+        'Branch',
+        'Mobile Number',
+        'Institute points',
+        'Department points',
+        'Total points',
+        'Faculty Advisor',
+        'Faculty Advisor email',
+      ]
+
+      const worksheet = XLSX.utils.json_to_sheet(exportRows, { header: headers })
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Transcript')
+
+      const safeBranch = selectedBranch.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, '_')
+      XLSX.writeFile(workbook, `student_transcript_sem${selectedSemester}_${safeBranch}.xlsx`)
+
+      resetTranscriptModal()
+    } catch (err) {
+      setTranscriptError(err.response?.data?.message || 'Failed to download transcript data.')
+    } finally {
+      setTranscriptDownloading(false)
+    }
+  }
 
   const initialsFromName = (name = '') => {
     return (
@@ -532,6 +618,17 @@ const AdminUserManagement = () => {
             <div className="p-8">
               <div className="flex items-center justify-between mb-8">
                 <h4 className="text-2xl font-bold text-[#111827]">Students</h4>
+                <button
+                  type="button"
+                  onClick={() => setShowTranscriptModal(true)}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 text-white text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
+                  style={{ backgroundColor: '#F4AD39' }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                    download
+                  </span>
+                  <span className="whitespace-nowrap">Download Transcript</span>
+                </button>
               </div>
               <div
                 className="overflow-hidden rounded-[10px]"
@@ -686,6 +783,118 @@ const AdminUserManagement = () => {
           </div>
         </div>
       </main>
+
+      {showTranscriptModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.45)',
+            zIndex: 110,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              boxShadow: '0 20px 45px rgba(0,0,0,0.2)',
+              padding: '24px',
+            }}
+          >
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-[#111827]">Download Student Transcript</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Select semester and branch to export students into an Excel file.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={resetTranscriptModal}
+                className="text-gray-400 hover:text-gray-700 transition-colors"
+                aria-label="Close"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+              <div>
+                <label className="block text-sm font-semibold text-[#111827] mb-2">Semester</label>
+                <select
+                  value={selectedSemester}
+                  onChange={(e) => setSelectedSemester(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#F4AD39]"
+                >
+                  <option value="">Select Semester</option>
+                  {semesterOptions.map((semester) => (
+                    <option key={semester} value={semester}>
+                      {semester}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-[#111827] mb-2">Branch</label>
+                <select
+                  value={selectedBranch}
+                  onChange={(e) => setSelectedBranch(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#F4AD39]"
+                >
+                  <option value="">Select Branch</option>
+                  {branchOptions.map((branch) => (
+                    <option key={branch} value={branch}>
+                      {branch}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {transcriptError && (
+              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                {transcriptError}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={resetTranscriptModal}
+                className="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadTranscript}
+                disabled={!selectedSemester || !selectedBranch || transcriptDownloading}
+                className="px-4 py-2 text-sm font-semibold rounded-lg text-white transition-all"
+                style={{
+                  backgroundColor:
+                    !selectedSemester || !selectedBranch || transcriptDownloading
+                      ? '#9ca3af'
+                      : '#F4AD39',
+                  cursor:
+                    !selectedSemester || !selectedBranch || transcriptDownloading
+                      ? 'not-allowed'
+                      : 'pointer',
+                  opacity: transcriptDownloading ? 0.8 : 1,
+                }}
+              >
+                {transcriptDownloading ? 'Preparing...' : 'Download Excel'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showImportModal && (
         <div

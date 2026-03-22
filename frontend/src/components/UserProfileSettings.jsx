@@ -16,9 +16,10 @@ const UserProfileSettings = () => {
   const [showConfirm, setShowConfirm] = useState(false)
   const [notifications, setNotifications] = useState(true)
   const [userProfile, setUserProfile] = useState({
-    name: 'Administrator',
-    email: 'admin@university.edu',
+    name: '',
+    email: '',
     role: 'Admin',
+    profilePicture: '',
   })
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [saveError, setSaveError] = useState('')
@@ -59,8 +60,8 @@ const UserProfileSettings = () => {
         setLoadingProfile(true)
         const { data } = await api.get('/auth/me')
         setUserProfile({
-          name: data.name || 'Administrator',
-          email: data.email || 'admin@university.edu',
+          name: data.name || '',
+          email: data.email || '',
           role: data.role || 'Admin',
           profilePicture: data.profilePicture || '',
         })
@@ -413,7 +414,7 @@ const UserProfileSettings = () => {
             )}
             <div className="flex flex-col">
               <span className="text-[0.9rem] font-semibold text-white">
-                {userProfile.name || 'Admin User'}
+                {userProfile.name || 'Admin'}
               </span>
               <span className="text-[0.78rem] text-[#9ca3af]">({userProfile.role || 'Admin'})</span>
             </div>
@@ -604,38 +605,6 @@ const UserProfileSettings = () => {
                   {uploadError}
                 </div>
               )}
-
-              {/* Profile Completion */}
-              <div style={{ width: '100%' }}>
-                <div
-                  style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}
-                >
-                  <span style={{ fontSize: '0.82rem', fontWeight: '600', color: '#4C9AFF' }}>
-                    Profile Completion
-                  </span>
-                  <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#1a1a2e' }}>
-                    85%
-                  </span>
-                </div>
-                <div
-                  style={{
-                    height: '6px',
-                    background: '#e5e1d8',
-                    borderRadius: '999px',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      height: '100%',
-                      width: '85%',
-                      background: 'linear-gradient(90deg, #4C9AFF, #2d7ae0)',
-                      borderRadius: '999px',
-                      transition: 'width 0.4s ease',
-                    }}
-                  ></div>
-                </div>
-              </div>
             </div>
 
             {/* Right Column */}

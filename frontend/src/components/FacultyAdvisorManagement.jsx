@@ -619,7 +619,9 @@ const FacultyAdvisorManagement = () => {
                             </span>
                           </td>
                           <td className="py-4 px-6">
-                            <span className="text-lg font-bold text-[#111827]">—</span>
+                            <span className="text-lg font-bold text-[#111827]">
+                              {Number(faculty.avgPoints || 0).toFixed(2)}
+                            </span>
                           </td>
                           <td className="py-4 px-6">
                             <span
