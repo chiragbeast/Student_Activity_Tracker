@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
-import { FiEye, FiEyeOff } from 'react-icons/fi'
+import { useState, useEffect, useRef } from 'react'
+import { FiEye, FiEyeOff, FiCamera } from 'react-icons/fi'
 import api from '../api'
+import ImageCropModal from './ImageCropModal'
 import './ProfilePage.css'
 
 export default function ProfilePage() {
@@ -15,6 +16,12 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(null)
   const [notifications, setNotifications] = useState(true)
   const [loading, setLoading] = useState(true)
+
+  // Profile picture state
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileInputRef = useRef(null)
+  const [cropImageSrc, setCropImageSrc] = useState(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -42,6 +49,60 @@ export default function ProfilePage() {
     setConfirmPassword('')
   }
 
+  const handleProfilePicChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if (!allowed.includes(file.type)) {
+      setUploadError('Only JPG, PNG, and WEBP images are allowed')
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image must be under 5 MB')
+      return
+    }
+
+    setUploadError('')
+    // Create a data URL and open the crop modal
+    const reader = new FileReader()
+    reader.onload = () => setCropImageSrc(reader.result)
+    reader.readAsDataURL(file)
+
+    // Reset file input so the same file can be re-selected
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleCroppedUpload = async (croppedBlob) => {
+    setCropImageSrc(null)
+    setUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('profilePicture', croppedBlob, 'profile.jpg')
+
+      const res = await api.put('/student/profile/picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+
+      // Update profile state
+      setProfile((prev) => ({ ...prev, profilePicture: res.data.profilePicture }))
+
+      // Sync to localStorage so sidebar/header reflect it
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+      storedUser.profilePicture = res.data.profilePicture
+      localStorage.setItem('user', JSON.stringify(storedUser))
+    } catch (err) {
+      console.error('Upload failed:', err)
+      setUploadError(err.response?.data?.message || 'Failed to upload image')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading profile...</div>
 
   const userObj = profile || JSON.parse(localStorage.getItem('user') || '{}')
@@ -59,16 +120,42 @@ export default function ProfilePage() {
       <div className="profile-grid">
         {/* Left: Profile Card */}
         <div className="profile-card">
-          <div className="avatar-wrapper">
-            <div className="avatar-circle">
-              <span className="avatar-letter">{userObj.name?.charAt(0) || 'U'}</span>
+          <div className="avatar-wrapper" onClick={() => fileInputRef.current?.click()}>
+            <div className={`avatar-circle ${uploading ? 'uploading' : ''}`}>
+              {userObj.profilePicture ? (
+                <img src={userObj.profilePicture} alt={userObj.name} className="avatar-image" />
+              ) : (
+                <span className="avatar-letter">{userObj.name?.charAt(0) || 'U'}</span>
+              )}
+              <div className="avatar-overlay">
+                <FiCamera className="avatar-camera-icon" />
+              </div>
+              {uploading && (
+                <div className="avatar-loading">
+                  <div className="avatar-spinner" />
+                </div>
+              )}
             </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="avatar-file-input"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              onChange={handleProfilePicChange}
+            />
           </div>
+          {uploadError && <p className="upload-error">{uploadError}</p>}
           <h2 className="profile-name">{userObj.name}</h2>
           <p className="profile-roll">Roll Number: {userObj.rollNumber || 'N/A'}</p>
           <p className="profile-email">{userObj.email}</p>
 
-          <button className="change-pic-btn">Change Profile Picture</button>
+          <button
+            className="change-pic-btn"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? 'Uploading…' : 'Change Profile Picture'}
+          </button>
 
           <div className="completion-section">
             <div className="completion-header">
@@ -285,6 +372,14 @@ export default function ProfilePage() {
           <a href="#">Help Center</a>
         </div>
       </footer>
+      {/* Crop Modal */}
+      {cropImageSrc && (
+        <ImageCropModal
+          imageSrc={cropImageSrc}
+          onCropDone={handleCroppedUpload}
+          onCancel={() => setCropImageSrc(null)}
+        />
+      )}
     </div>
   )
 }
