@@ -1,6 +1,5 @@
 import { useState, useEffect, Fragment } from 'react'
 import { Mail } from 'lucide-react'
-import MailModal from './FacultyMailModal'
 import { facultyApi } from '../services/api'
 import styles from './FacultyAssignedStudentsPage.module.css'
 
@@ -10,7 +9,6 @@ export default function AssignedStudentsPage() {
   const [allStudents, setAllStudents] = useState([])
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
-  const [mailTarget, setMailTarget] = useState(null)
   const [expandedStudentId, setExpandedStudentId] = useState(null)
   const [history, setHistory] = useState({}) // { studentId: [submissions] }
   const [historyState, setHistoryState] = useState({}) // { studentId: { loading: bool, error: string } }
@@ -104,6 +102,17 @@ export default function AssignedStudentsPage() {
       console.error('Error exporting bulk Excel:', err)
       alert('Failed to export bulk Excel')
     }
+  }
+
+  const handleMailClick = (e, studentEmail) => {
+    e.stopPropagation()
+
+    if (!studentEmail || studentEmail === 'N/A') {
+      alert('No valid email found for this student.')
+      return
+    }
+
+    window.location.href = `mailto:${studentEmail}`
   }
 
   const filtered = allStudents.filter(
@@ -212,10 +221,7 @@ export default function AssignedStudentsPage() {
                       <div className={styles.actionGroup}>
                         <button
                           className={styles.mailBtn}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setMailTarget(s)
-                          }}
+                          onClick={(e) => handleMailClick(e, s.email)}
                         >
                           <Mail size={16} />
                         </button>
@@ -364,15 +370,6 @@ export default function AssignedStudentsPage() {
           </button>
         </div>
       </div>
-
-      {/* -- Mail Modal -- */}
-      <MailModal
-        isOpen={!!mailTarget}
-        onClose={() => setMailTarget(null)}
-        studentId={mailTarget?._id}
-        studentName={mailTarget?.name}
-        studentEmail={mailTarget?.email}
-      />
     </div>
   )
 }
