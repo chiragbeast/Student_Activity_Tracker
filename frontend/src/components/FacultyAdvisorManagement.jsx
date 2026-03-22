@@ -8,6 +8,11 @@ const FacultyAdvisorManagement = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef(null)
+  const [adminUser, setAdminUser] = useState({
+    name: 'Admin User',
+    role: 'Admin',
+    profilePicture: '',
+  })
   const [facultyList, setFacultyList] = useState([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState('')
@@ -41,6 +46,25 @@ const FacultyAdvisorManagement = () => {
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    const syncAdminUser = () => {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+        setAdminUser({
+          name: storedUser.name || 'Admin User',
+          role: storedUser.role || 'Admin',
+          profilePicture: storedUser.profilePicture || '',
+        })
+      } catch {
+        setAdminUser({ name: 'Admin User', role: 'Admin', profilePicture: '' })
+      }
+    }
+
+    syncAdminUser()
+    window.addEventListener('storage', syncAdminUser)
+    return () => window.removeEventListener('storage', syncAdminUser)
   }, [])
 
   useEffect(() => {
@@ -403,15 +427,28 @@ const FacultyAdvisorManagement = () => {
             className="flex items-center gap-2.5 p-2 rounded-[10px] cursor-pointer hover:bg-white/[0.07] transition-colors"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
-            <div
-              className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[0.95rem]"
-              style={{ background: 'linear-gradient(135deg, #f5a623, #f7b731)', color: '#1a1a2e' }}
-            >
-              A
-            </div>
+            {adminUser.profilePicture ? (
+              <img
+                src={adminUser.profilePicture}
+                alt={adminUser.name || 'Admin'}
+                className="w-[38px] h-[38px] rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[0.95rem]"
+                style={{
+                  background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                  color: '#1a1a2e',
+                }}
+              >
+                {initialsFromName(adminUser.name)}
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="text-[0.9rem] font-semibold text-white">Admin User</span>
-              <span className="text-[0.78rem] text-[#9ca3af]">(Super Admin)</span>
+              <span className="text-[0.9rem] font-semibold text-white">
+                {adminUser.name || 'Admin User'}
+              </span>
+              <span className="text-[0.78rem] text-[#9ca3af]">({adminUser.role || 'Admin'})</span>
             </div>
           </div>
         </div>
