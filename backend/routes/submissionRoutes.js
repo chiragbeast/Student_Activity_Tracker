@@ -8,6 +8,7 @@ const {
     withdrawSubmission,
     downloadReceipt,
     deleteDocument,
+    exportMySubmissionsExcel,
 } = require('../controllers/submissionController');
 const { protect, role } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -18,6 +19,8 @@ router.use(protect, role('Student'));
 router.route('/')
     .post(upload.array('files', 5), createSubmission)
     .get(getMySubmissions);
+
+router.get('/export-excel', exportMySubmissionsExcel);
 
 router.route('/:id')
     .get(getSubmissionById)

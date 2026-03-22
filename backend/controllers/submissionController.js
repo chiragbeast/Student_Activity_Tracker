@@ -326,6 +326,84 @@ const downloadReceipt = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Export logged-in student's submissions as Excel
+// @route   GET /api/submissions/export-excel
+// @access  Private/Student
+const exportMySubmissionsExcel = asyncHandler(async (req, res) => {
+    const ExcelJS = require('exceljs');
+
+    const student = await User.findById(req.user._id).select('name email rollNumber department');
+    if (!student) {
+        res.status(404);
+        throw new Error('Student not found');
+    }
+
+    const pointsRecord = await ActivityPoints.findOne({ student: req.user._id });
+    const pts = pointsRecord || { institutePoints: 0, departmentPoints: 0, totalPoints: 0 };
+
+    const submissions = await Submission.find({ student: req.user._id }).sort({ createdAt: -1 });
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('My Submissions');
+
+    const headerStyle = {
+        font: { bold: true, size: 14 },
+        alignment: { horizontal: 'center' },
+    };
+
+    sheet.mergeCells('A1:E1');
+    sheet.getCell('A1').value = 'Student Activity Points Report';
+    sheet.getCell('A1').style = headerStyle;
+
+    sheet.addRow([]);
+    sheet.addRow(['Student Information']);
+    sheet.getRow(3).font = { bold: true };
+    sheet.addRow(['Name', student.name]);
+    sheet.addRow(['Roll Number', student.rollNumber || 'N/A']);
+    sheet.addRow(['Department', student.department || 'N/A']);
+    sheet.addRow(['Email', student.email]);
+    sheet.addRow([]);
+
+    sheet.addRow(['Points Summary']);
+    sheet.getRow(9).font = { bold: true };
+    sheet.addRow(['Institute Points', pts.institutePoints]);
+    sheet.addRow(['Department Points', pts.departmentPoints]);
+    sheet.addRow(['Total Cumulative Points', pts.totalPoints]);
+    sheet.getRow(12).font = { bold: true, color: { argb: 'FF000000' } };
+    sheet.addRow([]);
+
+    sheet.addRow(['Submission History']);
+    sheet.getRow(14).font = { bold: true };
+    sheet.addRow(['Activity', 'Level', 'Points', 'Status', 'Date']);
+    sheet.getRow(15).font = { bold: true };
+
+    submissions.forEach((sub) => {
+        const ptsValue = sub.status === 'Approved' ? sub.pointsApproved : sub.pointsRequested;
+        sheet.addRow([
+            sub.activityName || 'Unknown Activity',
+            sub.activityLevel || 'N/A',
+            ptsValue != null ? ptsValue : 0,
+            sub.status || 'Pending',
+            sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A',
+        ]);
+    });
+
+    sheet.getColumn(1).width = 40;
+    sheet.getColumn(2).width = 15;
+    sheet.getColumn(3).width = 10;
+    sheet.getColumn(4).width = 15;
+    sheet.getColumn(5).width = 15;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+        'Content-Disposition',
+        `attachment; filename=My_Submissions_${student.rollNumber || student.name.replace(/\s+/g, '_')}.xlsx`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+});
+
 module.exports = {
     createSubmission,
     getMySubmissions,
@@ -334,4 +412,5 @@ module.exports = {
     withdrawSubmission,
     downloadReceipt,
     deleteDocument,
+    exportMySubmissionsExcel,
 };

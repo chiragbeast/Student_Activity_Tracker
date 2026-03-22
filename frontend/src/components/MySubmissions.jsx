@@ -23,6 +23,7 @@ export default function MySubmissions() {
   const [submissions, setSubmissions] = useState([])
   const [confirmWithdraw, setConfirmWithdraw] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     fetchSubmissions()
@@ -52,6 +53,27 @@ export default function MySubmissions() {
     } catch (error) {
       console.error('Failed to withdraw', error)
       alert('Error withdrawing submission')
+    }
+  }
+
+  const handleExportExcel = async () => {
+    try {
+      setExporting(true)
+      const res = await api.get('/submissions/export-excel', { responseType: 'blob' })
+      const blob = new Blob([res.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `My_Submissions_${new Date().toISOString().split('T')[0]}.xlsx`
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to export submissions', error)
+      alert('Failed to export Excel')
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -206,9 +228,9 @@ export default function MySubmissions() {
               }}
             />
           </div>
-          <button className="export-btn">
+          <button className="export-btn" onClick={handleExportExcel} disabled={exporting}>
             <FiDownload className="btn-ic" />
-            Export
+            {exporting ? 'Exporting...' : 'Export'}
           </button>
         </div>
       </div>
