@@ -11,6 +11,7 @@ export default function FacultyDeadlinesPage() {
   const [searchTerm, setSearchTerm] = useState('')
 
   const [formData, setFormData] = useState({
+    title: '',
     description: '',
     assignedStudents: [],
   })
@@ -40,7 +41,7 @@ export default function FacultyDeadlinesPage() {
     try {
       await deadlineApi.createDeadline(formData)
       setShowModal(false)
-      setFormData({ description: '', assignedStudents: [] })
+      setFormData({ title: '', description: '', assignedStudents: [] })
       fetchData()
       alert('Deadline created and notifications sent!')
     } catch {
@@ -106,6 +107,7 @@ export default function FacultyDeadlinesPage() {
                   <Trash2 size={16} />
                 </button>
               </div>
+              <h3 className={styles.deadlineTitle}>{d.title}</h3>
               <p className={styles.deadlineDesc}>{d.description}</p>
               <div className={styles.deadlineMeta}>
                 <div className={styles.metaItem}>
@@ -144,6 +146,18 @@ export default function FacultyDeadlinesPage() {
               </button>
             </div>
             <form onSubmit={handleCreate} className={styles.form}>
+              <div className={styles.formGroup}>
+                <label>Heading / Title</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  required
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g. End Semester Project Submission"
+                />
+              </div>
+
               <div className={styles.formGroup}>
                 <label>Description</label>
                 <textarea
