@@ -12,7 +12,7 @@ const getDashboard = asyncHandler(async (req, res) => {
         User.countDocuments({ role: 'Faculty' }),
         Submission.countDocuments({ status: 'Pending' }),
         User.find({ role: 'Admin' })
-            .select('name email role createdAt lastLogin isActive')
+            .select('name email role profilePicture createdAt lastLogin isActive')
             .sort({ createdAt: -1 }),
     ]);
 
@@ -167,13 +167,15 @@ const getStudents = asyncHandler(async (req, res) => {
         },
         {
             $addFields: {
+                institutePoints: { $ifNull: [{ $arrayElemAt: ['$points.institutePoints', 0] }, 0] },
+                departmentPoints: { $ifNull: [{ $arrayElemAt: ['$points.departmentPoints', 0] }, 0] },
                 totalPoints: { $ifNull: [{ $arrayElemAt: ['$points.totalPoints', 0] }, 0] },
             },
         },
         {
             $project: {
                 name: 1, email: 1, rollNumber: 1, department: 1, profilePicture: 1,
-                isActive: 1, lastLogin: 1, createdAt: 1, totalPoints: 1,
+                isActive: 1, lastLogin: 1, createdAt: 1, institutePoints: 1, departmentPoints: 1, totalPoints: 1,
             },
         },
         { $sort: { createdAt: -1 } },
