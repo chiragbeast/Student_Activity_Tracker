@@ -311,7 +311,9 @@ export default function Sidebar({ activeNav, onNavChange }) {
               width: '38px',
               height: '38px',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+              background: profile?.profilePicture
+                ? 'transparent'
+                : 'linear-gradient(135deg, #f5a623, #f7b731)',
               color: '#1a1a2e',
               display: 'flex',
               alignItems: 'center',
@@ -319,16 +321,25 @@ export default function Sidebar({ activeNav, onNavChange }) {
               fontWeight: '700',
               fontSize: '0.95rem',
               flexShrink: 0,
+              overflow: 'hidden',
             }}
           >
-            {profile?.name
-              ? profile.name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 2)
-              : 'F'}
+            {profile?.profilePicture ? (
+              <img
+                src={profile.profilePicture}
+                alt={profile.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+              />
+            ) : profile?.name ? (
+              profile.name
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)
+            ) : (
+              'F'
+            )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', maxWidth: '150px' }}>
             <span

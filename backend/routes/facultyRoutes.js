@@ -10,12 +10,14 @@ const {
     exportStudentsCSV,
     getFacultyProfile,
     updateFacultyProfile,
+    updateFacultyProfilePicture,
     getStudentSubmissions,
     exportStudentPDF,
     exportAllPDFs,
     notifyStudentOfEmail,
 } = require('../controllers/facultyController');
 const { protect, role } = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 console.log('--- Faculty Routes Loading ---');
 
@@ -38,6 +40,8 @@ router.get('/export', exportStudentsCSV);
 router.route('/profile')
     .get(getFacultyProfile)
     .put(updateFacultyProfile);
+router.route('/profile/picture')
+    .put(upload.single('profilePicture'), updateFacultyProfilePicture);
 router.post('/students/:studentId/notify-email', notifyStudentOfEmail);
 
 module.exports = router;

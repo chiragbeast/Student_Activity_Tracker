@@ -15,6 +15,10 @@ export const facultyApi = {
   getStats: () => api.get('/faculty/stats'),
   getProfile: () => api.get('/faculty/profile'),
   updateProfile: (data) => api.put('/faculty/profile', data),
+  updateProfilePicture: (formData) =>
+    api.put('/faculty/profile/picture', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
   exportCSV: () => api.get('/faculty/export', { responseType: 'blob' }),
   getStudentHistory: (studentId) => api.get(`/faculty/students/${studentId}/submissions`),
   exportPDF: (studentId) =>
