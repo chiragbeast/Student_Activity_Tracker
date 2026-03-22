@@ -655,6 +655,160 @@ const updateFacultyProfilePicture = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Export student data as Excel
+// @route   GET /api/faculty/students/:studentId/export-excel
+// @access  Private/Faculty
+const exportStudentExcel = asyncHandler(async (req, res) => {
+    const { studentId } = req.params;
+    const ExcelJS = require('exceljs');
+
+    // Fetch student data
+    const student = await User.findById(studentId).select('name email rollNumber department facultyAdvisor');
+    if (!student || String(student.facultyAdvisor) !== String(req.user._id)) {
+        res.status(403);
+        throw new Error('Not authorized to export this student\'s data');
+    }
+
+    // Fetch points stats
+    const pointsRecord = await ActivityPoints.findOne({ student: studentId });
+    const pts = pointsRecord || { institutePoints: 0, departmentPoints: 0, totalPoints: 0 };
+
+    // Fetch all submissions
+    const submissions = await Submission.find({ student: studentId }).sort({ createdAt: -1 });
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Student Report');
+
+    // -- Header Styles --
+    const headerStyle = {
+        font: { bold: true, size: 14 },
+        alignment: { horizontal: 'center' }
+    };
+
+    // -- Student Info --
+    sheet.mergeCells('A1:E1');
+    sheet.getCell('A1').value = 'Student Activity Points Report';
+    sheet.getCell('A1').style = headerStyle;
+
+    sheet.addRow([]);
+    sheet.addRow(['Student Information']);
+    sheet.getRow(3).font = { bold: true };
+    sheet.addRow(['Name', student.name]);
+    sheet.addRow(['Roll Number', student.rollNumber || 'N/A']);
+    sheet.addRow(['Department', student.department || 'N/A']);
+    sheet.addRow(['Email', student.email]);
+    sheet.addRow([]);
+
+    // -- Points Summary --
+    sheet.addRow(['Points Summary']);
+    sheet.getRow(9).font = { bold: true };
+    sheet.addRow(['Institute Points', pts.institutePoints]);
+    sheet.addRow(['Department Points', pts.departmentPoints]);
+    sheet.addRow(['Total Cumulative Points', pts.totalPoints]);
+    sheet.getRow(12).font = { bold: true, color: { argb: 'FF000000' } };
+    sheet.addRow([]);
+
+    // -- Submissions Table --
+    sheet.addRow(['Submission History']);
+    sheet.getRow(14).font = { bold: true };
+    const tableHeader = ['Activity', 'Level', 'Points', 'Status', 'Date'];
+    sheet.addRow(tableHeader);
+    sheet.getRow(15).font = { bold: true };
+
+    submissions.forEach(sub => {
+        const ptsValue = sub.status === 'Approved' ? sub.pointsApproved : sub.pointsRequested;
+        sheet.addRow([
+            sub.activityName || 'Unknown Activity',
+            sub.activityLevel || 'N/A',
+            ptsValue != null ? ptsValue : 0,
+            sub.status || 'Pending',
+            sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A'
+        ]);
+    });
+
+    // Adjust column widths
+    sheet.getColumn(1).width = 40;
+    sheet.getColumn(2).width = 15;
+    sheet.getColumn(3).width = 10;
+    sheet.getColumn(4).width = 15;
+    sheet.getColumn(5).width = 15;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=Report_${student.rollNumber || student.name.replace(/\s+/g, '_')}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+});
+
+// @desc    Export all assigned students data as a single Excel file
+// @route   GET /api/faculty/export-all-excel
+// @access  Private/Faculty
+const exportAllExcel = asyncHandler(async (req, res) => {
+    const ExcelJS = require('exceljs');
+    const students = await User.find({
+        facultyAdvisor: req.user._id,
+        role: 'Student',
+    }).select('name email rollNumber department');
+
+    if (students.length === 0) {
+        res.status(404);
+        throw new Error('No assigned students found to export');
+    }
+
+    const workbook = new ExcelJS.Workbook();
+
+    for (let i = 0; i < students.length; i++) {
+        const student = students[i];
+        const studentNameClean = student.name.replace(/[*?:\\/|[\]]/g, '').substring(0, 30); // Excel sheet name limit
+        const sheet = workbook.addWorksheet(studentNameClean || `Student ${i+1}`);
+
+        // Fetch data for this student
+        const pointsRecord = await ActivityPoints.findOne({ student: student._id });
+        const pts = pointsRecord || { institutePoints: 0, departmentPoints: 0, totalPoints: 0 };
+        const submissions = await Submission.find({ student: student._id }).sort({ createdAt: -1 });
+
+        // -- Content (Reuse logic from exportStudentExcel) --
+        sheet.addRow(['Student Activity Points Report']).font = { bold: true, size: 14 };
+        sheet.addRow([]);
+        sheet.addRow(['Student Information']).font = { bold: true };
+        sheet.addRow(['Name', student.name]);
+        sheet.addRow(['Roll Number', student.rollNumber || 'N/A']);
+        sheet.addRow(['Department', student.department || 'N/A']);
+        sheet.addRow(['Email', student.email]);
+        sheet.addRow([]);
+        sheet.addRow(['Points Summary']).font = { bold: true };
+        sheet.addRow(['Institute Points', pts.institutePoints]);
+        sheet.addRow(['Department Points', pts.departmentPoints]);
+        sheet.addRow(['Total Cumulative Points', pts.totalPoints]).font = { bold: true };
+        sheet.addRow([]);
+        sheet.addRow(['Submission History']).font = { bold: true };
+        sheet.addRow(['Activity', 'Level', 'Points', 'Status', 'Date']).font = { bold: true };
+
+        submissions.forEach(sub => {
+            const ptsValue = sub.status === 'Approved' ? sub.pointsApproved : sub.pointsRequested;
+            sheet.addRow([
+                sub.activityName || 'Unknown Activity',
+                sub.activityLevel || 'N/A',
+                ptsValue != null ? ptsValue : 0,
+                sub.status || 'Pending',
+                sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A'
+            ]);
+        });
+
+        sheet.getColumn(1).width = 40;
+        sheet.getColumn(2).width = 15;
+        sheet.getColumn(3).width = 10;
+        sheet.getColumn(4).width = 15;
+        sheet.getColumn(5).width = 15;
+    }
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=Bulk_Student_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+});
+
 module.exports = {
     getFacultyStats,
     getAssignedStudents,
@@ -669,5 +823,7 @@ module.exports = {
     getStudentSubmissions,
     exportStudentPDF,
     exportAllPDFs,
+    exportStudentExcel,
+    exportAllExcel,
     notifyStudentOfEmail,
 };

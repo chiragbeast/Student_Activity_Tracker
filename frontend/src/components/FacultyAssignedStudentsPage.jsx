@@ -69,36 +69,40 @@ export default function AssignedStudentsPage() {
     }
   }
 
-  const handleExportPDF = async (e, studentId, studentName) => {
+  const handleExportExcel = async (e, studentId, studentName) => {
     e.stopPropagation() // Prevent row expansion
     try {
-      const res = await facultyApi.exportPDF(studentId)
-      const blob = new Blob([res.data], { type: 'application/pdf' })
+      const res = await facultyApi.exportExcel(studentId)
+      const blob = new Blob([res.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `Report_${studentName.replace(/\s+/g, '_')}.pdf`
+      a.download = `Report_${studentName.replace(/\s+/g, '_')}.xlsx`
       a.click()
       window.URL.revokeObjectURL(url)
     } catch (err) {
-      console.error('Error exporting PDF:', err)
-      alert('Failed to export PDF')
+      console.error('Error exporting Excel:', err)
+      alert('Failed to export Excel')
     }
   }
 
-  const handleExportAllPDF = async () => {
+  const handleExportAllExcel = async () => {
     try {
-      const res = await facultyApi.exportAllPDFs()
-      const blob = new Blob([res.data], { type: 'application/pdf' })
+      const res = await facultyApi.exportAllExcel()
+      const blob = new Blob([res.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `Bulk_Student_Report_${new Date().toISOString().split('T')[0]}.pdf`
+      a.download = `Bulk_Student_Report_${new Date().toISOString().split('T')[0]}.xlsx`
       a.click()
       window.URL.revokeObjectURL(url)
     } catch (err) {
-      console.error('Error exporting bulk PDF:', err)
-      alert('Failed to export bulk PDF')
+      console.error('Error exporting bulk Excel:', err)
+      alert('Failed to export bulk Excel')
     }
   }
 
@@ -147,7 +151,7 @@ export default function AssignedStudentsPage() {
         </div>
         <button className={styles.searchBtn}>Search</button>
 
-        <button className={styles.exportAllBtn} onClick={handleExportAllPDF}>
+        <button className={styles.exportAllBtn} onClick={handleExportAllExcel}>
           <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
             <path
               d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"
@@ -157,7 +161,7 @@ export default function AssignedStudentsPage() {
               strokeLinejoin="round"
             />
           </svg>
-          Export All (PDF)
+          Export All (Excel)
         </button>
       </div>
 
@@ -217,7 +221,7 @@ export default function AssignedStudentsPage() {
                         </button>
                         <button
                           className={styles.exportBtn}
-                          onClick={(e) => handleExportPDF(e, s.id, s.name)}
+                          onClick={(e) => handleExportExcel(e, s.id, s.name)}
                         >
                           <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
                             <path
@@ -234,7 +238,7 @@ export default function AssignedStudentsPage() {
                               strokeLinecap="round"
                             />
                           </svg>
-                          Export PDF
+                          Export Excel
                         </button>
                       </div>
                     </td>

@@ -23,7 +23,10 @@ export const facultyApi = {
   getStudentHistory: (studentId) => api.get(`/faculty/students/${studentId}/submissions`),
   exportPDF: (studentId) =>
     api.get(`/faculty/students/${studentId}/export-pdf`, { responseType: 'blob' }),
+  exportExcel: (studentId) =>
+    api.get(`/faculty/students/${studentId}/export-excel`, { responseType: 'blob' }),
   exportAllPDFs: () => api.get('/faculty/students/export-all-pdf', { responseType: 'blob' }),
+  exportAllExcel: () => api.get('/faculty/export-all-excel', { responseType: 'blob' }),
   notifyEmail: (studentId, reason) =>
     api.post(`/faculty/students/${studentId}/notify-email`, { reason }),
 }
