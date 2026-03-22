@@ -7,15 +7,15 @@ const User = require('../models/User');
 // @route   POST /api/deadlines
 // @access  Private/Faculty
 const createDeadline = asyncHandler(async (req, res) => {
-    const { description, assignedStudents } = req.body;
+    const { title, description, assignedStudents } = req.body;
 
-    if (!description) {
+    if (!title || !description) {
         res.status(400);
-        throw new Error('Description is required');
+        throw new Error('Title and description are required');
     }
 
     const deadline = await Deadline.create({
-        title: 'New Deadline', // Default title
+        title,
         description,
         assignedStudents: assignedStudents || [],
         createdBy: req.user._id,
