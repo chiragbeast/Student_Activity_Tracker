@@ -87,7 +87,7 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id).select('name email role notificationsEnabled emailNotifications');
+    const user = await User.findById(req.user._id).select('name email role profilePicture notificationsEnabled emailNotifications');
 
     if (!user) {
         res.status(404);

@@ -183,6 +183,77 @@ const getStudents = asyncHandler(async (req, res) => {
     res.status(200).json(students);
 });
 
+// @desc    Get transcript export data filtered by semester and branch
+// @route   GET /api/admin/students/transcript
+// @access  Private/Admin
+const getStudentTranscriptData = asyncHandler(async (req, res) => {
+    const semester = String(req.query.semester || '').trim();
+    const branch = String(req.query.branch || '').trim();
+
+    if (!semester || !branch) {
+        res.status(400);
+        throw new Error('Semester and branch are required');
+    }
+
+    const students = await User.aggregate([
+        {
+            $match: {
+                role: 'Student',
+                semester,
+                department: branch,
+            },
+        },
+        {
+            $lookup: {
+                from: 'activitypoints',
+                localField: '_id',
+                foreignField: 'student',
+                as: 'points',
+            },
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'facultyAdvisor',
+                foreignField: '_id',
+                as: 'facultyAdvisorDoc',
+            },
+        },
+        {
+            $addFields: {
+                institutePoints: { $ifNull: [{ $arrayElemAt: ['$points.institutePoints', 0] }, 0] },
+                departmentPoints: { $ifNull: [{ $arrayElemAt: ['$points.departmentPoints', 0] }, 0] },
+                totalPoints: { $ifNull: [{ $arrayElemAt: ['$points.totalPoints', 0] }, 0] },
+                facultyAdvisorName: { $ifNull: [{ $arrayElemAt: ['$facultyAdvisorDoc.name', 0] }, '' ] },
+                facultyAdvisorEmail: { $ifNull: [{ $arrayElemAt: ['$facultyAdvisorDoc.email', 0] }, '' ] },
+            },
+        },
+        {
+            $project: {
+                name: 1,
+                rollNumber: 1,
+                batch: 1,
+                semester: 1,
+                branch: '$department',
+                phone: 1,
+                institutePoints: 1,
+                departmentPoints: 1,
+                totalPoints: 1,
+                facultyAdvisorName: 1,
+                facultyAdvisorEmail: 1,
+            },
+        },
+        { $sort: { rollNumber: 1, name: 1 } },
+    ]);
+
+    res.status(200).json({
+        semester,
+        branch,
+        count: students.length,
+        students,
+    });
+});
+
 // @desc    Create a new student user
 // @route   POST /api/admin/students
 // @access  Private/Admin
@@ -414,15 +485,56 @@ const getFaculty = asyncHandler(async (req, res) => {
             },
         },
         {
+            $lookup: {
+                from: 'activitypoints',
+                let: { assignedStudentIds: '$assignedStudentsList._id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $in: ['$student', '$$assignedStudentIds'] },
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            totalAssignedPoints: { $sum: '$totalPoints' },
+                        },
+                    },
+                ],
+                as: 'assignedStudentsPoints',
+            },
+        },
+        {
             $addFields: {
                 assignedStudents: { $size: '$assignedStudentsList' },
                 pendingSubmissions: { $size: '$pendingSubmissionsList' },
+                totalAssignedPoints: {
+                    $ifNull: [{ $arrayElemAt: ['$assignedStudentsPoints.totalAssignedPoints', 0] }, 0],
+                },
+                avgPoints: {
+                    $cond: [
+                        { $gt: [{ $size: '$assignedStudentsList' }, 0] },
+                        {
+                            $divide: [
+                                {
+                                    $ifNull: [
+                                        { $arrayElemAt: ['$assignedStudentsPoints.totalAssignedPoints', 0] },
+                                        0,
+                                    ],
+                                },
+                                { $size: '$assignedStudentsList' },
+                            ],
+                        },
+                        0,
+                    ],
+                },
             },
         },
         {
             $project: {
                 name: 1, email: 1, department: 1, phone: 1, office: 1, rollNumber: 1, profilePicture: 1,
                 isActive: 1, lastLogin: 1, createdAt: 1, assignedStudents: 1, pendingSubmissions: 1,
+                avgPoints: 1,
             },
         },
         { $sort: { createdAt: -1 } },
@@ -645,6 +757,7 @@ module.exports = {
     getDashboard,
     getReportsAnalytics,
     getStudents,
+    getStudentTranscriptData,
     createStudent,
     bulkImportStudents,
     getStudentById,
