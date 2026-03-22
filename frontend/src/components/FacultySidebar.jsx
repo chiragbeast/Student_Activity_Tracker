@@ -255,7 +255,7 @@ export default function Sidebar({ activeNav, onNavChange }) {
                 e.stopPropagation()
                 setShowMenu(false)
                 localStorage.clear()
-                navigate('/')
+                navigate('/login')
               }}
               style={{
                 width: '100%',
