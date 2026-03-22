@@ -111,7 +111,7 @@ export default function NotificationCenter({ isPopup = false, onClose }) {
                     onClick={() => handleMarkRead(n._id)}
                   >
                     <div className={styles.content}>
-                      <h3 className={styles.notifTitle}>{n.title}</h3>
+                      <h3 className={styles.notifTitle}>{n.message}</h3>
                       <p className={styles.notifSender}>
                         Sent by{' '}
                         {n.senderRole === 'System' || !n.senderRole
@@ -121,17 +121,9 @@ export default function NotificationCenter({ isPopup = false, onClose }) {
                             : n.senderRole}
                         {n.sender && n.sender !== 'System' && n.sender !== 'System Admin'
                           ? ` (${n.sender})`
-                          : ''}
-                      </p>
-                      <p
-                        style={{
-                          margin: '4px 0 0 0',
-                          color: '#475569',
-                          fontSize: '0.9rem',
-                          lineHeight: '1.4',
-                        }}
-                      >
-                        {n.message}
+                          : n.sender === 'System Admin'
+                            ? ` (${n.sender})`
+                            : ''}
                       </p>
                     </div>
                     <div className={styles.time}>

@@ -8,6 +8,7 @@ import AssignedStudentsPage from './FacultyAssignedStudentsPage'
 import ReviewDetailPage from './FacultyReviewDetailPage'
 import ProfilePage from './FacultyProfilePage'
 import DeadlinesPage from './FacultyDeadlinesPage'
+import NotificationCenter from './NotificationCenter'
 import { facultyApi, notificationApi } from '../services/api'
 import './NotificationPanel.css'
 import styles from './FacultyDashboard.module.css'
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const [activeNav, setActiveNav] = useState('Dashboard')
   const [reviewSubmission, setReviewSubmission] = useState(null)
   const [showNotif, setShowNotif] = useState(false)
+  const [showAllNotif, setShowAllNotif] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [stats, setStats] = useState({ assignedStudents: 0, pendingReviews: 0 })
   const unreadCount = Array.isArray(notifications) ? notifications.filter((n) => !n.read).length : 0
@@ -136,13 +138,39 @@ export default function Dashboard() {
                             <div className={styles.notifContent}>
                               <p
                                 className={styles.notifText}
-                                style={{ fontWeight: n.read ? '400' : '600' }}
+                                style={{
+                                  fontWeight: n.read ? '500' : '700',
+                                  marginBottom: '2px',
+                                  fontSize: '0.85rem',
+                                }}
                               >
                                 {n.message}
                               </p>
-                              <span className={styles.notifTime}>
-                                {new Date(n.createdAt).toLocaleString()}
-                              </span>
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <span
+                                  className={styles.notifSenderInfo}
+                                  style={{ fontSize: '0.72rem', color: '#64748b' }}
+                                >
+                                  Sent by{' '}
+                                  {n.senderRole === 'Student'
+                                    ? 'Student'
+                                    : n.senderRole || 'System'}
+                                  {n.sender && n.sender !== 'System' && n.sender !== 'System Admin'
+                                    ? ` (${n.sender})`
+                                    : n.sender === 'System Admin'
+                                      ? ` (${n.sender})`
+                                      : ''}
+                                </span>
+                                <span className={styles.notifTime} style={{ fontSize: '0.7rem' }}>
+                                  {new Date(n.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         ))
@@ -155,7 +183,15 @@ export default function Dashboard() {
                         </div>
                       )}
                     </div>
-                    <button className={styles.viewAllBtn}>View All Notifications</button>
+                    <button
+                      className={styles.viewAllBtn}
+                      onClick={() => {
+                        setShowNotif(false)
+                        setShowAllNotif(true)
+                      }}
+                    >
+                      View All Notifications
+                    </button>
                   </div>
                 )}
               </div>
@@ -171,11 +207,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className={styles.layout}>
-      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
-      <div className={styles.main}>
-        <div className={styles.content}>{renderPage()}</div>
+    <>
+      <div className={styles.layout}>
+        <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
+        <div className={styles.main}>
+          <div className={styles.content}>{renderPage()}</div>
+        </div>
       </div>
-    </div>
+      {showAllNotif && <NotificationCenter isPopup={true} onClose={() => setShowAllNotif(false)} />}
+    </>
   )
 }

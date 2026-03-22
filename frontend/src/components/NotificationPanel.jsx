@@ -142,13 +142,31 @@ export default function NotificationPanel() {
                           )}
                         </div>
                         <div className="notif-content">
+                          <p
+                            className="notif-message"
+                            style={{ fontWeight: '600', color: '#111827', marginBottom: '2px' }}
+                          >
+                            {n.message}
+                          </p>
                           <div className="notif-message-header">
-                            <span className="notif-sender">{n.sender || 'System'}</span>
+                            <span
+                              className="notif-sender"
+                              style={{ fontWeight: '400', fontSize: '0.75rem', color: '#6b7280' }}
+                            >
+                              Sent by{' '}
+                              {n.senderRole === 'Faculty'
+                                ? 'Faculty Advisor'
+                                : n.senderRole || 'System'}
+                              {n.sender && n.sender !== 'System' && n.sender !== 'System Admin'
+                                ? ` (${n.sender})`
+                                : n.sender === 'System Admin'
+                                  ? ` (${n.sender})`
+                                  : ''}
+                            </span>
                             <span className="notif-time">
                               {new Date(n.createdAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <p className="notif-message">{n.message}</p>
                         </div>
                         {!n.read && <span className="notif-unread-dot" />}
                       </div>

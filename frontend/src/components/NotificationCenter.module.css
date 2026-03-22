@@ -68,7 +68,7 @@
   border-radius: 12px;
   padding: 16px 20px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   border: 1px solid #f1f5f9;
   transition: all 0.2s;
@@ -111,11 +111,10 @@
 }
 
 .time {
-  position: absolute;
-  top: 16px;
-  right: 20px;
   font-size: 0.8rem;
   color: #94a3b8;
+  white-space: nowrap;
+  margin-top: 4px;
 }
 
 .scrollArea {

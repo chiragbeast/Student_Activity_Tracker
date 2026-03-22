@@ -38,3 +38,6 @@ dist-ssr
 # Session notes
 conversation_history.md
 gitcommands.md
+
+#config
+backend/config/db.js  
