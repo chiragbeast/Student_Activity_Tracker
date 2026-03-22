@@ -14,6 +14,8 @@ const {
     getStudentSubmissions,
     exportStudentPDF,
     exportAllPDFs,
+    exportStudentExcel,
+    exportAllExcel,
     notifyStudentOfEmail,
 } = require('../controllers/facultyController');
 const { protect, role } = require('../middleware/authMiddleware');
@@ -32,8 +34,10 @@ router.post('/submissions/bulk-review', bulkReviewSubmissions);
 router.get('/submissions/:id', getSubmissionDetails);
 router.post('/submissions/:id/review', reviewSubmission);
 router.get('/students/export-all-pdf', exportAllPDFs);
+router.get('/export-all-excel', exportAllExcel);
 router.get('/students/:studentId/submissions', getStudentSubmissions);
 router.get('/students/:studentId/export-pdf', exportStudentPDF);
+router.get('/students/:studentId/export-excel', exportStudentExcel);
 router.get('/export', exportStudentsCSV);
 router.route('/profile')
     .get(getFacultyProfile)
