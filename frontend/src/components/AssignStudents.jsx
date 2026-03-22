@@ -7,6 +7,11 @@ const AssignStudents = () => {
   const { id } = useParams()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef(null)
+  const [adminUser, setAdminUser] = useState({
+    name: 'Admin User',
+    role: 'Admin',
+    profilePicture: '',
+  })
   const [unassignedSearchQuery, setUnassignedSearchQuery] = useState('')
   const [assignedSearchQuery, setAssignedSearchQuery] = useState('')
   const [unassignedBranchFilter, setUnassignedBranchFilter] = useState('ALL')
@@ -24,6 +29,25 @@ const AssignStudents = () => {
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    const syncAdminUser = () => {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+        setAdminUser({
+          name: storedUser.name || 'Admin User',
+          role: storedUser.role || 'Admin',
+          profilePicture: storedUser.profilePicture || '',
+        })
+      } catch {
+        setAdminUser({ name: 'Admin User', role: 'Admin', profilePicture: '' })
+      }
+    }
+
+    syncAdminUser()
+    window.addEventListener('storage', syncAdminUser)
+    return () => window.removeEventListener('storage', syncAdminUser)
   }, [])
 
   const [faculty, setFaculty] = useState(null)
@@ -64,6 +88,18 @@ const AssignStudents = () => {
       'engineering physics (ep)': 'EP',
     }
     return map[dept.toLowerCase().trim()] || dept.toUpperCase()
+  }
+
+  const initialsFromName = (name = '') => {
+    return (
+      name
+        .split(' ')
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase() || 'U'
+    )
   }
 
   useEffect(() => {
@@ -370,15 +406,28 @@ const AssignStudents = () => {
             className="flex items-center gap-2.5 p-2 rounded-[10px] cursor-pointer hover:bg-white/[0.07] transition-colors"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
-            <div
-              className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[0.95rem]"
-              style={{ background: 'linear-gradient(135deg, #f5a623, #f7b731)', color: '#1a1a2e' }}
-            >
-              A
-            </div>
+            {adminUser.profilePicture ? (
+              <img
+                src={adminUser.profilePicture}
+                alt={adminUser.name || 'Admin'}
+                className="w-[38px] h-[38px] rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[0.95rem]"
+                style={{
+                  background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                  color: '#1a1a2e',
+                }}
+              >
+                {initialsFromName(adminUser.name)}
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="text-[0.9rem] font-semibold text-white">Admin User</span>
-              <span className="text-[0.78rem] text-[#9ca3af]">(Super Admin)</span>
+              <span className="text-[0.9rem] font-semibold text-white">
+                {adminUser.name || 'Admin User'}
+              </span>
+              <span className="text-[0.78rem] text-[#9ca3af]">({adminUser.role || 'Admin'})</span>
             </div>
           </div>
         </div>
@@ -411,15 +460,26 @@ const AssignStudents = () => {
                   boxShadow: '0 0 22px rgba(154,40,235,0.25), 0 0 30px rgba(245,164,34,0.28)',
                 }}
               >
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0"
-                  style={{
-                    background: 'linear-gradient(135deg, #f5a623, #f7b731)',
-                    color: '#1a1a2e',
-                  }}
-                >
-                  {faculty?.name?.charAt(0).toUpperCase()}
-                </div>
+                {faculty?.profilePicture ? (
+                  <img
+                    src={faculty.profilePicture}
+                    alt={faculty?.name || 'Faculty'}
+                    className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0"
+                    style={{
+                      background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                      color: '#1a1a2e',
+                    }}
+                  >
+                    {initialsFromName(faculty?.name)}
+                  </div>
+                )}
                 <div className="flex-grow text-center md:text-left">
                   <h2 className="text-2xl font-bold" style={{ color: '#ffffff' }}>
                     {faculty?.name}
@@ -529,17 +589,23 @@ const AssignStudents = () => {
                             checked={selectedUnassigned.includes(student._id)}
                             onChange={() => {}}
                           />
-                          <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center font-bold overflow-hidden"
-                            style={{ backgroundColor: '#e5e1d8', color: '#1a1a2e' }}
-                          >
-                            <span className="text-sm">
-                              {student.name
-                                .split(' ')
-                                .map((n) => n[0])
-                                .join('')}
-                            </span>
-                          </div>
+                          {student.profilePicture ? (
+                            <img
+                              src={student.profilePicture}
+                              alt={student.name}
+                              className="w-10 h-10 rounded-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                              }}
+                            />
+                          ) : (
+                            <div
+                              className="w-10 h-10 rounded-full flex items-center justify-center font-bold overflow-hidden"
+                              style={{ backgroundColor: '#e5e1d8', color: '#1a1a2e' }}
+                            >
+                              <span className="text-sm">{initialsFromName(student.name)}</span>
+                            </div>
+                          )}
                           <div className="flex-grow min-w-0">
                             <p
                               className={`font-medium text-sm truncate`}
@@ -693,17 +759,23 @@ const AssignStudents = () => {
                             checked={selectedAssigned.includes(student._id)}
                             onChange={() => {}}
                           />
-                          <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center font-bold overflow-hidden"
-                            style={{ backgroundColor: '#e5e1d8', color: '#1a1a2e' }}
-                          >
-                            <span className="text-sm">
-                              {student.name
-                                .split(' ')
-                                .map((n) => n[0])
-                                .join('')}
-                            </span>
-                          </div>
+                          {student.profilePicture ? (
+                            <img
+                              src={student.profilePicture}
+                              alt={student.name}
+                              className="w-10 h-10 rounded-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                              }}
+                            />
+                          ) : (
+                            <div
+                              className="w-10 h-10 rounded-full flex items-center justify-center font-bold overflow-hidden"
+                              style={{ backgroundColor: '#e5e1d8', color: '#1a1a2e' }}
+                            >
+                              <span className="text-sm">{initialsFromName(student.name)}</span>
+                            </div>
+                          )}
                           <div className="flex-grow min-w-0">
                             <p
                               className={`font-medium text-sm truncate`}
@@ -749,15 +821,22 @@ const AssignStudents = () => {
                   <div className="flex -space-x-3 overflow-hidden">
                     {selectedUnassigned.slice(0, 2).map((_id) => {
                       const student = unassignedStudents.find((s) => s._id === _id)
-                      return (
+                      return student?.profilePicture ? (
+                        <img
+                          key={_id}
+                          src={student.profilePicture}
+                          alt={student.name}
+                          className="inline-block h-8 w-8 rounded-full ring-2 ring-black object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      ) : (
                         <div
                           key={_id}
                           className="inline-block h-8 w-8 rounded-full ring-2 ring-black bg-slate-800 flex items-center justify-center text-[10px] font-bold text-white"
                         >
-                          {student?.name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')}
+                          {initialsFromName(student?.name)}
                         </div>
                       )
                     })}

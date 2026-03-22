@@ -287,7 +287,9 @@ export default function Sidebar() {
               width: '38px',
               height: '38px',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+              background: userObj.profilePicture
+                ? 'transparent'
+                : 'linear-gradient(135deg, #f5a623, #f7b731)',
               color: '#1a1a2e',
               display: 'flex',
               alignItems: 'center',
@@ -295,9 +297,18 @@ export default function Sidebar() {
               fontWeight: '700',
               fontSize: '0.95rem',
               flexShrink: 0,
+              overflow: 'hidden',
             }}
           >
-            {avatarLetter}
+            {userObj.profilePicture ? (
+              <img
+                src={userObj.profilePicture}
+                alt={displayName}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+              />
+            ) : (
+              avatarLetter
+            )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontSize: '0.9rem', fontWeight: '600', color: '#fff' }}>

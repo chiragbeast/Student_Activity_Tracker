@@ -4,6 +4,7 @@ const Submission = require('../models/Submission');
 const ActivityPoints = require('../models/ActivityPoints');
 const Notification = require('../models/Notification');
 const { sendEmail } = require('../utils/mailer');
+const cloudinary = require('../config/cloudinary');
 
 // ── Helper: Get all student IDs assigned to this faculty ──
 async function getAssignedStudentIds(facultyId) {
@@ -453,24 +454,24 @@ function generateStudentPDFReport(doc, student, pts, submissions) {
     // Table Rows
     submissions.forEach(sub => {
         if (doc.y > 680) doc.addPage();
-        
+
         const currentY = doc.y;
         doc.fontSize(9).fillColor('#444444');
         doc.text(sub.activityName || 'Unknown Activity', 50, currentY, { width: 220 });
         doc.text(sub.activityLevel || 'N/A', 270, currentY, { width: 70 });
-        
+
         const ptsValue = sub.status === 'Approved' ? sub.pointsApproved : sub.pointsRequested;
         doc.text(ptsValue != null ? ptsValue.toString() : '0', 340, currentY, { width: 50 });
-        
+
         // Color status based on value
         let statusColor = '#444444';
         if (sub.status === 'Approved') statusColor = '#27ae60';
         if (sub.status === 'Denied') statusColor = '#e74c3c';
         if (sub.status === 'Pending') statusColor = '#f39c12';
-        
+
         doc.fillColor(statusColor).text(sub.status || 'Pending', 390, currentY, { width: 70 });
         doc.fillColor('#444444').text(sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A', 460, currentY, { width: 90 });
-        
+
         doc.moveDown(0.8);
     });
 }
@@ -498,7 +499,7 @@ const exportStudentPDF = asyncHandler(async (req, res) => {
 
     const doc = new PDFDocument({ margin: 50, bufferPages: true });
     let filename = `Report_${student.rollNumber || student.name.replace(/\s+/g, '_')}.pdf`;
-    
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
     doc.pipe(res);
@@ -542,7 +543,7 @@ const exportAllPDFs = asyncHandler(async (req, res) => {
 
     for (let i = 0; i < students.length; i++) {
         const student = students[i];
-        
+
         // Fetch data for this student
         const pointsRecord = await ActivityPoints.findOne({ student: student._id });
         const pts = pointsRecord || { institutePoints: 0, departmentPoints: 0, totalPoints: 0 };
@@ -586,7 +587,7 @@ const notifyStudentOfEmail = asyncHandler(async (req, res) => {
 
     const Notification = require('../models/Notification');
     const msg = reason === 'meeting' ? 'Your Faculty Advisor has requested a meeting with you. Please check your email for details.' : 'Your Faculty Advisor has sent you a message regarding your semester points. Please check your email for details.';
-    
+
     await Notification.create({
         user: studentId,
         type: 'info',
@@ -595,6 +596,217 @@ const notifyStudentOfEmail = asyncHandler(async (req, res) => {
     });
 
     res.status(200).json({ success: true, message: 'Student notified' });
+});
+
+// @desc    Upload/update faculty profile picture
+// @route   PUT /api/faculty/profile/picture
+// @access  Private/Faculty
+const updateFacultyProfilePicture = asyncHandler(async (req, res) => {
+    if (!req.file) {
+        res.status(400);
+        throw new Error('Please upload an image file');
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    // Delete old profile picture from Cloudinary if it exists
+    if (user.profilePicture) {
+        try {
+            const urlParts = user.profilePicture.split('/');
+            const folderAndFile = urlParts.slice(-2).join('/');
+            const publicId = folderAndFile.replace(/\.[^/.]+$/, '');
+            await cloudinary.uploader.destroy(publicId);
+        } catch (err) {
+            console.error('Failed to delete old profile picture:', err.message);
+        }
+    }
+
+    // Upload new image to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'profile-pictures',
+                resource_type: 'image',
+                public_id: `user-${user._id}-${Date.now()}`,
+                transformation: [
+                    { width: 300, height: 300, crop: 'fill', gravity: 'face' },
+                ],
+            },
+            (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+            }
+        );
+        const { Readable } = require('stream');
+        const readable = Readable.from(req.file.buffer);
+        readable.pipe(uploadStream);
+    });
+
+    user.profilePicture = result.secure_url;
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        profilePicture: user.profilePicture,
+    });
+});
+
+// @desc    Export student data as Excel
+// @route   GET /api/faculty/students/:studentId/export-excel
+// @access  Private/Faculty
+const exportStudentExcel = asyncHandler(async (req, res) => {
+    const { studentId } = req.params;
+    const ExcelJS = require('exceljs');
+
+    // Fetch student data
+    const student = await User.findById(studentId).select('name email rollNumber department facultyAdvisor');
+    if (!student || String(student.facultyAdvisor) !== String(req.user._id)) {
+        res.status(403);
+        throw new Error('Not authorized to export this student\'s data');
+    }
+
+    // Fetch points stats
+    const pointsRecord = await ActivityPoints.findOne({ student: studentId });
+    const pts = pointsRecord || { institutePoints: 0, departmentPoints: 0, totalPoints: 0 };
+
+    // Fetch all submissions
+    const submissions = await Submission.find({ student: studentId }).sort({ createdAt: -1 });
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Student Report');
+
+    // -- Header Styles --
+    const headerStyle = {
+        font: { bold: true, size: 14 },
+        alignment: { horizontal: 'center' }
+    };
+
+    // -- Student Info --
+    sheet.mergeCells('A1:E1');
+    sheet.getCell('A1').value = 'Student Activity Points Report';
+    sheet.getCell('A1').style = headerStyle;
+
+    sheet.addRow([]);
+    sheet.addRow(['Student Information']);
+    sheet.getRow(3).font = { bold: true };
+    sheet.addRow(['Name', student.name]);
+    sheet.addRow(['Roll Number', student.rollNumber || 'N/A']);
+    sheet.addRow(['Department', student.department || 'N/A']);
+    sheet.addRow(['Email', student.email]);
+    sheet.addRow([]);
+
+    // -- Points Summary --
+    sheet.addRow(['Points Summary']);
+    sheet.getRow(9).font = { bold: true };
+    sheet.addRow(['Institute Points', pts.institutePoints]);
+    sheet.addRow(['Department Points', pts.departmentPoints]);
+    sheet.addRow(['Total Cumulative Points', pts.totalPoints]);
+    sheet.getRow(12).font = { bold: true, color: { argb: 'FF000000' } };
+    sheet.addRow([]);
+
+    // -- Submissions Table --
+    sheet.addRow(['Submission History']);
+    sheet.getRow(14).font = { bold: true };
+    const tableHeader = ['Activity', 'Level', 'Points', 'Status', 'Date'];
+    sheet.addRow(tableHeader);
+    sheet.getRow(15).font = { bold: true };
+
+    submissions.forEach(sub => {
+        const ptsValue = sub.status === 'Approved' ? sub.pointsApproved : sub.pointsRequested;
+        sheet.addRow([
+            sub.activityName || 'Unknown Activity',
+            sub.activityLevel || 'N/A',
+            ptsValue != null ? ptsValue : 0,
+            sub.status || 'Pending',
+            sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A'
+        ]);
+    });
+
+    // Adjust column widths
+    sheet.getColumn(1).width = 40;
+    sheet.getColumn(2).width = 15;
+    sheet.getColumn(3).width = 10;
+    sheet.getColumn(4).width = 15;
+    sheet.getColumn(5).width = 15;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=Report_${student.rollNumber || student.name.replace(/\s+/g, '_')}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+});
+
+// @desc    Export all assigned students data as a single Excel file
+// @route   GET /api/faculty/export-all-excel
+// @access  Private/Faculty
+const exportAllExcel = asyncHandler(async (req, res) => {
+    const ExcelJS = require('exceljs');
+    const students = await User.find({
+        facultyAdvisor: req.user._id,
+        role: 'Student',
+    }).select('name email rollNumber department');
+
+    if (students.length === 0) {
+        res.status(404);
+        throw new Error('No assigned students found to export');
+    }
+
+    const workbook = new ExcelJS.Workbook();
+
+    for (let i = 0; i < students.length; i++) {
+        const student = students[i];
+        const studentNameClean = student.name.replace(/[*?:\\/|[\]]/g, '').substring(0, 30); // Excel sheet name limit
+        const sheet = workbook.addWorksheet(studentNameClean || `Student ${i+1}`);
+
+        // Fetch data for this student
+        const pointsRecord = await ActivityPoints.findOne({ student: student._id });
+        const pts = pointsRecord || { institutePoints: 0, departmentPoints: 0, totalPoints: 0 };
+        const submissions = await Submission.find({ student: student._id }).sort({ createdAt: -1 });
+
+        // -- Content (Reuse logic from exportStudentExcel) --
+        sheet.addRow(['Student Activity Points Report']).font = { bold: true, size: 14 };
+        sheet.addRow([]);
+        sheet.addRow(['Student Information']).font = { bold: true };
+        sheet.addRow(['Name', student.name]);
+        sheet.addRow(['Roll Number', student.rollNumber || 'N/A']);
+        sheet.addRow(['Department', student.department || 'N/A']);
+        sheet.addRow(['Email', student.email]);
+        sheet.addRow([]);
+        sheet.addRow(['Points Summary']).font = { bold: true };
+        sheet.addRow(['Institute Points', pts.institutePoints]);
+        sheet.addRow(['Department Points', pts.departmentPoints]);
+        sheet.addRow(['Total Cumulative Points', pts.totalPoints]).font = { bold: true };
+        sheet.addRow([]);
+        sheet.addRow(['Submission History']).font = { bold: true };
+        sheet.addRow(['Activity', 'Level', 'Points', 'Status', 'Date']).font = { bold: true };
+
+        submissions.forEach(sub => {
+            const ptsValue = sub.status === 'Approved' ? sub.pointsApproved : sub.pointsRequested;
+            sheet.addRow([
+                sub.activityName || 'Unknown Activity',
+                sub.activityLevel || 'N/A',
+                ptsValue != null ? ptsValue : 0,
+                sub.status || 'Pending',
+                sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A'
+            ]);
+        });
+
+        sheet.getColumn(1).width = 40;
+        sheet.getColumn(2).width = 15;
+        sheet.getColumn(3).width = 10;
+        sheet.getColumn(4).width = 15;
+        sheet.getColumn(5).width = 15;
+    }
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=Bulk_Student_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
 });
 
 module.exports = {
@@ -607,8 +819,11 @@ module.exports = {
     exportStudentsCSV,
     getFacultyProfile,
     updateFacultyProfile,
+    updateFacultyProfilePicture,
     getStudentSubmissions,
     exportStudentPDF,
     exportAllPDFs,
+    exportStudentExcel,
+    exportAllExcel,
     notifyStudentOfEmail,
 };

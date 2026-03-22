@@ -118,12 +118,6 @@ const EditFaculty = () => {
                   Manage faculty identity and academic permissions
                 </p>
               </div>
-              <div
-                className="h-12 w-12 rounded-full flex items-center justify-center border"
-                style={{ backgroundColor: '#fff4e6', borderColor: '#f5a623' }}
-              >
-                <span className="material-symbols-outlined text-primary">school</span>
-              </div>
             </header>
 
             <form className="space-y-8" onSubmit={handleSave}>
@@ -330,13 +324,7 @@ const EditFaculty = () => {
                 style={{ backgroundColor: '#fafaf8', borderColor: '#e5e1d8' }}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="h-10 w-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: '#fff4e6' }}
-                    >
-                      <span className="material-symbols-outlined text-primary">work</span>
-                    </div>
+                  <div>
                     <div>
                       <h3 className="font-poppins font-medium" style={{ color: '#1a1a2e' }}>
                         Account Status
