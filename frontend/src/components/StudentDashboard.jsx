@@ -258,6 +258,23 @@ export default function StudentDashboard() {
                   </div>
                   <div className="deadline-body">
                     <span className="deadline-title">{d.title}</span>
+                    {d.description && (
+                      <p
+                        className="deadline-desc"
+                        style={{
+                          fontSize: '0.82rem',
+                          color: '#6b7280',
+                          margin: '2px 0 6px',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          lineHeight: '1.4',
+                        }}
+                      >
+                        {d.description}
+                      </p>
+                    )}
                     <div className="deadline-meta">
                       <span className={`deadline-category-dot ${catLower}`} />
                       <span className="deadline-category-label">{d.category}</span>

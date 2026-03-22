@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { FiEye, FiEyeOff, FiCamera } from 'react-icons/fi'
 import { Loader2 } from 'lucide-react'
 import { facultyApi } from '../services/api'
+import api from '../api'
 import ImageCropModal from './ImageCropModal'
 import styles from './FacultyProfilePage.module.css'
 
@@ -48,9 +49,41 @@ export default function FacultyProfilePage() {
     }
   }
 
-  const handleSave = (e) => {
+  // Password feedback
+  const [pwMessage, setPwMessage] = useState('')
+  const [pwError, setPwError] = useState('')
+
+  const handleSave = async (e) => {
     e.preventDefault()
-    console.log('Save changes', { currentPassword, newPassword, confirmPassword, notifications })
+    setPwMessage('')
+    setPwError('')
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPwError('All password fields are required')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError('New password and confirm password do not match')
+      return
+    }
+    if (newPassword.length < 6) {
+      setPwError('Password must be at least 6 characters')
+      return
+    }
+
+    try {
+      const res = await api.put('/auth/change-password', {
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      })
+      setPwMessage(res.data.message || 'Password updated successfully')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (err) {
+      setPwError(err.response?.data?.message || 'Failed to update password')
+    }
   }
 
   const handleDiscard = () => {
@@ -314,6 +347,30 @@ export default function FacultyProfilePage() {
                       Save Changes
                     </button>
                   </div>
+                  {pwError && (
+                    <p
+                      style={{
+                        color: '#ef4444',
+                        fontWeight: 600,
+                        fontSize: '0.85rem',
+                        marginTop: '12px',
+                      }}
+                    >
+                      {pwError}
+                    </p>
+                  )}
+                  {pwMessage && (
+                    <p
+                      style={{
+                        color: '#10b981',
+                        fontWeight: 600,
+                        fontSize: '0.85rem',
+                        marginTop: '12px',
+                      }}
+                    >
+                      {pwMessage}
+                    </p>
+                  )}
                 </form>
 
                 <hr className={styles.accordionDivider} />
