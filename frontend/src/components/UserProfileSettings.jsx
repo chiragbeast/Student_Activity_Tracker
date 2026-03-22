@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
+import ImageCropModal from './ImageCropModal'
 
 const UserProfileSettings = () => {
   const navigate = useNavigate()
@@ -23,6 +24,23 @@ const UserProfileSettings = () => {
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState('')
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [cropImageSrc, setCropImageSrc] = useState(null)
+  const [notificationsSaving, setNotificationsSaving] = useState(false)
+  const fileInputRef = useRef(null)
+
+  const initialsFromName = (name = '') => {
+    return (
+      name
+        .split(' ')
+        .filter(Boolean)
+        .map((part) => part[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase() || 'A'
+    )
+  }
 
   // Close profile menu when clicking outside
   useEffect(() => {
@@ -44,6 +62,7 @@ const UserProfileSettings = () => {
           name: data.name || 'Administrator',
           email: data.email || 'admin@university.edu',
           role: data.role || 'Admin',
+          profilePicture: data.profilePicture || '',
         })
         setNotifications(Boolean(data.notificationsEnabled))
       } catch {
@@ -96,6 +115,70 @@ const UserProfileSettings = () => {
     setConfirmPassword('')
     setSaveError('')
     setSaveSuccess('')
+  }
+
+  const handleProfilePicChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png']
+    if (!allowed.includes(file.type)) {
+      setUploadError('Only JPG and PNG images are allowed')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image must be under 5 MB')
+      return
+    }
+
+    setUploadError('')
+    const reader = new FileReader()
+    reader.onload = () => setCropImageSrc(reader.result)
+    reader.readAsDataURL(file)
+
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleCroppedUpload = async (croppedBlob) => {
+    setCropImageSrc(null)
+    setUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('profilePicture', croppedBlob, 'profile.jpg')
+
+      const { data } = await api.put('/auth/me/picture', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+
+      setUserProfile((prev) => ({
+        ...prev,
+        profilePicture: data.profilePicture,
+      }))
+
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+      storedUser.profilePicture = data.profilePicture
+      localStorage.setItem('user', JSON.stringify(storedUser))
+    } catch (err) {
+      setUploadError(err.response?.data?.message || 'Failed to upload image')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleSaveNotifications = async () => {
+    try {
+      setNotificationsSaving(true)
+      setSaveError('')
+      setSaveSuccess('')
+      await api.put('/auth/me', { notificationsEnabled: notifications })
+      setSaveSuccess('Notification preferences updated successfully.')
+    } catch (err) {
+      setSaveError(err.response?.data?.message || 'Failed to update notification preferences.')
+    } finally {
+      setNotificationsSaving(false)
+    }
   }
 
   return (
@@ -311,15 +394,28 @@ const UserProfileSettings = () => {
             className="flex items-center gap-2.5 p-2 rounded-[10px] cursor-pointer hover:bg-white/[0.07] transition-colors"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
-            <div
-              className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[0.95rem]"
-              style={{ background: 'linear-gradient(135deg, #f5a623, #f7b731)', color: '#1a1a2e' }}
-            >
-              A
-            </div>
+            {userProfile.profilePicture ? (
+              <img
+                src={userProfile.profilePicture}
+                alt={userProfile.name || 'Admin'}
+                className="w-[38px] h-[38px] rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[0.95rem]"
+                style={{
+                  background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                  color: '#1a1a2e',
+                }}
+              >
+                {initialsFromName(userProfile.name)}
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="text-[0.9rem] font-semibold text-white">Admin User</span>
-              <span className="text-[0.78rem] text-[#9ca3af]">(Super Admin)</span>
+              <span className="text-[0.9rem] font-semibold text-white">
+                {userProfile.name || 'Admin User'}
+              </span>
+              <span className="text-[0.78rem] text-[#9ca3af]">({userProfile.role || 'Admin'})</span>
             </div>
           </div>
         </div>
@@ -378,6 +474,7 @@ const UserProfileSettings = () => {
               {/* Avatar */}
               <div style={{ marginBottom: '18px' }}>
                 <div
+                  onClick={() => fileInputRef.current?.click()}
                   style={{
                     width: '120px',
                     height: '120px',
@@ -387,19 +484,56 @@ const UserProfileSettings = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    position: 'relative',
                   }}
                 >
-                  <span
-                    style={{
-                      fontFamily: 'Poppins, sans-serif',
-                      fontSize: '3rem',
-                      fontWeight: '800',
-                      color: '#1a1a2e',
-                    }}
-                  >
-                    A
-                  </span>
+                  {userProfile.profilePicture ? (
+                    <img
+                      src={userProfile.profilePicture}
+                      alt={userProfile.name || 'Admin'}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span
+                      style={{
+                        fontFamily: 'Poppins, sans-serif',
+                        fontSize: '3rem',
+                        fontWeight: '800',
+                        color: '#1a1a2e',
+                      }}
+                    >
+                      {initialsFromName(userProfile.name)}
+                    </span>
+                  )}
+
+                  {uploading && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundColor: 'rgba(255,255,255,0.6)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.85rem',
+                        fontWeight: '700',
+                        color: '#1a1a2e',
+                      }}
+                    >
+                      Uploading...
+                    </div>
+                  )}
                 </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png"
+                  style={{ display: 'none' }}
+                  onChange={handleProfilePicChange}
+                />
               </div>
 
               <h2
@@ -421,6 +555,9 @@ const UserProfileSettings = () => {
               </p>
 
               <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -430,7 +567,8 @@ const UserProfileSettings = () => {
                   color: '#1a1a2e',
                   fontSize: '0.9rem',
                   fontWeight: '700',
-                  cursor: 'pointer',
+                  cursor: uploading ? 'not-allowed' : 'pointer',
+                  opacity: uploading ? 0.7 : 1,
                   fontFamily: 'inherit',
                   transition: 'transform 0.15s, box-shadow 0.2s',
                   boxShadow: '0 2px 8px rgba(245,166,35,0.3)',
@@ -445,8 +583,27 @@ const UserProfileSettings = () => {
                   e.currentTarget.style.boxShadow = '0 2px 8px rgba(245,166,35,0.3)'
                 }}
               >
-                Change Profile Picture
+                {uploading ? 'Uploading...' : 'Change Profile Picture'}
               </button>
+
+              {uploadError && (
+                <div
+                  style={{
+                    width: '100%',
+                    marginTop: '-12px',
+                    marginBottom: '18px',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    color: '#dc2626',
+                    fontSize: '0.78rem',
+                    fontWeight: '600',
+                  }}
+                >
+                  {uploadError}
+                </div>
+              )}
 
               {/* Profile Completion */}
               <div style={{ width: '100%' }}>
@@ -835,12 +992,12 @@ const UserProfileSettings = () => {
                 <div
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: 'flex-start',
                     justifyContent: 'space-between',
                     gap: '24px',
                   }}
                 >
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <h3
                       style={{
                         fontSize: '0.95rem',
@@ -861,6 +1018,26 @@ const UserProfileSettings = () => {
                     >
                       Stay updated with important activity alerts and system announcements.
                     </p>
+
+                    <button
+                      type="button"
+                      onClick={handleSaveNotifications}
+                      disabled={notificationsSaving}
+                      style={{
+                        marginTop: '14px',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        border: '1px solid #1a1a2e',
+                        background: '#1a1a2e',
+                        color: '#ffffff',
+                        fontSize: '0.82rem',
+                        fontWeight: '700',
+                        cursor: notificationsSaving ? 'not-allowed' : 'pointer',
+                        opacity: notificationsSaving ? 0.7 : 1,
+                      }}
+                    >
+                      {notificationsSaving ? 'Saving...' : 'Save Notification Settings'}
+                    </button>
                   </div>
 
                   <label
@@ -977,6 +1154,14 @@ const UserProfileSettings = () => {
           </footer>
         </div>
       </main>
+
+      {cropImageSrc && (
+        <ImageCropModal
+          imageSrc={cropImageSrc}
+          onCropDone={handleCroppedUpload}
+          onCancel={() => setCropImageSrc(null)}
+        />
+      )}
     </div>
   )
 }

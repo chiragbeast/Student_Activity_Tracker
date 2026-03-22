@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const cloudinary = require('../config/cloudinary');
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -98,8 +99,88 @@ const getMe = asyncHandler(async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profilePicture: user.profilePicture,
         notificationsEnabled: user.notificationsEnabled,
         emailNotifications: user.emailNotifications,
+    });
+});
+
+// @desc    Update logged-in user profile preferences
+// @route   PUT /api/auth/me
+// @access  Private
+const updateMe = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    const { notificationsEnabled, emailNotifications } = req.body;
+
+    if (notificationsEnabled !== undefined) user.notificationsEnabled = notificationsEnabled;
+    if (emailNotifications !== undefined) user.emailNotifications = emailNotifications;
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+        _id: updatedUser._id,
+        notificationsEnabled: updatedUser.notificationsEnabled,
+        emailNotifications: updatedUser.emailNotifications,
+    });
+});
+
+// @desc    Upload/update logged-in user profile picture
+// @route   PUT /api/auth/me/picture
+// @access  Private
+const updateMyProfilePicture = asyncHandler(async (req, res) => {
+    if (!req.file) {
+        res.status(400);
+        throw new Error('Please upload an image file');
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    if (user.profilePicture) {
+        try {
+            const urlParts = user.profilePicture.split('/');
+            const folderAndFile = urlParts.slice(-2).join('/');
+            const publicId = folderAndFile.replace(/\.[^/.]+$/, '');
+            await cloudinary.uploader.destroy(publicId);
+        } catch (err) {
+            console.error('Failed to delete old profile picture:', err.message);
+        }
+    }
+
+    const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'profile-pictures',
+                resource_type: 'image',
+                public_id: `user-${user._id}-${Date.now()}`,
+                transformation: [{ width: 300, height: 300, crop: 'fill', gravity: 'face' }],
+            },
+            (error, uploadedResult) => {
+                if (error) return reject(error);
+                resolve(uploadedResult);
+            }
+        );
+
+        const { Readable } = require('stream');
+        const readable = Readable.from(req.file.buffer);
+        readable.pipe(uploadStream);
+    });
+
+    user.profilePicture = result.secure_url;
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        profilePicture: user.profilePicture,
     });
 });
 
@@ -146,5 +227,7 @@ module.exports = {
     loginUser,
     registerUser,
     getMe,
+    updateMe,
+    updateMyProfilePicture,
     changePassword,
 };

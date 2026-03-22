@@ -1,15 +1,42 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
+import * as XLSX from 'xlsx'
 
 const FacultyAdvisorManagement = () => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef(null)
+  const [adminUser, setAdminUser] = useState({
+    name: 'Admin User',
+    role: 'Admin',
+    profilePicture: '',
+  })
   const [facultyList, setFacultyList] = useState([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState('')
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [isDraggingFile, setIsDraggingFile] = useState(false)
+  const [importRows, setImportRows] = useState([])
+  const [importFileName, setImportFileName] = useState('')
+  const [importError, setImportError] = useState('')
+  const [importSubmitting, setImportSubmitting] = useState(false)
+  const [importSummary, setImportSummary] = useState(null)
+  const fileInputRef = useRef(null)
+
+  const fetchFaculty = async () => {
+    try {
+      setLoading(true)
+      setFetchError('')
+      const { data } = await api.get('/admin/faculty')
+      setFacultyList(data)
+    } catch {
+      setFetchError('Failed to load faculty data.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -22,18 +49,146 @@ const FacultyAdvisorManagement = () => {
   }, [])
 
   useEffect(() => {
-    const fetchFaculty = async () => {
+    const syncAdminUser = () => {
       try {
-        const { data } = await api.get('/admin/faculty')
-        setFacultyList(data)
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+        setAdminUser({
+          name: storedUser.name || 'Admin User',
+          role: storedUser.role || 'Admin',
+          profilePicture: storedUser.profilePicture || '',
+        })
       } catch {
-        setFetchError('Failed to load faculty data.')
-      } finally {
-        setLoading(false)
+        setAdminUser({ name: 'Admin User', role: 'Admin', profilePicture: '' })
       }
     }
+
+    syncAdminUser()
+    window.addEventListener('storage', syncAdminUser)
+    return () => window.removeEventListener('storage', syncAdminUser)
+  }, [])
+
+  useEffect(() => {
     fetchFaculty()
   }, [])
+
+  const normalizeHeaderKey = (key) => {
+    if (!key) return ''
+    return String(key)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+  }
+
+  const getRowValue = (row, candidateKeys) => {
+    for (const key of candidateKeys) {
+      if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') {
+        return String(row[key]).trim()
+      }
+    }
+
+    const normalizedMap = Object.entries(row).reduce((acc, [k, v]) => {
+      acc[normalizeHeaderKey(k)] = v
+      return acc
+    }, {})
+
+    for (const key of candidateKeys) {
+      const value = normalizedMap[normalizeHeaderKey(key)]
+      if (value !== undefined && value !== null && String(value).trim() !== '') {
+        return String(value).trim()
+      }
+    }
+
+    return ''
+  }
+
+  const parseFacultyExcelFile = async (file) => {
+    const allowed = /\.(xlsx|xls)$/i
+    if (!allowed.test(file.name)) {
+      throw new Error('Please upload a valid Excel file (.xlsx or .xls).')
+    }
+
+    const buffer = await file.arrayBuffer()
+    const workbook = XLSX.read(buffer, { type: 'array' })
+    const firstSheetName = workbook.SheetNames[0]
+    if (!firstSheetName) {
+      throw new Error('The uploaded file has no worksheet.')
+    }
+
+    const worksheet = workbook.Sheets[firstSheetName]
+    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: '' })
+
+    const parsed = rows
+      .map((row, index) => {
+        const serialRaw = getRowValue(row, ['S.No', 'S No', 'SNo', 'Serial Number', 'SerialNo'])
+        const serialNumber = Number(serialRaw) || index + 1
+
+        return {
+          serialNumber,
+          name: getRowValue(row, ['Name *', 'Name']),
+          email: getRowValue(row, ['Email *', 'Email']),
+          employeeId: getRowValue(row, ['Employee ID *', 'Employee ID', 'EmployeeId']),
+          department: getRowValue(row, ['Department']),
+          office: getRowValue(row, ['Office Details', 'Office']),
+          phone: getRowValue(row, ['Phone', 'Phone Number', 'Mobile']),
+        }
+      })
+      .filter(
+        (row) =>
+          row.name || row.email || row.employeeId || row.department || row.office || row.phone
+      )
+
+    return parsed
+  }
+
+  const handleFileSelect = async (file) => {
+    if (!file) return
+    setImportError('')
+    setImportSummary(null)
+
+    try {
+      const parsedRows = await parseFacultyExcelFile(file)
+      if (parsedRows.length === 0) {
+        throw new Error('No faculty rows were found in the uploaded file.')
+      }
+      setImportRows(parsedRows)
+      setImportFileName(file.name)
+    } catch (err) {
+      setImportRows([])
+      setImportFileName('')
+      setImportError(err.message || 'Failed to parse Excel file.')
+    }
+  }
+
+  const handleImportConfirm = async () => {
+    if (importRows.length === 0) {
+      setImportError('Please upload a faculty Excel sheet before confirming import.')
+      return
+    }
+
+    try {
+      setImportSubmitting(true)
+      setImportError('')
+      const { data } = await api.post('/admin/faculty/bulk-import', {
+        rows: importRows,
+      })
+
+      setImportSummary(data)
+      await fetchFaculty()
+    } catch (err) {
+      setImportError(err.response?.data?.message || 'Bulk import failed. Please try again.')
+    } finally {
+      setImportSubmitting(false)
+    }
+  }
+
+  const resetImportModal = () => {
+    setShowImportModal(false)
+    setIsDraggingFile(false)
+    setImportRows([])
+    setImportFileName('')
+    setImportError('')
+    setImportSummary(null)
+    setImportSubmitting(false)
+  }
 
   const filteredFaculty = facultyList.filter((f) => {
     const q = searchQuery.toLowerCase()
@@ -43,6 +198,18 @@ const FacultyAdvisorManagement = () => {
       (f.department || '').toLowerCase().includes(q)
     )
   })
+
+  const initialsFromName = (name = '') => {
+    return (
+      name
+        .split(' ')
+        .filter(Boolean)
+        .map((part) => part[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase() || 'F'
+    )
+  }
 
   return (
     <div
@@ -260,15 +427,28 @@ const FacultyAdvisorManagement = () => {
             className="flex items-center gap-2.5 p-2 rounded-[10px] cursor-pointer hover:bg-white/[0.07] transition-colors"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
-            <div
-              className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[0.95rem]"
-              style={{ background: 'linear-gradient(135deg, #f5a623, #f7b731)', color: '#1a1a2e' }}
-            >
-              A
-            </div>
+            {adminUser.profilePicture ? (
+              <img
+                src={adminUser.profilePicture}
+                alt={adminUser.name || 'Admin'}
+                className="w-[38px] h-[38px] rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[0.95rem]"
+                style={{
+                  background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                  color: '#1a1a2e',
+                }}
+              >
+                {initialsFromName(adminUser.name)}
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="text-[0.9rem] font-semibold text-white">Admin User</span>
-              <span className="text-[0.78rem] text-[#9ca3af]">(Super Admin)</span>
+              <span className="text-[0.9rem] font-semibold text-white">
+                {adminUser.name || 'Admin User'}
+              </span>
+              <span className="text-[0.78rem] text-[#9ca3af]">({adminUser.role || 'Admin'})</span>
             </div>
           </div>
         </div>
@@ -293,6 +473,21 @@ const FacultyAdvisorManagement = () => {
               <span>+</span>
               <span>Add Faculty Advisor</span>
             </Link>
+            <button
+              type="button"
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg border transition-all"
+              style={{
+                borderColor: '#F4AD39',
+                color: '#14213D',
+                backgroundColor: '#ffffff',
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                upload_file
+              </span>
+              <span>Import from Excel</span>
+            </button>
           </div>
         </header>
 
@@ -382,15 +577,26 @@ const FacultyAdvisorManagement = () => {
                         >
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
-                                style={{
-                                  background: 'linear-gradient(135deg, #f5a623, #f7b731)',
-                                  color: '#1a1a2e',
-                                }}
-                              >
-                                {faculty.name ? faculty.name.charAt(0).toUpperCase() : '?'}
-                              </div>
+                              {faculty.profilePicture ? (
+                                <img
+                                  src={faculty.profilePicture}
+                                  alt={faculty.name || 'Faculty'}
+                                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none'
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                                  style={{
+                                    background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                                    color: '#1a1a2e',
+                                  }}
+                                >
+                                  {initialsFromName(faculty.name)}
+                                </div>
+                              )}
                               <div>
                                 <p className="text-sm font-bold text-[#111827]">{faculty.name}</p>
                                 <p className="text-xs text-gray-400">{faculty.email}</p>
@@ -497,6 +703,151 @@ const FacultyAdvisorManagement = () => {
           </div>
         </div>
       </main>
+
+      {showImportModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.45)',
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '620px',
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              boxShadow: '0 20px 45px rgba(0,0,0,0.2)',
+              padding: '24px',
+            }}
+          >
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-[#111827]">Import Faculty from Excel</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Upload the final template file faculty_bulk_import (.xlsx/.xls).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={resetImportModal}
+                className="text-gray-400 hover:text-gray-700 transition-colors"
+                aria-label="Close"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={(e) => handleFileSelect(e.target.files?.[0])}
+            />
+
+            <div
+              onDragEnter={(e) => {
+                e.preventDefault()
+                setIsDraggingFile(true)
+              }}
+              onDragOver={(e) => {
+                e.preventDefault()
+                setIsDraggingFile(true)
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault()
+                setIsDraggingFile(false)
+              }}
+              onDrop={(e) => {
+                e.preventDefault()
+                setIsDraggingFile(false)
+                handleFileSelect(e.dataTransfer.files?.[0])
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                border: `2px dashed ${isDraggingFile ? '#F4AD39' : '#d1d5db'}`,
+                backgroundColor: isDraggingFile ? '#fff8eb' : '#fafafa',
+                borderRadius: '12px',
+                padding: '28px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <span className="material-symbols-outlined text-4xl" style={{ color: '#F4AD39' }}>
+                cloud_upload
+              </span>
+              <p className="text-sm font-semibold text-[#111827] mt-2">
+                Drag and drop your Excel file here
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Accepts only .xlsx or .xls files</p>
+            </div>
+
+            {importFileName && (
+              <div className="mt-4 rounded-lg border border-[#fde9c3] bg-[#fffaf0] p-3">
+                <p className="text-sm font-semibold text-[#8a5a00]">
+                  Uploaded file: {importFileName}
+                </p>
+                <p className="text-sm text-[#8a5a00] mt-1">
+                  Detected faculty rows: <span className="font-bold">{importRows.length}</span>
+                </p>
+              </div>
+            )}
+
+            {importSummary && (
+              <div className="mt-4 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-4">
+                <p className="text-sm text-[#111827] font-semibold">Import completed</p>
+                <p className="text-sm text-[#374151] mt-2">Total rows: {importSummary.totalRows}</p>
+                <p className="text-sm text-green-700 mt-1">
+                  Successfully added: {importSummary.successCount}
+                </p>
+                <p className="text-sm text-red-700 mt-1">
+                  Failed rows: {importSummary.failedCount}
+                </p>
+                {importSummary.failedCount > 0 && (
+                  <div className="mt-2 text-sm text-red-700">
+                    <p className="font-medium">Failed serial numbers:</p>
+                    <p>{importSummary.failedRows.map((f) => String(f.serialNumber)).join(', ')}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {importError && (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                {importError}
+              </div>
+            )}
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={resetImportModal}
+                className="px-4 py-2 rounded-lg border text-sm font-semibold"
+                style={{ borderColor: '#e5e7eb', color: '#374151', backgroundColor: '#fff' }}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handleImportConfirm}
+                disabled={importSubmitting || importRows.length === 0}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ backgroundColor: '#F4AD39' }}
+              >
+                {importSubmitting ? 'Importing...' : 'Confirm Import'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

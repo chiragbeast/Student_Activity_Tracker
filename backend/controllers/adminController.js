@@ -172,7 +172,7 @@ const getStudents = asyncHandler(async (req, res) => {
         },
         {
             $project: {
-                name: 1, email: 1, rollNumber: 1, department: 1,
+                name: 1, email: 1, rollNumber: 1, department: 1, profilePicture: 1,
                 isActive: 1, lastLogin: 1, createdAt: 1, totalPoints: 1,
             },
         },
@@ -221,6 +221,92 @@ const createStudent = asyncHandler(async (req, res) => {
         department: student.department,
         isActive: student.isActive,
         totalPoints: 0,
+    });
+});
+
+// @desc    Bulk import students from parsed Excel rows
+// @route   POST /api/admin/students/bulk-import
+// @access  Private/Admin
+const bulkImportStudents = asyncHandler(async (req, res) => {
+    const { rows } = req.body;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+        res.status(400);
+        throw new Error('Rows array is required for bulk import');
+    }
+
+    const failedRows = [];
+    let successCount = 0;
+
+    const seenEmails = new Set();
+    const seenRollNumbers = new Set();
+
+    for (let index = 0; index < rows.length; index += 1) {
+        const row = rows[index] || {};
+        const serialNumber = Number(row.serialNumber) || index + 1;
+
+        const name = typeof row.name === 'string' ? row.name.trim() : '';
+        const email = typeof row.email === 'string' ? row.email.trim().toLowerCase() : '';
+        const rollNumber = typeof row.rollNumber === 'string' || typeof row.rollNumber === 'number'
+            ? String(row.rollNumber).trim()
+            : '';
+        const department = typeof row.department === 'string' ? row.department.trim() : '';
+        const batch = typeof row.batch === 'string' ? row.batch.trim() : '';
+        const semester = row.semester !== undefined && row.semester !== null ? String(row.semester).trim() : '';
+        const phone = typeof row.phone === 'string' || typeof row.phone === 'number' ? String(row.phone).trim() : '';
+
+        if (!name || !email || !rollNumber) {
+            failedRows.push({ serialNumber, reason: 'Missing required fields (name, email, roll number)' });
+            continue;
+        }
+
+        if (seenEmails.has(email)) {
+            failedRows.push({ serialNumber, reason: 'Duplicate email in uploaded sheet' });
+            continue;
+        }
+        if (seenRollNumbers.has(rollNumber)) {
+            failedRows.push({ serialNumber, reason: 'Duplicate roll number in uploaded sheet' });
+            continue;
+        }
+
+        seenEmails.add(email);
+        seenRollNumbers.add(rollNumber);
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            failedRows.push({ serialNumber, reason: 'Email already exists' });
+            continue;
+        }
+
+        const existingStudentRoll = await User.findOne({ role: 'Student', rollNumber });
+        if (existingStudentRoll) {
+            failedRows.push({ serialNumber, reason: 'Roll number already exists for another student' });
+            continue;
+        }
+
+        try {
+            await User.create({
+                name,
+                email,
+                password: String(rollNumber),
+                role: 'Student',
+                rollNumber,
+                department: department || undefined,
+                batch: batch || undefined,
+                semester: semester || undefined,
+                phone: phone || undefined,
+            });
+            successCount += 1;
+        } catch (error) {
+            failedRows.push({ serialNumber, reason: error.message || 'Failed to create student' });
+        }
+    }
+
+    res.status(200).json({
+        totalRows: rows.length,
+        successCount,
+        failedCount: failedRows.length,
+        failedRows,
     });
 });
 
@@ -333,7 +419,7 @@ const getFaculty = asyncHandler(async (req, res) => {
         },
         {
             $project: {
-                name: 1, email: 1, department: 1, phone: 1, office: 1, rollNumber: 1,
+                name: 1, email: 1, department: 1, phone: 1, office: 1, rollNumber: 1, profilePicture: 1,
                 isActive: 1, lastLogin: 1, createdAt: 1, assignedStudents: 1, pendingSubmissions: 1,
             },
         },
@@ -378,6 +464,90 @@ const createFaculty = asyncHandler(async (req, res) => {
         office: faculty.office,
         isActive: faculty.isActive,
         assignedStudents: 0,
+    });
+});
+
+// @desc    Bulk import faculty from parsed Excel rows
+// @route   POST /api/admin/faculty/bulk-import
+// @access  Private/Admin
+const bulkImportFaculty = asyncHandler(async (req, res) => {
+    const { rows } = req.body;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+        res.status(400);
+        throw new Error('Rows array is required for bulk import');
+    }
+
+    const failedRows = [];
+    let successCount = 0;
+
+    const seenEmails = new Set();
+    const seenEmployeeIds = new Set();
+
+    for (let index = 0; index < rows.length; index += 1) {
+        const row = rows[index] || {};
+        const serialNumber = Number(row.serialNumber) || index + 1;
+
+        const name = typeof row.name === 'string' ? row.name.trim() : '';
+        const email = typeof row.email === 'string' ? row.email.trim().toLowerCase() : '';
+        const employeeId = typeof row.employeeId === 'string' || typeof row.employeeId === 'number'
+            ? String(row.employeeId).trim()
+            : '';
+        const department = typeof row.department === 'string' ? row.department.trim() : '';
+        const office = typeof row.office === 'string' ? row.office.trim() : '';
+        const phone = typeof row.phone === 'string' || typeof row.phone === 'number' ? String(row.phone).trim() : '';
+
+        if (!name || !email || !employeeId) {
+            failedRows.push({ serialNumber, reason: 'Missing required fields (name, email, employee ID)' });
+            continue;
+        }
+
+        if (seenEmails.has(email)) {
+            failedRows.push({ serialNumber, reason: 'Duplicate email in uploaded sheet' });
+            continue;
+        }
+        if (seenEmployeeIds.has(employeeId)) {
+            failedRows.push({ serialNumber, reason: 'Duplicate employee ID in uploaded sheet' });
+            continue;
+        }
+
+        seenEmails.add(email);
+        seenEmployeeIds.add(employeeId);
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            failedRows.push({ serialNumber, reason: 'Email already exists' });
+            continue;
+        }
+
+        const existingFacultyId = await User.findOne({ role: 'Faculty', rollNumber: employeeId });
+        if (existingFacultyId) {
+            failedRows.push({ serialNumber, reason: 'Employee ID already exists for another faculty' });
+            continue;
+        }
+
+        try {
+            await User.create({
+                name,
+                email,
+                password: String(employeeId),
+                role: 'Faculty',
+                department: department || undefined,
+                phone: phone || undefined,
+                office: office || undefined,
+                rollNumber: employeeId,
+            });
+            successCount += 1;
+        } catch (error) {
+            failedRows.push({ serialNumber, reason: error.message || 'Failed to create faculty' });
+        }
+    }
+
+    res.status(200).json({
+        totalRows: rows.length,
+        successCount,
+        failedCount: failedRows.length,
+        failedRows,
     });
 });
 
@@ -439,10 +609,10 @@ const getFacultyStudents = asyncHandler(async (req, res) => {
     }
     const [assigned, unassigned] = await Promise.all([
         User.find({ role: 'Student', facultyAdvisor: req.params.id })
-            .select('name rollNumber department isActive')
+            .select('name rollNumber department isActive profilePicture')
             .sort({ name: 1 }),
         User.find({ role: 'Student', facultyAdvisor: null })
-            .select('name rollNumber department isActive')
+            .select('name rollNumber department isActive profilePicture')
             .sort({ name: 1 }),
     ]);
     res.status(200).json({ faculty, assigned, unassigned });
@@ -469,4 +639,21 @@ const assignStudents = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Assignments updated successfully' });
 });
 
-module.exports = { getDashboard, getReportsAnalytics, getStudents, createStudent, getStudentById, updateStudent, deleteStudent, getFaculty, createFaculty, getFacultyById, updateFaculty, deleteFaculty, getFacultyStudents, assignStudents };
+module.exports = {
+    getDashboard,
+    getReportsAnalytics,
+    getStudents,
+    createStudent,
+    bulkImportStudents,
+    getStudentById,
+    updateStudent,
+    deleteStudent,
+    getFaculty,
+    createFaculty,
+    bulkImportFaculty,
+    getFacultyById,
+    updateFaculty,
+    deleteFaculty,
+    getFacultyStudents,
+    assignStudents,
+};
