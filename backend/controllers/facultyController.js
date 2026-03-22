@@ -744,69 +744,67 @@ const exportStudentExcel = asyncHandler(async (req, res) => {
 // @route   GET /api/faculty/export-all-excel
 // @access  Private/Faculty
 const exportAllExcel = asyncHandler(async (req, res) => {
-    const ExcelJS = require('exceljs');
-    const students = await User.find({
-        facultyAdvisor: req.user._id,
-        role: 'Student',
-    }).select('name email rollNumber department');
+    try {
+        const ExcelJS = require('exceljs');
+        const students = await User.find({
+            facultyAdvisor: req.user._id,
+            role: 'Student',
+        }).select('name email rollNumber department');
 
-    if (students.length === 0) {
-        res.status(404);
-        throw new Error('No assigned students found to export');
-    }
+        if (students.length === 0) {
+            res.status(404);
+            throw new Error('No assigned students found to export');
+        }
 
-    const workbook = new ExcelJS.Workbook();
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet('Assigned Students Summary');
 
-    for (let i = 0; i < students.length; i++) {
-        const student = students[i];
-        const studentNameClean = student.name.replace(/[*?:\\/|[\]]/g, '').substring(0, 30); // Excel sheet name limit
-        const sheet = workbook.addWorksheet(studentNameClean || `Student ${i+1}`);
+        // -- Heading --
+        sheet.mergeCells('A1:F1');
+        const headingCell = sheet.getCell('A1');
+        headingCell.value = 'Student Activity Points Report';
+        headingCell.font = { bold: true, size: 16 };
+        headingCell.alignment = { horizontal: 'center' };
+        sheet.addRow([]); // Blank row
 
-        // Fetch data for this student
-        const pointsRecord = await ActivityPoints.findOne({ student: student._id });
-        const pts = pointsRecord || { institutePoints: 0, departmentPoints: 0, totalPoints: 0 };
-        const submissions = await Submission.find({ student: student._id }).sort({ createdAt: -1 });
+        // -- Table Header --
+        const headers = ['Student Name', 'Roll Number', 'Department', 'Department Points', 'Institute Points', 'Total Points'];
+        const headerRow = sheet.addRow(headers);
+        headerRow.font = { bold: true };
+        headerRow.alignment = { horizontal: 'center' };
 
-        // -- Content (Reuse logic from exportStudentExcel) --
-        sheet.addRow(['Student Activity Points Report']).font = { bold: true, size: 14 };
-        sheet.addRow([]);
-        sheet.addRow(['Student Information']).font = { bold: true };
-        sheet.addRow(['Name', student.name]);
-        sheet.addRow(['Roll Number', student.rollNumber || 'N/A']);
-        sheet.addRow(['Department', student.department || 'N/A']);
-        sheet.addRow(['Email', student.email]);
-        sheet.addRow([]);
-        sheet.addRow(['Points Summary']).font = { bold: true };
-        sheet.addRow(['Institute Points', pts.institutePoints]);
-        sheet.addRow(['Department Points', pts.departmentPoints]);
-        sheet.addRow(['Total Cumulative Points', pts.totalPoints]).font = { bold: true };
-        sheet.addRow([]);
-        sheet.addRow(['Submission History']).font = { bold: true };
-        sheet.addRow(['Activity', 'Level', 'Points', 'Status', 'Date']).font = { bold: true };
+        // -- Table Data --
+        for (const student of students) {
+            const pointsRecord = await ActivityPoints.findOne({ student: student._id });
+            const pts = pointsRecord || { institutePoints: 0, departmentPoints: 0, totalPoints: 0 };
 
-        submissions.forEach(sub => {
-            const ptsValue = sub.status === 'Approved' ? sub.pointsApproved : sub.pointsRequested;
             sheet.addRow([
-                sub.activityName || 'Unknown Activity',
-                sub.activityLevel || 'N/A',
-                ptsValue != null ? ptsValue : 0,
-                sub.status || 'Pending',
-                sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A'
+                student.name,
+                student.rollNumber || 'N/A',
+                student.department || 'N/A',
+                pts.departmentPoints,
+                pts.institutePoints,
+                pts.totalPoints
             ]);
-        });
+        }
 
-        sheet.getColumn(1).width = 40;
-        sheet.getColumn(2).width = 15;
-        sheet.getColumn(3).width = 10;
-        sheet.getColumn(4).width = 15;
-        sheet.getColumn(5).width = 15;
+        // Adjust column widths
+        sheet.getColumn(1).width = 30;
+        sheet.getColumn(2).width = 20;
+        sheet.getColumn(3).width = 20;
+        sheet.getColumn(4).width = 20;
+        sheet.getColumn(5).width = 20;
+        sheet.getColumn(6).width = 15;
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename=Assigned_Students_Summary_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error('Error in exportAllExcel:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename=Bulk_Student_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
-
-    await workbook.xlsx.write(res);
-    res.end();
 });
 
 module.exports = {
