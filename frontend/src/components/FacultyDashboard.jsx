@@ -9,6 +9,7 @@ import ReviewDetailPage from './FacultyReviewDetailPage'
 import ProfilePage from './FacultyProfilePage'
 import DeadlinesPage from './FacultyDeadlinesPage'
 import { facultyApi, notificationApi } from '../services/api'
+import './NotificationPanel.css'
 import styles from './FacultyDashboard.module.css'
 
 export default function Dashboard() {
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const [showNotif, setShowNotif] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [stats, setStats] = useState({ assignedStudents: 0, pendingReviews: 0 })
+  const unreadCount = Array.isArray(notifications) ? notifications.filter((n) => !n.read).length : 0
 
   async function fetchNotifications() {
     try {
@@ -105,14 +107,9 @@ export default function Dashboard() {
             <div className={styles.dashHeader}>
               <h1 className={styles.dashTitle}>Faculty Dashboard</h1>
               <div className={styles.notifWrapper}>
-                <button className={styles.bell} onClick={() => setShowNotif(!showNotif)}>
-                  <Bell size={22} />
-                  {Array.isArray(notifications) &&
-                    notifications.filter((n) => !n.read).length > 0 && (
-                      <span className={styles.badge}>
-                        {notifications.filter((n) => !n.read).length}
-                      </span>
-                    )}
+                <button className="notification-btn" onClick={() => setShowNotif(!showNotif)}>
+                  <Bell size={22} fill={unreadCount > 0 ? 'currentColor' : 'none'} />
+                  {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
                 </button>
 
                 {showNotif && (

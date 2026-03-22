@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { FiBell, FiCheck, FiX, FiEdit3, FiAlertCircle } from 'react-icons/fi'
+import { BsBellFill } from 'react-icons/bs'
 import api from '../api'
 import NotificationCenter from './NotificationCenter'
 import './NotificationPanel.css'
@@ -88,7 +89,7 @@ export default function NotificationPanel() {
           aria-label="Notifications"
           onClick={() => setOpen(!open)}
         >
-          <FiBell />
+          {unreadCount > 0 ? <BsBellFill /> : <FiBell />}
           {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
         </button>
 

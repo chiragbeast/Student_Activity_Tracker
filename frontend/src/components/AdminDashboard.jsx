@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
+import NotificationPanel from './NotificationPanel'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const profileMenuRef = useRef(null)
   const [adminUser, setAdminUser] = useState({
-    name: 'Admin User',
+    name: '',
     role: 'Admin',
     profilePicture: '',
   })
@@ -32,22 +33,36 @@ export default function AdminDashboard() {
   }, [])
 
   useEffect(() => {
-    const syncAdminUser = () => {
+    const fetchAdminProfile = async () => {
       try {
+        const { data } = await api.get('/auth/me')
+        setAdminUser({
+          name: data.name || '',
+          role: data.role || 'Admin',
+          profilePicture: data.profilePicture || '',
+        })
+
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+        localStorage.setItem(
+          'user',
+          JSON.stringify({
+            ...storedUser,
+            name: data.name || storedUser.name,
+            role: data.role || storedUser.role,
+            profilePicture: data.profilePicture || storedUser.profilePicture,
+          })
+        )
+      } catch {
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
         setAdminUser({
-          name: storedUser.name || 'Admin User',
+          name: storedUser.name || '',
           role: storedUser.role || 'Admin',
           profilePicture: storedUser.profilePicture || '',
         })
-      } catch {
-        setAdminUser({ name: 'Admin User', role: 'Admin', profilePicture: '' })
       }
     }
 
-    syncAdminUser()
-    window.addEventListener('storage', syncAdminUser)
-    return () => window.removeEventListener('storage', syncAdminUser)
+    fetchAdminProfile()
   }, [])
 
   const initialsFromName = (name = '') => {
@@ -322,7 +337,7 @@ export default function AdminDashboard() {
             )}
             <div className="flex flex-col">
               <span className="text-[0.9rem] font-semibold text-white">
-                {adminUser.name || 'Admin User'}
+                {adminUser.name || 'Admin'}
               </span>
               <span className="text-[0.78rem] text-[#9ca3af]">({adminUser.role || 'Admin'})</span>
             </div>
@@ -338,18 +353,7 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold text-[#111827]">Welcome back, Admin</h1>
             <p className="text-gray-500 mt-1">Monitor and manage your institution's activities.</p>
           </div>
-          <div className="flex items-center gap-6">
-            <button className="hover:text-[#14213D]" style={{ color: '#F4AD39' }}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                ></path>
-              </svg>
-            </button>
-          </div>
+          <NotificationPanel />
         </header>
 
         {/* Dashboard Body */}
@@ -451,23 +455,37 @@ export default function AdminDashboard() {
                     >
                       {/* Admin Column with Avatar */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div
-                          style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #f5a623, #f7b731)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontWeight: '700',
-                            fontSize: '1rem',
-                            color: '#1a1a2e',
-                            flexShrink: 0,
-                          }}
-                        >
-                          {admin.name?.charAt(0).toUpperCase()}
-                        </div>
+                        {admin.profilePicture ? (
+                          <img
+                            src={admin.profilePicture}
+                            alt={admin.name || 'Admin'}
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              flexShrink: 0,
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: '700',
+                              fontSize: '1rem',
+                              color: '#1a1a2e',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {initialsFromName(admin.name)}
+                          </div>
+                        )}
                         <div>
                           <p
                             style={{

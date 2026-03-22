@@ -4,6 +4,7 @@ const {
 	getDashboard,
 	getReportsAnalytics,
 	getStudents,
+	getStudentTranscriptData,
 	createStudent,
 	bulkImportStudents,
 	getStudentById,
@@ -23,6 +24,7 @@ const { protect, role } = require('../middleware/authMiddleware');
 router.get('/dashboard', protect, role('Admin'), getDashboard);
 router.get('/reports', protect, role('Admin'), getReportsAnalytics);
 router.get('/students', protect, role('Admin'), getStudents);
+router.get('/students/transcript', protect, role('Admin'), getStudentTranscriptData);
 router.post('/students', protect, role('Admin'), createStudent);
 router.post('/students/bulk-import', protect, role('Admin'), bulkImportStudents);
 router.get('/students/:id', protect, role('Admin'), getStudentById);

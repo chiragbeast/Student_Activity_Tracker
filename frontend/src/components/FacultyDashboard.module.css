@@ -38,24 +38,26 @@
 }
 
 .bell {
-  background: white;
-  border: 1.5px solid #eee;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  background: none;
+  border: 1px solid #e5e7eb;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #555;
-  transition: all 0.2s;
+  color: #f4ad39;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
   position: relative;
 }
 
 .bell:hover {
-  border-color: var(--amber);
-  color: var(--amber);
-  background: var(--amber-light);
+  background: #f3f4f6;
+  border-color: #d1d5db;
 }
 
 .badge {
