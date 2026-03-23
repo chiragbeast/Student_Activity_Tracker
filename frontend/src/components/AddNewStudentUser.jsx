@@ -733,6 +733,7 @@ const AddNewStudentUser = () => {
               {/* Error Message */}
               {formError && (
                 <div
+                  data-testid="add-student-error"
                   style={{
                     padding: '12px 16px',
                     borderRadius: '8px',
@@ -750,6 +751,7 @@ const AddNewStudentUser = () => {
               {/* Actions */}
               <div className="flex items-center gap-4 pt-4">
                 <button
+                  data-testid="add-student-submit"
                   type="button"
                   onClick={handleAddStudent}
                   disabled={submitting}

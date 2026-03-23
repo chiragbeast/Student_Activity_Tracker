@@ -684,6 +684,7 @@ const AddFacultyAdvisor = () => {
               {/* Actions */}
               {formError && (
                 <div
+                  data-testid="add-faculty-error"
                   style={{
                     padding: '10px 14px',
                     borderRadius: '8px',
@@ -698,6 +699,7 @@ const AddFacultyAdvisor = () => {
               )}
               <div className="flex items-center gap-4 pt-4">
                 <button
+                  data-testid="add-faculty-submit"
                   type="button"
                   onClick={handleAddFaculty}
                   disabled={submitting}

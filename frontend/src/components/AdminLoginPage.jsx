@@ -1,41 +1,50 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import api from '../api'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [selectedRole, setSelectedRole] = useState('Student')
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [formError, setFormError] = useState('')
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setFormError('')
 
-    // Hardcoded credentials
-    const credentials = {
-      Student: { email: 'student@nitc.ac.in', password: '123' },
-      Faculty: { email: 'faculty@nitc.ac.in', password: '123' },
-      Admin: { email: 'admin@nitc.ac.in', password: '123' },
+    if (!formData.email.trim() || !formData.password.trim()) {
+      setFormError('Email and password are required.')
+      return
     }
 
-    const validCredentials = credentials[selectedRole]
+    try {
+      setLoading(true)
+      const { data } = await api.post('/auth/login', {
+        email: formData.email,
+        password: formData.password,
+        role: 'Admin',
+      })
 
-    // Validate credentials
-    if (
-      formData.email === validCredentials.email &&
-      formData.password === validCredentials.password
-    ) {
-      // Navigate to MFA page for Faculty/Admin with correct credentials
-      if (selectedRole === 'Faculty' || selectedRole === 'Admin') {
-        navigate('/mfa')
-      } else {
-        // For student, navigate to dashboard
-        navigate('/dashboard')
-      }
-    } else {
-      alert('Invalid email or password. Please try again.')
+      localStorage.setItem('token', data.token)
+      localStorage.setItem(
+        'user',
+        JSON.stringify({
+          _id: data._id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+        })
+      )
+
+      navigate('/admin_dashboard')
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Invalid email or password. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -47,37 +56,15 @@ export default function LoginPage() {
       {/* Main content */}
       <main className="flex-1 flex flex-col items-center px-6 pt-[124px] pb-8 w-full relative z-10">
         <h1
+          data-testid="admin-login-title"
           className="text-[2rem] font-extrabold mb-2"
           style={{ color: '#1a1a2e', letterSpacing: '-0.5px' }}
         >
-          Welcome Back
+          Admin Login
         </h1>
         <p className="text-[0.95rem] mb-7" style={{ color: '#6b7280' }}>
-          Select your role to access your dashboard.
+          Enter your admin credentials to access the dashboard.
         </p>
-
-        {/* Role tabs */}
-        <div
-          className="flex w-full max-w-[400px] mb-7 p-1 rounded-xl"
-          style={{ backgroundColor: '#f5f5f0' }}
-        >
-          {['Student', 'Faculty', 'Admin'].map((role) => (
-            <button
-              key={role}
-              type="button"
-              className="flex-1 py-3 border-none rounded-[10px] text-[0.95rem] font-medium cursor-pointer transition-all"
-              style={{
-                background: selectedRole === role ? '#fff' : 'transparent',
-                color: selectedRole === role ? '#1a1a2e' : '#6b7280',
-                fontWeight: selectedRole === role ? '600' : '500',
-                boxShadow: selectedRole === role ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-              }}
-              onClick={() => setSelectedRole(role)}
-            >
-              {role}
-            </button>
-          ))}
-        </div>
 
         {/* Form */}
         <form className="w-full max-w-[400px]" onSubmit={handleSubmit}>
@@ -108,6 +95,7 @@ export default function LoginPage() {
                 ></path>
               </svg>
               <input
+                data-testid="admin-email-input"
                 id="email"
                 type="text"
                 placeholder="Enter your ID or Email"
@@ -146,6 +134,7 @@ export default function LoginPage() {
                 ></path>
               </svg>
               <input
+                data-testid="admin-password-input"
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
@@ -210,28 +199,45 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {formError && (
+            <div
+              data-testid="admin-login-error"
+              className="mb-5 rounded-lg border px-4 py-3 text-sm"
+              style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca', color: '#dc2626' }}
+            >
+              {formError}
+            </div>
+          )}
+
           <button
+            data-testid="admin-login-submit"
             type="submit"
+            disabled={loading}
             className="w-full py-4 border-0 rounded-xl text-white text-[1.05rem] font-bold cursor-pointer transition-all mt-2"
             style={{
               background: 'linear-gradient(135deg, #f5a623 0%, #f7b731 50%, #f5a623 100%)',
               letterSpacing: '0.5px',
               boxShadow: '0 4px 14px rgba(245, 166, 35, 0.35)',
+              opacity: loading ? 0.8 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer',
             }}
             onMouseOver={(e) => {
+              if (loading) return
               e.target.style.transform = 'translateY(-1px)'
               e.target.style.boxShadow = '0 6px 20px rgba(245, 166, 35, 0.45)'
             }}
             onMouseOut={(e) => {
+              if (loading) return
               e.target.style.transform = 'translateY(0)'
               e.target.style.boxShadow = '0 4px 14px rgba(245, 166, 35, 0.35)'
             }}
             onMouseDown={(e) => {
+              if (loading) return
               e.target.style.transform = 'translateY(0)'
               e.target.style.boxShadow = '0 2px 8px rgba(245, 166, 35, 0.3)'
             }}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
       </main>

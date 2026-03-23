@@ -491,6 +491,7 @@ const FacultyAdvisorManagement = () => {
           <div className="flex items-center gap-6">
             <Link
               to="/add_faculty_advisor"
+              data-testid="add-faculty-advisor-btn"
               className="flex items-center justify-center gap-2 px-5 py-2.5 text-white text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
               style={{ backgroundColor: '#F4AD39' }}
             >
@@ -533,6 +534,7 @@ const FacultyAdvisorManagement = () => {
                 ></path>
               </svg>
               <input
+                data-testid="faculty-search-input"
                 className="w-full h-full bg-transparent border-none focus:ring-0 pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400"
                 placeholder="Search by name, email, or department..."
                 type="text"

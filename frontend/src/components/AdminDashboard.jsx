@@ -143,6 +143,7 @@ export default function AdminDashboard() {
           </a>
           <Link
             to="/admin_student_management"
+            data-testid="admin-nav-students"
             className="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/5 font-medium text-[0.92rem]"
           >
             <svg
@@ -162,6 +163,7 @@ export default function AdminDashboard() {
           </Link>
           <Link
             to="/faculty_advisor_management"
+            data-testid="admin-nav-faculty"
             className="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/5 font-medium text-[0.92rem]"
           >
             <svg
@@ -187,6 +189,7 @@ export default function AdminDashboard() {
           </Link>
           <Link
             to="/reports_analytics"
+            data-testid="admin-nav-reports"
             className="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/5 font-medium text-[0.92rem]"
           >
             <svg
@@ -206,6 +209,7 @@ export default function AdminDashboard() {
           </Link>
           <Link
             to="/system_configuration"
+            data-testid="admin-nav-system-config"
             className="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/5 font-medium text-[0.92rem]"
           >
             <svg
@@ -374,7 +378,9 @@ export default function AdminDashboard() {
         {/* Header */}
         <header className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-bold text-[#111827]">Welcome back, Admin</h1>
+            <h1 data-testid="admin-dashboard-title" className="text-3xl font-bold text-[#111827]">
+              Welcome back, Admin
+            </h1>
             <p className="text-gray-500 mt-1">Monitor and manage your institution's activities.</p>
           </div>
           <NotificationPanel />
