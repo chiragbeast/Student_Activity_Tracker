@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 // Student components
 import LoginPage from './components/LoginPage'
@@ -10,7 +10,6 @@ import ProfilePage from './components/ProfilePage'
 import RegisterPage from './components/RegisterPage'
 
 // Admin components
-import LandingPage from './components/LandingPage'
 import AdminLoginPage from './components/AdminLoginPage'
 import MFAPage from './components/MFAPage'
 import AdminDashboard from './components/AdminDashboard'
@@ -23,6 +22,7 @@ import UserProfileSettings from './components/UserProfileSettings'
 import EditStudent from './components/EditStudent'
 import EditFaculty from './components/EditFaculty'
 import AssignStudents from './components/AssignStudents'
+import SystemConfiguration from './components/SystemConfiguration'
 import NotificationCenter from './components/NotificationCenter'
 
 // Faculty components
@@ -33,7 +33,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Landing & Auth */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/mfa" element={<MFAPage />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
@@ -59,11 +59,15 @@ function App() {
         <Route path="/edit_student/:id" element={<EditStudent />} />
         <Route path="/edit_faculty/:id" element={<EditFaculty />} />
         <Route path="/assign_students/:id" element={<AssignStudents />} />
+        <Route path="/system_configuration" element={<SystemConfiguration />} />
         <Route path="/admin_notifications" element={<NotificationCenter />} />
 
         {/* Faculty routes */}
         <Route path="/faculty_dashboard" element={<FacultyDashboard />} />
         <Route path="/faculty_notifications" element={<NotificationCenter />} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   )

@@ -271,7 +271,9 @@
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 
 .reviewProofBtn:hover {
@@ -400,6 +402,29 @@
   transition: all 0.15s;
 }
 
+.downloadGuidelinesBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px;
+  border-radius: 11px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: #fff8ec;
+  color: var(--amber-dark);
+  border: 1.5px solid #f0d7a8;
+}
+
+.downloadGuidelinesBtn:hover:not(:disabled) {
+  background: #ffeecf;
+  transform: translateY(-1px);
+}
+
 .approveBtn {
   background: var(--amber);
   color: white;
@@ -432,7 +457,8 @@
 }
 
 .approveBtn:disabled,
-.rejectBtn:disabled {
+.rejectBtn:disabled,
+.downloadGuidelinesBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
