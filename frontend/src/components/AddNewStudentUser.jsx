@@ -363,11 +363,8 @@ const AddNewStudentUser = () => {
       </aside>
 
       {/* Main Content */}
-      <main
-        className="flex-1 overflow-y-auto relative flex flex-col items-center justify-center p-8"
-        style={{ backgroundColor: '#FFFBF2' }}
-      >
-        <div className="w-full max-w-2xl z-10">
+      <main className="flex-1 overflow-y-auto relative p-8" style={{ backgroundColor: '#FFFBF2' }}>
+        <div className="w-full max-w-2xl z-10 mx-auto pb-8">
           <header className="mb-8 text-center">
             <h2 className="text-4xl font-black tracking-tight mb-2" style={{ color: '#1a1a2e' }}>
               Add New Student User
