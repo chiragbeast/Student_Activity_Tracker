@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { facultyApi } from '../services/api'
+import api from '../api'
 import styles from './FacultyReviewDetailPage.module.css'
 
 export default function ReviewDetailPage({ submission: initialSubmission, onBack }) {
@@ -10,6 +11,7 @@ export default function ReviewDetailPage({ submission: initialSubmission, onBack
   const [feedback, setFeedback] = useState('')
   const [status, setStatus] = useState(null) // null | 'approved' | 'rejected'
   const [loading, setLoading] = useState(false)
+  const [downloadingGuidelines, setDownloadingGuidelines] = useState(false)
 
   // Fetch fresh details if we have an _id
   useEffect(() => {
@@ -63,6 +65,42 @@ export default function ReviewDetailPage({ submission: initialSubmission, onBack
     } catch {
       alert('Failed to reject submission')
       setStatus(null)
+    }
+  }
+
+  const handleDownloadGuidelines = async () => {
+    try {
+      setDownloadingGuidelines(true)
+      const { data } = await api.get('/brochure/current')
+      const brochure = data?.brochure
+
+      if (!brochure?.brochureUrl) {
+        alert('Guidelines brochure is not available yet.')
+        return
+      }
+
+      try {
+        const response = await fetch(brochure.brochureUrl)
+        if (!response.ok) {
+          throw new Error('Failed to fetch brochure')
+        }
+
+        const blob = await response.blob()
+        const objectUrl = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = objectUrl
+        link.download = brochure.fileName || 'guidelines-brochure'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(objectUrl)
+      } catch {
+        window.open(brochure.brochureUrl, '_blank', 'noopener,noreferrer')
+      }
+    } catch {
+      alert('Failed to download guidelines.')
+    } finally {
+      setDownloadingGuidelines(false)
     }
   }
 
@@ -336,6 +374,23 @@ export default function ReviewDetailPage({ submission: initialSubmission, onBack
                   />
                 </svg>
                 Reject Submission
+              </button>
+
+              <button
+                className={styles.downloadGuidelinesBtn}
+                onClick={handleDownloadGuidelines}
+                disabled={downloadingGuidelines}
+              >
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                  <path
+                    d="M12 3v11m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {downloadingGuidelines ? 'Downloading...' : 'Download Guidelines'}
               </button>
             </div>
 

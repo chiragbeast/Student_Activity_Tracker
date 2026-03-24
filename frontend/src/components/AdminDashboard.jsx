@@ -143,6 +143,7 @@ export default function AdminDashboard() {
           </a>
           <Link
             to="/admin_student_management"
+            data-testid="admin-nav-students"
             className="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/5 font-medium text-[0.92rem]"
           >
             <svg
@@ -162,6 +163,7 @@ export default function AdminDashboard() {
           </Link>
           <Link
             to="/faculty_advisor_management"
+            data-testid="admin-nav-faculty"
             className="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/5 font-medium text-[0.92rem]"
           >
             <svg
@@ -187,6 +189,7 @@ export default function AdminDashboard() {
           </Link>
           <Link
             to="/reports_analytics"
+            data-testid="admin-nav-reports"
             className="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/5 font-medium text-[0.92rem]"
           >
             <svg
@@ -203,6 +206,31 @@ export default function AdminDashboard() {
               ></path>
             </svg>
             <span>Reports</span>
+          </Link>
+          <Link
+            to="/system_configuration"
+            data-testid="admin-nav-system-config"
+            className="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/5 font-medium text-[0.92rem]"
+          >
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+            >
+              <path
+                d="M10.325 4.317a1 1 0 011.35-.936l1.854.78a1 1 0 00.94 0l1.854-.78a1 1 0 011.35.936l.168 2.003a1 1 0 00.55.826l1.73.999a1 1 0 01.364 1.363l-1.02 1.767a1 1 0 000 1l1.02 1.768a1 1 0 01-.364 1.362l-1.73 1a1 1 0 00-.55.825l-.168 2.003a1 1 0 01-1.35.936l-1.854-.78a1 1 0 00-.94 0l-1.854.78a1 1 0 01-1.35-.936l-.168-2.003a1 1 0 00-.55-.826l-1.73-.999a1 1 0 01-.364-1.363l1.02-1.767a1 1 0 000-1l-1.02-1.768a1 1 0 01.364-1.362l1.73-1a1 1 0 00.55-.825l.168-2.003z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+              <path
+                d="M12 15a3 3 0 100-6 3 3 0 000 6z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg>
+            <span>System Configuration</span>
           </Link>
         </nav>
 
@@ -350,7 +378,9 @@ export default function AdminDashboard() {
         {/* Header */}
         <header className="flex justify-between items-center mb-10">
           <div>
-            <h1 className="text-3xl font-bold text-[#111827]">Welcome back, Admin</h1>
+            <h1 data-testid="admin-dashboard-title" className="text-3xl font-bold text-[#111827]">
+              Welcome back, Admin
+            </h1>
             <p className="text-gray-500 mt-1">Monitor and manage your institution's activities.</p>
           </div>
           <NotificationPanel />

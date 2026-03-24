@@ -22,6 +22,7 @@ import UserProfileSettings from './components/UserProfileSettings'
 import EditStudent from './components/EditStudent'
 import EditFaculty from './components/EditFaculty'
 import AssignStudents from './components/AssignStudents'
+import SystemConfiguration from './components/SystemConfiguration'
 import NotificationCenter from './components/NotificationCenter'
 
 // Faculty components
@@ -58,6 +59,7 @@ function App() {
         <Route path="/edit_student/:id" element={<EditStudent />} />
         <Route path="/edit_faculty/:id" element={<EditFaculty />} />
         <Route path="/assign_students/:id" element={<AssignStudents />} />
+        <Route path="/system_configuration" element={<SystemConfiguration />} />
         <Route path="/admin_notifications" element={<NotificationCenter />} />
 
         {/* Faculty routes */}

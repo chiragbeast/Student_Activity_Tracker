@@ -5,6 +5,7 @@ const Deadline = require('./Deadline');
 const AuditLog = require('./AuditLog');
 const SystemConfig = require('./SystemConfig');
 const ActivityPoints = require('./ActivityPoints');
+const Brochure = require('./Brochure');
 
 module.exports = {
     User,
@@ -14,4 +15,5 @@ module.exports = {
     AuditLog,
     SystemConfig,
     ActivityPoints,
+    Brochure,
 };

@@ -293,6 +293,30 @@ const AssignStudents = () => {
             </svg>
             <span>Reports</span>
           </Link>
+          <Link
+            to="/system_configuration"
+            className="flex items-center gap-3 px-4 py-3 rounded-[10px] transition-all text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/5 font-medium text-[0.92rem]"
+          >
+            <svg
+              className="w-5 h-5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+            >
+              <path
+                d="M10.325 4.317a1 1 0 011.35-.936l1.854.78a1 1 0 00.94 0l1.854-.78a1 1 0 011.35.936l.168 2.003a1 1 0 00.55.826l1.73.999a1 1 0 01.364 1.363l-1.02 1.767a1 1 0 000 1l1.02 1.768a1 1 0 01-.364 1.362l-1.73 1a1 1 0 00-.55.825l-.168 2.003a1 1 0 01-1.35.936l-1.854-.78a1 1 0 00-.94 0l-1.854.78a1 1 0 01-1.35-.936l-.168-2.003a1 1 0 00-.55-.826l-1.73-.999a1 1 0 01-.364-1.363l1.02-1.767a1 1 0 000-1l-1.02-1.768a1 1 0 01.364-1.362l1.73-1a1 1 0 00.55-.825l.168-2.003z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+              <path
+                d="M12 15a3 3 0 100-6 3 3 0 000 6z"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg>
+            <span>System Configuration</span>
+          </Link>
         </nav>
 
         <div ref={profileMenuRef} className="mt-auto" style={{ position: 'relative' }}>
@@ -455,9 +479,9 @@ const AssignStudents = () => {
               <section
                 className="rounded-xl border p-6 flex flex-col md:flex-row items-center gap-6"
                 style={{
-                  backgroundColor: '#14213d',
-                  borderColor: 'rgba(255,255,255,0.16)',
-                  boxShadow: '0 0 22px rgba(154,40,235,0.25), 0 0 30px rgba(245,164,34,0.28)',
+                  backgroundColor: '#ffffff',
+                  borderColor: '#e5e1d8',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 }}
               >
                 {faculty?.profilePicture ? (
@@ -481,26 +505,26 @@ const AssignStudents = () => {
                   </div>
                 )}
                 <div className="flex-grow text-center md:text-left">
-                  <h2 className="text-2xl font-bold" style={{ color: '#ffffff' }}>
+                  <h2 className="text-2xl font-bold" style={{ color: '#111827' }}>
                     {faculty?.name}
                   </h2>
-                  <p className="text-sm mt-1" style={{ color: '#ffffff' }}>
+                  <p className="text-sm mt-1" style={{ color: '#111827' }}>
                     Office: {faculty?.office || '—'}
                   </p>
-                  <p className="text-sm" style={{ color: '#ffffff' }}>
+                  <p className="text-sm" style={{ color: '#111827' }}>
                     Email: {faculty?.email || '—'}
                   </p>
                 </div>
                 <div
                   className="flex flex-col items-center md:items-end gap-1 px-2 py-1 rounded-lg"
-                  style={{ backgroundColor: '#14213d' }}
+                  style={{ backgroundColor: '#ffffff' }}
                 >
-                  <span className="text-3xl font-bold" style={{ color: '#ffffff' }}>
+                  <span className="text-3xl font-bold" style={{ color: '#111827' }}>
                     {assignedStudents.length}
                   </span>
                   <span
                     className="text-xs uppercase tracking-wider font-bold"
-                    style={{ color: '#ffffff' }}
+                    style={{ color: '#111827' }}
                   >
                     Current Students
                   </span>
@@ -579,7 +603,7 @@ const AssignStudents = () => {
                           className="flex items-center gap-4 p-3 transition-colors group cursor-pointer border-b"
                           style={{ borderColor: '#e5e1d8' }}
                           onClick={() => handleCheckUnassigned(student._id)}
-                          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fafaf8')}
+                          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fffbf2')}
                           onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
                         >
                           <input
@@ -623,11 +647,11 @@ const AssignStudents = () => {
                   </div>
                   <div
                     className="p-3 border-t flex justify-between items-center"
-                    style={{ backgroundColor: '#14213d', borderColor: '#e5e1d8' }}
+                    style={{ backgroundColor: '#ffffff', borderColor: '#e5e1d8' }}
                   >
                     <button
                       className="text-xs hover:brightness-110 transition-colors underline"
-                      style={{ color: '#ffffff', textDecorationColor: '#ffffff' }}
+                      style={{ color: '#111827', textDecorationColor: '#111827' }}
                       onClick={handleSelectAllUnassigned}
                     >
                       {selectedUnassigned.length === filteredUnassigned.length
@@ -636,7 +660,7 @@ const AssignStudents = () => {
                     </button>
                     <span
                       className="text-[10px] uppercase tracking-widest font-bold"
-                      style={{ color: '#ffffff' }}
+                      style={{ color: '#111827' }}
                     >
                       {selectedUnassigned.length} selected
                     </span>
@@ -749,7 +773,7 @@ const AssignStudents = () => {
                           className="flex items-center gap-4 p-3 transition-colors group cursor-pointer border-b"
                           style={{ borderColor: '#e5e1d8' }}
                           onClick={() => handleCheckAssigned(student._id)}
-                          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fafaf8')}
+                          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#fffbf2')}
                           onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ffffff')}
                         >
                           <input
@@ -793,18 +817,18 @@ const AssignStudents = () => {
                   </div>
                   <div
                     className="p-3 border-t flex justify-between items-center"
-                    style={{ backgroundColor: '#14213d', borderColor: '#e5e1d8' }}
+                    style={{ backgroundColor: '#ffffff', borderColor: '#e5e1d8' }}
                   >
                     <button
                       className="text-xs hover:brightness-110 transition-colors underline"
-                      style={{ color: '#ffffff', textDecorationColor: '#ffffff' }}
+                      style={{ color: '#111827', textDecorationColor: '#111827' }}
                       onClick={() => setSelectedAssigned([])}
                     >
                       Deselect All
                     </button>
                     <span
                       className="text-[10px] uppercase tracking-widest font-bold"
-                      style={{ color: '#ffffff' }}
+                      style={{ color: '#111827' }}
                     >
                       {selectedAssigned.length} selected
                     </span>
@@ -815,7 +839,7 @@ const AssignStudents = () => {
               {/* Sticky Footer Action Bar */}
               <footer
                 className="border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4"
-                style={{ backgroundColor: '#14213d', borderColor: 'rgba(255,255,255,0.16)' }}
+                style={{ backgroundColor: '#ffffff', borderColor: '#e5e1d8' }}
               >
                 <div className="flex items-center gap-6">
                   <div className="flex -space-x-3 overflow-hidden">
@@ -846,8 +870,8 @@ const AssignStudents = () => {
                       </div>
                     )}
                   </div>
-                  <div className="text-sm" style={{ color: '#ffffff' }}>
-                    <span className="font-bold" style={{ color: '#ffffff' }}>
+                  <div className="text-sm" style={{ color: '#111827' }}>
+                    <span className="font-bold" style={{ color: '#111827' }}>
                       {selectedUnassigned.length} students
                     </span>{' '}
                     selected to be added to this advisor.
@@ -857,8 +881,8 @@ const AssignStudents = () => {
                   <button
                     className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold transition-colors rounded-xl border"
                     style={{
-                      backgroundColor: '#14213d',
-                      borderColor: 'rgba(255,255,255,0.5)',
+                      backgroundColor: '#f5a623',
+                      borderColor: '#f5a623',
                       color: '#ffffff',
                     }}
                     onClick={handleDiscardChanges}
@@ -868,9 +892,9 @@ const AssignStudents = () => {
                   <button
                     className="flex-1 sm:flex-none px-8 py-2.5 rounded-xl font-bold hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     style={{
-                      backgroundColor: '#14213d',
+                      backgroundColor: '#f5a623',
                       color: '#ffffff',
-                      border: '1px solid rgba(255,255,255,0.5)',
+                      border: '1px solid #f5a623',
                     }}
                     onClick={handleFinalizeAssignments}
                     disabled={saving}
