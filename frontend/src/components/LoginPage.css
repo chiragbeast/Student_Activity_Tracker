@@ -8,10 +8,6 @@
   flex-direction: column;
 }
 
-
-
-
-
 /* ========== Main Content ========== */
 .login-content {
   flex: 1;
@@ -99,7 +95,9 @@
   border: 1.5px solid #e5e1d8;
   border-radius: 12px;
   padding: 0 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .input-wrapper:focus-within {
@@ -175,7 +173,9 @@
   font-weight: 700;
   cursor: pointer;
   letter-spacing: 0.5px;
-  transition: transform 0.15s, box-shadow 0.25s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.25s;
   box-shadow: 0 4px 14px rgba(245, 166, 35, 0.35);
   margin-top: 8px;
 }
@@ -188,6 +188,40 @@
 .login-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(245, 166, 35, 0.3);
+}
+
+.oauth-section {
+  margin-top: 16px;
+}
+
+.oauth-divider {
+  position: relative;
+  text-align: center;
+  margin: 4px 0 14px;
+}
+
+.oauth-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e5e1d8;
+}
+
+.oauth-divider span {
+  position: relative;
+  display: inline-block;
+  padding: 0 10px;
+  background: #fdf8f0;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.google-login-btn-wrap {
+  display: flex;
+  justify-content: center;
 }
 
 /* ========== Signup Prompt ========== */

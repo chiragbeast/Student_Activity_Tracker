@@ -2,11 +2,13 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 const cloudinary = require('../config/cloudinary');
 const { Resend } = require('resend');
 
 const OTP_EXPIRY_MINUTES = Number(process.env.OTP_EXPIRY_MINUTES || 5);
 const OTP_RESEND_COOLDOWN_SECONDS = Number(process.env.OTP_RESEND_COOLDOWN_SECONDS || 60);
+const googleClient = new OAuth2Client();
 
 const getResendClient = () => {
     if (!process.env.RESEND_API_KEY) {
@@ -90,6 +92,14 @@ const generateToken = (id) => {
     });
 };
 
+const buildAuthPayload = (user) => ({
+    _id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    token: generateToken(user._id),
+});
+
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
@@ -123,17 +133,62 @@ const loginUser = asyncHandler(async (req, res) => {
         user.lastLogin = new Date();
         await user.save();
 
-        res.json({
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user._id),
-        });
+        res.json(buildAuthPayload(user));
     } else {
         res.status(401);
         throw new Error('Invalid email or password');
     }
+});
+
+// @desc    Google OAuth login (Student/Faculty/Admin)
+// @route   POST /api/auth/google-login
+// @access  Public
+const loginWithGoogle = asyncHandler(async (req, res) => {
+    const { idToken, role } = req.body;
+
+    if (!idToken) {
+        res.status(400);
+        throw new Error('Google ID token is required');
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+        res.status(500);
+        throw new Error('GOOGLE_CLIENT_ID is not configured');
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload?.email || !payload?.email_verified) {
+        res.status(401);
+        throw new Error('Google account email is not verified');
+    }
+
+    const normalizedEmail = String(payload.email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+        res.status(404);
+        throw new Error('No SAPT account exists for this Google email');
+    }
+
+    if (role && user.role !== role) {
+        res.status(403);
+        throw new Error(`This account is not allowed for ${role} login`);
+    }
+
+    if (!user.isActive || user.isLocked) {
+        res.status(401);
+        throw new Error('Not authorized, account disabled or locked');
+    }
+
+    user.lastLogin = new Date();
+    await user.save();
+
+    res.status(200).json(buildAuthPayload(user));
 });
 
 // @desc    Verify OTP for faculty/admin login
@@ -182,11 +237,7 @@ const verify2FA = asyncHandler(async (req, res) => {
     await user.save();
 
     res.status(200).json({
-        _id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id),
+        ...buildAuthPayload(user),
     });
 });
 
@@ -416,6 +467,7 @@ const changePassword = asyncHandler(async (req, res) => {
 
 module.exports = {
     loginUser,
+    loginWithGoogle,
     verify2FA,
     resend2FA,
     registerUser,

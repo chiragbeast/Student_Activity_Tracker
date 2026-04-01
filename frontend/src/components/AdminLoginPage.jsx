@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google'
 import api from '../api'
 
 export default function LoginPage() {
@@ -7,6 +8,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [formError, setFormError] = useState('')
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -55,6 +57,37 @@ export default function LoginPage() {
     }
   }
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const idToken = credentialResponse?.credential
+    if (!idToken) {
+      setFormError('Google login failed. Please try again.')
+      return
+    }
+
+    try {
+      setLoading(true)
+      setFormError('')
+      const { data } = await api.post('/auth/google-login', { idToken, role: 'Admin' })
+
+      localStorage.setItem('token', data.token)
+      localStorage.setItem(
+        'user',
+        JSON.stringify({
+          _id: data._id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+        })
+      )
+
+      navigate('/admin_dashboard')
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Google admin login failed.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div
       className="min-h-screen flex flex-col items-center overflow-hidden"
@@ -88,7 +121,7 @@ export default function LoginPage() {
               style={{ borderColor: '#e5e1d8' }}
             >
               <svg
-                className="w-[1.15rem] h-[1.15rem] flex-shrink-0"
+                className="w-[1.15rem] h-[1.15rem] shrink-0"
                 style={{ color: '#9ca3af' }}
                 fill="none"
                 stroke="currentColor"
@@ -127,7 +160,7 @@ export default function LoginPage() {
               style={{ borderColor: '#e5e1d8' }}
             >
               <svg
-                className="w-[1.15rem] h-[1.15rem] flex-shrink-0"
+                className="w-[1.15rem] h-[1.15rem] shrink-0"
                 style={{ color: '#9ca3af' }}
                 fill="none"
                 stroke="currentColor"
@@ -246,6 +279,44 @@ export default function LoginPage() {
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
+
+          {googleClientId ? (
+            <div className="mt-5">
+              <div className="relative text-center mb-4">
+                <span
+                  className="px-3 text-[0.82rem]"
+                  style={{
+                    color: '#6b7280',
+                    backgroundColor: '#fdf8f0',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  or continue with
+                </span>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: 0,
+                    right: 0,
+                    height: '1px',
+                    backgroundColor: '#e5e1d8',
+                    transform: 'translateY(-50%)',
+                  }}
+                />
+              </div>
+              <div className="flex justify-center" data-testid="admin-google-login-section">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setFormError('Google admin login failed.')}
+                  width="400"
+                  text="continue_with"
+                  shape="pill"
+                />
+              </div>
+            </div>
+          ) : null}
         </form>
       </main>
     </div>

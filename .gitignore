@@ -44,3 +44,6 @@ tests/
 
 #config
 backend/config/db.js  
+
+# Test artifacts and automation suite
+tests/

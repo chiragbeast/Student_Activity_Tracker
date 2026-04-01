@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
 	loginUser,
+	loginWithGoogle,
 	verify2FA,
 	resend2FA,
 	registerUser,
@@ -14,6 +15,7 @@ const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
 router.post('/login', loginUser);
+router.post('/google-login', loginWithGoogle);
 router.post('/verify-2fa', verify2FA);
 router.post('/resend-2fa', resend2FA);
 router.post('/register', registerUser);

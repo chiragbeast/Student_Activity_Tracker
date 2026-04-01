@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { HiOutlineMail } from 'react-icons/hi'
 import { FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
+import { GoogleLogin } from '@react-oauth/google'
 import api from '../api'
 import './LoginPage.css'
 
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -45,6 +47,33 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to login')
+    }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const idToken = credentialResponse?.credential
+    if (!idToken) {
+      setError('Google login failed. Please try again.')
+      return
+    }
+
+    try {
+      setError('')
+      const response = await api.post('/auth/google-login', { idToken })
+
+      localStorage.setItem('token', response.data.token)
+      localStorage.setItem('user', JSON.stringify(response.data))
+
+      const role = response.data.role
+      if (role === 'Admin') {
+        navigate('/admin_dashboard')
+      } else if (role === 'Faculty') {
+        navigate('/faculty_dashboard')
+      } else {
+        navigate('/dashboard')
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google login failed')
     }
   }
 
@@ -118,6 +147,23 @@ export default function LoginPage() {
           <button type="submit" className="login-btn" data-testid="login-submit">
             Login
           </button>
+
+          {googleClientId ? (
+            <div className="oauth-section" data-testid="google-login-section">
+              <div className="oauth-divider">
+                <span>or continue with</span>
+              </div>
+              <div className="google-login-btn-wrap">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google login failed')}
+                  width="400"
+                  text="continue_with"
+                  shape="pill"
+                />
+              </div>
+            </div>
+          ) : null}
         </form>
       </main>
     </div>
