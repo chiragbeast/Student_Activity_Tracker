@@ -107,7 +107,9 @@ export default function Dashboard() {
         return (
           <>
             <div className={styles.dashHeader}>
-              <h1 className={styles.dashTitle}>Faculty Dashboard</h1>
+              <h1 className={styles.dashTitle} data-testid="faculty-dashboard-title">
+                Faculty Dashboard
+              </h1>
               <div className={styles.notifWrapper}>
                 <button className="notification-btn" onClick={() => setShowNotif(!showNotif)}>
                   <Bell size={22} fill={unreadCount > 0 ? 'currentColor' : 'none'} />

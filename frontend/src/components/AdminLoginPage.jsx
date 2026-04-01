@@ -26,8 +26,15 @@ export default function LoginPage() {
       const { data } = await api.post('/auth/login', {
         email: formData.email,
         password: formData.password,
-        role: 'Admin',
       })
+
+      if (data?.requires2FA) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        localStorage.setItem('pendingMfaEmail', data.email)
+        navigate('/mfa')
+        return
+      }
 
       localStorage.setItem('token', data.token)
       localStorage.setItem(

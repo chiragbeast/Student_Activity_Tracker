@@ -24,6 +24,25 @@ const userSchema = new mongoose.Schema({
         select: false, // Never return password by default
     },
 
+    // ── OTP-based MFA (Faculty/Admin only) ──
+    otpCodeHash: {
+        type: String,
+        default: null,
+        select: false,
+    },
+    otpExpiresAt: {
+        type: Date,
+        default: null,
+    },
+    otpRequestedAt: {
+        type: Date,
+        default: null,
+    },
+    otpAttempts: {
+        type: Number,
+        default: 0,
+    },
+
     // ── Role & Institute Info (FR-1.1, BR-01) ──
     role: {
         type: String,

@@ -1,11 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import api from '../api'
 
 export default function MFAPage() {
   const navigate = useNavigate()
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
-  const [timeLeft, setTimeLeft] = useState(114) // 1:54 in seconds
+  const [timeLeft, setTimeLeft] = useState(60)
+  const [submitting, setSubmitting] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const inputRefs = useRef([])
+  const pendingMfaEmail = localStorage.getItem('pendingMfaEmail')
 
   // Timer countdown
   useEffect(() => {
@@ -64,38 +70,99 @@ export default function MFAPage() {
     }
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setError('')
+    setInfo('')
+
+    if (!pendingMfaEmail) {
+      setError('MFA session not found. Please login again.')
+      return
+    }
+
     const enteredOTP = otp.join('')
-    
-    // Hardcoded MFA pin
-    if (enteredOTP === '123456') {
-      // Redirect to admin dashboard after successful MFA
-      navigate('/admin_dashboard')
-    } else {
-      alert('Invalid verification code. Please try again.')
+
+    if (enteredOTP.length !== 6) {
+      setError('Please enter the 6-digit verification code.')
+      return
+    }
+
+    try {
+      setSubmitting(true)
+      const { data } = await api.post('/auth/verify-2fa', {
+        email: pendingMfaEmail,
+        code: enteredOTP,
+      })
+
+      localStorage.removeItem('pendingMfaEmail')
+      localStorage.setItem('token', data.token)
+      localStorage.setItem(
+        'user',
+        JSON.stringify({
+          _id: data._id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+        })
+      )
+
+      if (data.role === 'Admin') {
+        navigate('/admin_dashboard')
+      } else if (data.role === 'Faculty') {
+        navigate('/faculty_dashboard')
+      } else {
+        navigate('/dashboard')
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Invalid or expired verification code.')
       setOtp(['', '', '', '', '', ''])
       inputRefs.current[0]?.focus()
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  const handleResend = () => {
-    setTimeLeft(114)
-    setOtp(['', '', '', '', '', ''])
-    inputRefs.current[0]?.focus()
+  const handleResend = async () => {
+    if (!pendingMfaEmail || timeLeft > 0) {
+      return
+    }
+
+    try {
+      setResending(true)
+      setError('')
+      setInfo('')
+      const { data } = await api.post('/auth/resend-2fa', { email: pendingMfaEmail })
+      const cooldown = Number(data?.cooldownSeconds || 60)
+      setTimeLeft(cooldown)
+      setOtp(['', '', '', '', '', ''])
+      inputRefs.current[0]?.focus()
+      setInfo('A new verification code has been sent to your email.')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to resend verification code.')
+    } finally {
+      setResending(false)
+    }
   }
 
   return (
-    <div className="font-body min-h-screen overflow-x-hidden" style={{backgroundColor: '#fdf8f0'}}>
-      
+    <div
+      className="font-body min-h-screen overflow-x-hidden"
+      style={{ backgroundColor: '#fdf8f0' }}
+    >
       <div className="relative flex min-h-screen w-full flex-col items-center justify-center px-4 py-12">
         <div className="layout-content-container flex flex-col w-full max-w-[520px]">
-          <div className="rounded-[2rem] p-10 md:p-12 border shadow-lg" style={{backgroundColor: '#fff', borderColor: '#e5e1d8'}}>
+          <div
+            className="rounded-[2rem] p-10 md:p-12 border shadow-lg"
+            style={{ backgroundColor: '#fff', borderColor: '#e5e1d8' }}
+          >
             <div className="text-center mb-10">
-              <h1 className="font-display text-3xl font-bold leading-tight mb-3 tracking-tight" style={{color: '#1a1a2e'}}>
+              <h1
+                className="font-display text-3xl font-bold leading-tight mb-3 tracking-tight"
+                style={{ color: '#1a1a2e' }}
+              >
                 Secure Verification
               </h1>
-              <p className="text-base max-w-[320px] mx-auto" style={{color: '#6b7280'}}>
+              <p className="text-base max-w-[320px] mx-auto" style={{ color: '#6b7280' }}>
                 Enter the 6-digit code sent to your faculty/admin email
               </p>
             </div>
@@ -107,7 +174,7 @@ export default function MFAPage() {
                     key={index}
                     ref={(el) => (inputRefs.current[index] = el)}
                     className="otp-input w-12 h-16 md:w-14 md:h-20 border-2 rounded-[16px] text-center text-2xl font-bold transition-all focus:outline-none focus:ring-2 focus:ring-primary/40"
-                    style={{backgroundColor: '#fff', borderColor: '#e5e1d8', color: '#1a1a2e'}}
+                    style={{ backgroundColor: '#fff', borderColor: '#e5e1d8', color: '#1a1a2e' }}
                     maxLength="1"
                     placeholder="·"
                     type="text"
@@ -120,52 +187,90 @@ export default function MFAPage() {
                 ))}
               </div>
 
-              <button 
-                className="w-full text-white font-bold py-5 rounded-2xl text-lg tracking-wide transition-all transform active:scale-[0.98] flex items-center justify-center gap-3" 
+              <button
+                className="w-full text-white font-bold py-5 rounded-2xl text-lg tracking-wide transition-all transform active:scale-[0.98] flex items-center justify-center gap-3"
                 type="submit"
-                style={{background: 'linear-gradient(135deg, #f5a623 0%, #f7b731 50%, #f5a623 100%)', boxShadow: '0 4px 14px rgba(245, 166, 35, 0.35)'}}
+                disabled={submitting}
+                style={{
+                  background: 'linear-gradient(135deg, #f5a623 0%, #f7b731 50%, #f5a623 100%)',
+                  boxShadow: '0 4px 14px rgba(245, 166, 35, 0.35)',
+                }}
                 onMouseOver={(e) => {
-                  e.target.style.transform = 'translateY(-1px)';
-                  e.target.style.boxShadow = '0 6px 20px rgba(245, 166, 35, 0.45)';
+                  if (submitting) return
+                  e.target.style.transform = 'translateY(-1px)'
+                  e.target.style.boxShadow = '0 6px 20px rgba(245, 166, 35, 0.45)'
                 }}
                 onMouseOut={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 14px rgba(245, 166, 35, 0.35)';
+                  if (submitting) return
+                  e.target.style.transform = 'translateY(0)'
+                  e.target.style.boxShadow = '0 4px 14px rgba(245, 166, 35, 0.35)'
                 }}
               >
-                <span>Verify &amp; Access</span>
+                <span>{submitting ? 'Verifying...' : 'Verify & Access'}</span>
                 <span className="material-symbols-outlined font-bold">lock_open</span>
               </button>
+
+              {error && (
+                <p className="text-sm text-center mt-3" style={{ color: '#dc2626' }}>
+                  {error}
+                </p>
+              )}
+
+              {info && (
+                <p className="text-sm text-center mt-3" style={{ color: '#15803d' }}>
+                  {info}
+                </p>
+              )}
             </form>
 
             <div className="mt-10 text-center space-y-4">
-              <p className="text-sm" style={{color: '#6b7280'}}>
-                Didn't receive the code? 
-                <button 
+              <p className="text-sm" style={{ color: '#6b7280' }}>
+                Didn't receive the code?
+                <button
                   className="ml-1 font-bold hover:underline"
-                  style={{color: timeLeft > 0 ? '#9ca3af' : '#f5a623', cursor: timeLeft > 0 ? 'not-allowed' : 'pointer'}}
+                  style={{
+                    color: timeLeft > 0 ? '#9ca3af' : '#f5a623',
+                    cursor: timeLeft > 0 ? 'not-allowed' : 'pointer',
+                  }}
                   onClick={handleResend}
-                  disabled={timeLeft > 0}
+                  disabled={timeLeft > 0 || resending}
                 >
-                  Resend Code
+                  {resending ? 'Resending...' : 'Resend Code'}
                 </button>
               </p>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border" style={{backgroundColor: '#fef3e2', borderColor: '#f5a623'}}>
+              <div
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border"
+                style={{ backgroundColor: '#fef3e2', borderColor: '#f5a623' }}
+              >
                 <span className="material-symbols-outlined text-primary text-sm">timer</span>
                 <span className="text-primary/90 text-xs font-mono font-bold uppercase tracking-widest">
-                  {timeLeft > 0 ? `Resend available in ${formatTime(timeLeft)}` : 'Code ready to resend'}
+                  {timeLeft > 0
+                    ? `Resend available in ${formatTime(timeLeft)}`
+                    : 'Code ready to resend'}
                 </span>
               </div>
             </div>
           </div>
 
           <div className="mt-8 flex justify-center items-center gap-6">
-            <a className="flex items-center gap-2 text-sm font-medium transition-colors" style={{color: '#6b7280'}} href="#" onMouseOver={(e) => e.currentTarget.style.color = '#f5a623'} onMouseOut={(e) => e.currentTarget.style.color = '#6b7280'}>
+            <a
+              className="flex items-center gap-2 text-sm font-medium transition-colors"
+              style={{ color: '#6b7280' }}
+              href="#"
+              onMouseOver={(e) => (e.currentTarget.style.color = '#f5a623')}
+              onMouseOut={(e) => (e.currentTarget.style.color = '#6b7280')}
+            >
               <span className="material-symbols-outlined text-lg">contact_support</span>
               IT Support
             </a>
-            <span className="w-1 h-1 rounded-full" style={{backgroundColor: '#d1d5db'}}></span>
-            <Link to="/login" className="flex items-center gap-2 text-sm font-medium transition-colors" style={{color: '#6b7280'}} onMouseOver={(e) => e.currentTarget.style.color = '#f5a623'} onMouseOut={(e) => e.currentTarget.style.color = '#6b7280'}>
+            <span className="w-1 h-1 rounded-full" style={{ backgroundColor: '#d1d5db' }}></span>
+            <Link
+              to="/login"
+              className="flex items-center gap-2 text-sm font-medium transition-colors"
+              style={{ color: '#6b7280' }}
+              onMouseOver={(e) => (e.currentTarget.style.color = '#f5a623')}
+              onMouseOut={(e) => (e.currentTarget.style.color = '#6b7280')}
+            >
               <span className="material-symbols-outlined text-lg">logout</span>
               Back to Login
             </Link>

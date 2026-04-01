@@ -95,7 +95,9 @@ export default function PendingSubmissionsPage({ onReview }) {
     <div className={styles.page}>
       {/* Page Header */}
       <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Pending Submissions</h1>
+        <h1 className={styles.pageTitle} data-testid="faculty-pending-submissions-title">
+          Pending Submissions
+        </h1>
       </div>
 
       {/* Stats Cards */}
@@ -127,6 +129,7 @@ export default function PendingSubmissionsPage({ onReview }) {
             </svg>
             <input
               type="text"
+              data-testid="faculty-pending-submissions-search"
               placeholder="Search submissions..."
               className={styles.searchInput}
               value={search}
@@ -217,7 +220,11 @@ export default function PendingSubmissionsPage({ onReview }) {
                 <td className={styles.date}>{s.date}</td>
                 <td>
                   <div className={styles.actionGroup}>
-                    <button className={styles.reviewBtn} onClick={() => onReview && onReview(s)}>
+                    <button
+                      className={styles.reviewBtn}
+                      data-testid={`faculty-pending-review-${s.id}`}
+                      onClick={() => onReview && onReview(s)}
+                    >
                       Review
                     </button>
                   </div>

@@ -150,7 +150,9 @@ export default function ReviewDetailPage({ submission: initialSubmission, onBack
             strokeLinejoin="round"
           />
         </svg>
-        <span className={styles.breadcrumbCurrent}>Review Detail</span>
+        <span className={styles.breadcrumbCurrent} data-testid="faculty-review-detail-title">
+          Review Detail
+        </span>
       </nav>
 
       {status && (

@@ -87,7 +87,9 @@ export default function FacultyDeadlinesPage() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Manage Deadlines</h1>
+        <h1 className={styles.title} data-testid="faculty-manage-deadlines-title">
+          Manage Deadlines
+        </h1>
         <button className={styles.createBtn} onClick={() => setShowModal(true)}>
           <Plus size={18} />
           <span>Create Deadline</span>

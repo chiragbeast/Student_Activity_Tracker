@@ -5,11 +5,8 @@ import { FiLock, FiEye, FiEyeOff } from 'react-icons/fi'
 import api from '../api'
 import './LoginPage.css'
 
-const ROLES = ['Student', 'Faculty', 'Admin']
-
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [activeRole, setActiveRole] = useState('Student')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -23,8 +20,15 @@ export default function LoginPage() {
       const response = await api.post('/auth/login', {
         email,
         password,
-        role: activeRole,
       })
+
+      if (response.data?.requires2FA) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        localStorage.setItem('pendingMfaEmail', response.data.email)
+        navigate('/mfa')
+        return
+      }
 
       // Store token and user data
       localStorage.setItem('token', response.data.token)
@@ -49,7 +53,7 @@ export default function LoginPage() {
       {/* Main content */}
       <main className="login-content">
         <h1 className="login-title">Welcome Back</h1>
-        <p className="login-subtitle">Select your role to access your dashboard.</p>
+        <p className="login-subtitle">Enter your email and password to continue.</p>
 
         {error && (
           <div
@@ -59,20 +63,6 @@ export default function LoginPage() {
             {error}
           </div>
         )}
-
-        {/* Role tabs */}
-        <div className="role-tabs">
-          {ROLES.map((role) => (
-            <button
-              key={role}
-              className={`role-tab ${activeRole === role ? 'active' : ''}`}
-              onClick={() => setActiveRole(role)}
-              type="button"
-            >
-              {role}
-            </button>
-          ))}
-        </div>
 
         {/* Form */}
         <form className="login-form" onSubmit={handleSubmit}>
@@ -84,6 +74,7 @@ export default function LoginPage() {
               <HiOutlineMail className="input-icon" />
               <input
                 id="email"
+                data-testid="login-email"
                 type="text"
                 className="form-input"
                 placeholder="Enter your ID or Email"
@@ -101,6 +92,7 @@ export default function LoginPage() {
               <FiLock className="input-icon" />
               <input
                 id="password"
+                data-testid="login-password"
                 type={showPassword ? 'text' : 'password'}
                 className="form-input"
                 placeholder="Enter your password"
@@ -123,7 +115,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button type="submit" className="login-btn">
+          <button type="submit" className="login-btn" data-testid="login-submit">
             Login
           </button>
         </form>
