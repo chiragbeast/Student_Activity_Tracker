@@ -153,6 +153,7 @@ export default function Sidebar({ activeNav, onNavChange }) {
           return (
             <button
               key={label}
+              data-testid={`faculty-nav-${label.toLowerCase().replace(/\s+/g, '-')}`}
               onClick={() => onNavChange(label)}
               style={{
                 display: 'flex',

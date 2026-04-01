@@ -59,8 +59,14 @@ export default function PendingSubmissions({ onReviewClick }) {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2 className={styles.title}>Pending Submissions</h2>
-        <button className={styles.viewAll} onClick={() => onReviewClick('View All')}>
+        <h2 className={styles.title} data-testid="faculty-dashboard-pending-title">
+          Pending Submissions
+        </h2>
+        <button
+          className={styles.viewAll}
+          data-testid="faculty-dashboard-pending-view-all"
+          onClick={() => onReviewClick('View All')}
+        >
           View All
         </button>
       </div>
@@ -78,6 +84,7 @@ export default function PendingSubmissions({ onReviewClick }) {
           </svg>
           <input
             type="text"
+            data-testid="faculty-dashboard-pending-search"
             placeholder="Search by student or activity..."
             className={styles.searchInput}
             value={search}
@@ -126,7 +133,11 @@ export default function PendingSubmissions({ onReviewClick }) {
                 <td className={styles.date}>{s.date}</td>
                 <td>
                   <div className={styles.actionGroup}>
-                    <button className={styles.reviewBtn} onClick={() => onReviewClick(s)}>
+                    <button
+                      className={styles.reviewBtn}
+                      data-testid={`faculty-dashboard-review-${s.id}`}
+                      onClick={() => onReviewClick(s)}
+                    >
                       Review
                     </button>
                   </div>
