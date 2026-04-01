@@ -375,6 +375,12 @@
   }
 }
 
+@media (max-width: 425px) {
+  .dashboard-header .notif-wrapper {
+    display: none;
+  }
+}
+
 /* ========== Deadlines Card ========== */
 .card-deadlines {
   margin-bottom: 20px;
