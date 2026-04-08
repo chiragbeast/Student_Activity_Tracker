@@ -10,6 +10,8 @@ const {
 	updateMe,
 	updateMyProfilePicture,
 	changePassword,
+	forgotPassword,
+	resetPassword,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -22,5 +24,7 @@ router.post('/register', registerUser);
 router.route('/me').get(protect, getMe).put(protect, updateMe);
 router.put('/me/picture', protect, upload.single('profilePicture'), updateMyProfilePicture);
 router.put('/change-password', protect, changePassword);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 
 module.exports = router;

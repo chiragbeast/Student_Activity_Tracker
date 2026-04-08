@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const cloudinary = require('../config/cloudinary');
 const { Resend } = require('resend');
@@ -72,13 +73,18 @@ const sendOtpEmail = async (toEmail, otpCode) => {
             </table>
         </div>`;
 
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL,
         to: toEmail,
         subject: 'Your SAPT verification code',
-                text: `Your SAPT verification code is ${otpCode}. It expires in ${expiryText}.`,
-                html,
+        text: `Your SAPT verification code is ${otpCode}. It expires in ${expiryText}.`,
+        html,
     });
+
+    if (error) {
+        console.error('Resend Error in sendOtpEmail:', error);
+        throw new Error(error.message || 'Failed to send OTP email via Resend API');
+    }
 };
 
 // Generate JWT Token
@@ -117,18 +123,6 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (user && (await bcrypt.compare(password, user.password))) {
-        // Student logs in directly. Faculty/Admin must complete OTP verification.
-        if (user.role === 'Faculty' || user.role === 'Admin') {
-            const otpCode = await setOtpForUser(user);
-            await sendOtpEmail(user.email, otpCode);
-
-            return res.status(200).json({
-                requires2FA: true,
-                email: user.email,
-                role: user.role,
-                message: 'Verification code sent to your email',
-            });
-        }
 
         user.lastLogin = new Date();
         await user.save();
@@ -465,6 +459,147 @@ const changePassword = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Password updated successfully' });
 });
 
+// @desc    Forgot Password
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        res.status(400);
+        throw new Error('Email is required');
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+        res.status(404);
+        throw new Error('No account found with that email');
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    // Hash token and save to DB
+    user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+    await user.save({ validateBeforeSave: false });
+
+    // Send email
+    const resetUrl = `${req.protocol}://${req.get('host').replace('5000', '5173')}/reset-password/${resetToken}`;
+    
+    if (!process.env.RESEND_FROM_EMAIL || !process.env.RESEND_API_KEY) {
+        // In local development without email configured, just log the URL
+        console.log('\n--- PASSWORD RESET LINK ---');
+        console.log(resetUrl);
+        console.log('---------------------------\n');
+        
+        return res.status(200).json({ 
+            message: 'Email not configured. Check the server console for your reset link!' 
+        });
+    }
+
+    const resend = getResendClient();
+    const html = `
+    <div style="margin:0;padding:0;background:#fdf8f0;font-family:Poppins,Segoe UI,Arial,sans-serif;color:#1a1a2e;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fdf8f0;padding:32px 12px;">
+            <tr>
+                <td align="center">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e5e1d8;border-radius:18px;overflow:hidden;box-shadow:0 8px 26px rgba(26,26,46,0.08);">
+                        <tr>
+                            <td style="padding:24px 28px;background:linear-gradient(135deg,#f5a623 0%,#f7b731 100%);color:#1a1a2e;">
+                                <h1 style="margin:0;font-size:22px;line-height:1.3;font-weight:800;">Password Reset Request</h1>
+                                <p style="margin:8px 0 0 0;font-size:14px;line-height:1.5;font-weight:500;">Let's get you back into your account.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:28px;">
+                                <p style="margin:0 0 14px 0;font-size:15px;line-height:1.7;color:#374151;">Hi ${user.name},</p>
+                                <p style="margin:0 0 16px 0;font-size:15px;line-height:1.7;color:#374151;">We received a request to reset the password for your SAPT account. Click the button below to reset it:</p>
+
+                                <div style="margin:24px 0;text-align:center;">
+                                    <a href="${resetUrl}" style="display:inline-block;padding:14px 32px;background:#f5a623;color:#ffffff;text-decoration:none;font-weight:700;border-radius:12px;font-size:16px;">Reset Password</a>
+                                </div>
+
+                                <p style="margin:14px 0 0 0;font-size:13px;line-height:1.6;color:#6b7280;">If you didn't request a password reset, you can safely ignore this email. This link will expire in 1 hour.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>`;
+
+    try {
+        const { error } = await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: user.email,
+            subject: 'Password Reset Request - SAPT',
+            text: `Forgot your password? Reset it here: ${resetUrl}. This link expires in 1 hour.`,
+            html,
+        });
+
+        if (error) {
+            console.error('Resend Error in forgotPassword:', error);
+            throw new Error(error.message || 'Failed to send email via Resend API');
+        }
+
+        res.status(200).json({ message: 'Password reset link sent to your email' });
+    } catch (err) {
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        await user.save({ validateBeforeSave: false });
+        
+        console.error('Email sending error:', err);
+        res.status(500);
+        throw new Error(err.message || 'There was an error sending the email. Try again later!');
+    }
+});
+
+// @desc    Reset Password
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+    // Hash the generic token and look for matching user
+    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() },
+    }).select('+password');
+
+    if (!user) {
+        res.status(400);
+        throw new Error('Token is invalid or has expired');
+    }
+
+    const { password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword) {
+        res.status(400);
+        throw new Error('Password and confirm password are required');
+    }
+
+    if (password !== confirmPassword) {
+        res.status(400);
+        throw new Error('Passwords do not match');
+    }
+
+    if (password.length < 6) {
+        res.status(400);
+        throw new Error('Password must be at least 6 characters');
+    }
+
+    // Set new password
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save(); // Model pre-save hook handles hashing
+
+    res.status(200).json({ message: 'Password has been successfully reset' });
+});
+
 module.exports = {
     loginUser,
     loginWithGoogle,
@@ -475,4 +610,6 @@ module.exports = {
     updateMe,
     updateMyProfilePicture,
     changePassword,
+    forgotPassword,
+    resetPassword,
 };

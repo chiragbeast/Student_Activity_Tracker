@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { FaGoogle } from 'react-icons/fa'
 import api from '../api'
 import './LoginPage.css'
@@ -112,9 +112,9 @@ export default function LoginPage() {
               Continue with Google
             </button>
 
-            <a href="#" className="forgot-password-link">
+            <Link to="/forgot-password" className="forgot-password-link">
               Forgot Password?
-            </a>
+            </Link>
           </form>
         </section>
       </main>
