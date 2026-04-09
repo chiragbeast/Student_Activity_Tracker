@@ -4,6 +4,7 @@ import Sidebar from './Sidebar'
 import NotificationCenter from './NotificationCenter'
 import NotificationPanel from './NotificationPanel'
 import api from '../api'
+import { initSocket, disconnectSocket, onNotification, offNotification } from '../services/socket' // [NEW] Import socket service
 import './DashboardLayout.css'
 
 export default function DashboardLayout() {
@@ -44,7 +45,26 @@ export default function DashboardLayout() {
     }
 
     fetchUnreadCount()
-    const interval = setInterval(fetchUnreadCount, 10000)
+    const interval = setInterval(fetchUnreadCount, 15000) // Slightly increased interval as we have live updates now
+
+    // [NEW] Initialize Socket.io
+    const userData = JSON.parse(localStorage.getItem('user') || '{}')
+    if (userData._id) {
+      initSocket(userData._id)
+
+      const handleLiveNotification = () => {
+        fetchUnreadCount() // Update count immediately when notification received
+      }
+
+      onNotification(handleLiveNotification)
+
+      return () => {
+        isMounted = false
+        clearInterval(interval)
+        offNotification(handleLiveNotification)
+        disconnectSocket()
+      }
+    }
 
     return () => {
       isMounted = false

@@ -1,14 +1,20 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
+const http = require('http'); // [NEW] Import http
 const cors = require('cors');
 const connectDB = require('./config/db');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
+const socketUtils = require('./utils/socket'); // [NEW] Import socketUtils
 
 // Connect Database
 connectDB();
 
 const app = express();
+const server = http.createServer(app); // [NEW] Create HTTP server
+
+// Initialize Socket.io
+socketUtils.init(server); // [NEW] Initialize socket.io with the server
 
 // Middleware
 app.use(cors());
@@ -36,6 +42,7 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+// [CHANGED] Listen on server instead of app
+server.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });

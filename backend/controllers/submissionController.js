@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const ActivityPoints = require('../models/ActivityPoints');
 const { sendEmail } = require('../utils/mailer');
+const socketUtils = require('../utils/socket'); // [NEW] Import socketUtils
 const cloudinary = require('../config/cloudinary');
 const { Readable } = require('stream');
 
@@ -88,7 +89,7 @@ const createSubmission = asyncHandler(async (req, res) => {
     if (status === 'Pending') {
         const student = await User.findById(req.user._id);
         if (student && student.facultyAdvisor) {
-            await Notification.create({
+            const notif = await Notification.create({
                 user: student.facultyAdvisor,
                 type: 'new_submission',
                 title: 'New Submission for Review',
@@ -97,6 +98,9 @@ const createSubmission = asyncHandler(async (req, res) => {
                 senderRole: 'Student',
                 relatedSubmission: submission._id,
             });
+
+            // Emit live notification
+            socketUtils.sendNotification(student.facultyAdvisor, notif);
 
             const facultyAdvisor = await User.findById(student.facultyAdvisor);
             if (facultyAdvisor && facultyAdvisor.emailNotifications) {
@@ -193,7 +197,7 @@ const updateSubmission = asyncHandler(async (req, res) => {
     if (submission.status === 'Pending') {
         const student = await User.findById(req.user._id);
         if (student && student.facultyAdvisor) {
-            await Notification.create({
+            const notif = await Notification.create({
                 user: student.facultyAdvisor,
                 type: 'new_submission',
                 title: 'Submission Resubmitted',
@@ -202,6 +206,9 @@ const updateSubmission = asyncHandler(async (req, res) => {
                 senderRole: 'Student',
                 relatedSubmission: updatedSubmission._id,
             });
+
+            // Emit live notification
+            socketUtils.sendNotification(student.facultyAdvisor, notif);
         }
     }
 

@@ -4,6 +4,7 @@ const Submission = require('../models/Submission');
 const ActivityPoints = require('../models/ActivityPoints');
 const Notification = require('../models/Notification');
 const { sendEmail } = require('../utils/mailer');
+const socketUtils = require('../utils/socket'); // [NEW] Import socketUtils
 const cloudinary = require('../config/cloudinary');
 
 // ── Helper: Get all student IDs assigned to this faculty ──
@@ -177,7 +178,7 @@ const reviewSubmission = asyncHandler(async (req, res) => {
         Returned: 'submission_returned',
     };
 
-    await Notification.create({
+    const notif = await Notification.create({
         user: submission.student,
         type: typeMap[status] || 'info',
         title: `Submission ${status}`,
@@ -186,6 +187,9 @@ const reviewSubmission = asyncHandler(async (req, res) => {
         senderRole: 'Faculty',
         relatedSubmission: submission._id,
     });
+
+    // Emit live notification
+    socketUtils.sendNotification(submission.student, notif);
 
     if (student.emailNotifications) {
         await sendEmail({
@@ -285,7 +289,7 @@ const bulkReviewSubmissions = asyncHandler(async (req, res) => {
                 Returned: 'submission_returned',
             };
 
-            await Notification.create({
+            const notif = await Notification.create({
                 user: submission.student,
                 type: typeMap[status] || 'info',
                 title: `Submission ${status} (Bulk Review)`,
@@ -294,6 +298,9 @@ const bulkReviewSubmissions = asyncHandler(async (req, res) => {
                 senderRole: 'Faculty',
                 relatedSubmission: submission._id,
             });
+
+            // Emit live notification
+            socketUtils.sendNotification(submission.student, notif);
 
             results.processed++;
         } catch (err) {
@@ -588,12 +595,15 @@ const notifyStudentOfEmail = asyncHandler(async (req, res) => {
     const Notification = require('../models/Notification');
     const msg = reason === 'meeting' ? 'Your Faculty Advisor has requested a meeting with you. Please check your email for details.' : 'Your Faculty Advisor has sent you a message regarding your semester points. Please check your email for details.';
 
-    await Notification.create({
+    const notif = await Notification.create({
         user: studentId,
         type: 'info',
         title: reason === 'meeting' ? 'Meeting Request from FA' : 'Message regarding Activity Points',
         message: msg
     });
+
+    // Emit live notification
+    socketUtils.sendNotification(studentId, notif);
 
     res.status(200).json({ success: true, message: 'Student notified' });
 });

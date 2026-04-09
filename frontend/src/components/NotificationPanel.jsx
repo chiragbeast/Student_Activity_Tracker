@@ -3,6 +3,7 @@ import { FiBell, FiCheck, FiX, FiEdit3, FiAlertCircle } from 'react-icons/fi'
 import { BsBellFill } from 'react-icons/bs'
 import api from '../api'
 import NotificationCenter from './NotificationCenter'
+import { onNotification, offNotification } from '../services/socket' // [NEW] Import socket listeners
 import './NotificationPanel.css'
 
 const ICON_MAP = {
@@ -63,10 +64,23 @@ export default function NotificationPanel({
     const initialFetchTimer = setTimeout(() => {
       fetchNotifications()
     }, 0)
-    const interval = setInterval(fetchNotifications, 10000)
+    const interval = setInterval(fetchNotifications, 15000)
+
+    // [NEW] Listen for live notifications
+    const handleLiveNotification = (notification) => {
+      setNotifications((prev) => {
+        // Prevent duplicate if polling also fetched it
+        if (prev.find((n) => n._id === notification._id)) return prev
+        return [notification, ...prev]
+      })
+    }
+
+    onNotification(handleLiveNotification)
+
     return () => {
       clearTimeout(initialFetchTimer)
       clearInterval(interval)
+      offNotification(handleLiveNotification)
     }
   }, [])
 
