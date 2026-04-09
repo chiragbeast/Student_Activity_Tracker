@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
 import ImageCropModal from './ImageCropModal'
+import SpotlightBackground from './ui/SpotlightBackground'
 
 const UserProfileSettings = () => {
   const navigate = useNavigate()
@@ -28,7 +29,6 @@ const UserProfileSettings = () => {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [cropImageSrc, setCropImageSrc] = useState(null)
-  const [notificationsSaving, setNotificationsSaving] = useState(false)
   const fileInputRef = useRef(null)
 
   const initialsFromName = (name = '') => {
@@ -168,25 +168,8 @@ const UserProfileSettings = () => {
     }
   }
 
-  const handleSaveNotifications = async () => {
-    try {
-      setNotificationsSaving(true)
-      setSaveError('')
-      setSaveSuccess('')
-      await api.put('/auth/me', { notificationsEnabled: notifications })
-      setSaveSuccess('Notification preferences updated successfully.')
-    } catch (err) {
-      setSaveError(err.response?.data?.message || 'Failed to update notification preferences.')
-    } finally {
-      setNotificationsSaving(false)
-    }
-  }
-
   return (
-    <div
-      className="h-screen overflow-hidden flex font-display"
-      style={{ backgroundColor: '#FFFBF2' }}
-    >
+    <div className="h-screen overflow-hidden flex" style={{ backgroundColor: '#f7f4eb' }}>
       {/* Sidebar */}
       <aside
         className="w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5"
@@ -446,706 +429,681 @@ const UserProfileSettings = () => {
         </div>
       </aside>
 
-      {/* Main Content Area with Cream Background */}
+      {/* Main Content Area */}
       <main
-        style={{
-          flex: 1,
-          backgroundColor: '#FFFBF2',
-          overflowY: 'auto',
-          padding: '36px 40px',
-        }}
+        className="flex-1 overflow-y-auto"
+        style={{ backgroundColor: '#f7f4eb', fontFamily: 'Poppins, sans-serif' }}
       >
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h1
-              style={{
-                fontFamily: 'Poppins, sans-serif',
-                fontSize: '1.85rem',
-                fontWeight: '800',
-                color: '#1a1a2e',
-                margin: '0 0 6px',
-              }}
-            >
-              Admin Profile & Settings
-            </h1>
-            <p style={{ fontSize: '0.92rem', color: '#6b7280', margin: 0 }}>
-              Manage your administrative account and security preferences.
-            </p>
-          </div>
-
-          {/* Grid Layout */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '320px 1fr',
-              gap: '24px',
-              alignItems: 'start',
-            }}
-          >
-            {/* Left: Profile Card */}
-            <div
-              style={{
-                background: '#fff',
-                borderRadius: '16px',
-                padding: '32px 28px 28px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textAlign: 'center',
-              }}
-            >
-              {/* Avatar */}
-              <div style={{ marginBottom: '18px' }}>
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{
-                    width: '120px',
-                    height: '120px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #fdf8f0 0%, #f5e6c8 100%)',
-                    border: '3px solid #f5a623',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    position: 'relative',
-                  }}
-                >
-                  {userProfile.profilePicture ? (
-                    <img
-                      src={userProfile.profilePicture}
-                      alt={userProfile.name || 'Admin'}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <span
-                      style={{
-                        fontFamily: 'Poppins, sans-serif',
-                        fontSize: '3rem',
-                        fontWeight: '800',
-                        color: '#1a1a2e',
-                      }}
-                    >
-                      {initialsFromName(userProfile.name)}
-                    </span>
-                  )}
-
-                  {uploading && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundColor: 'rgba(255,255,255,0.6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.85rem',
-                        fontWeight: '700',
-                        color: '#1a1a2e',
-                      }}
-                    >
-                      Uploading...
-                    </div>
-                  )}
-                </div>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png"
-                  style={{ display: 'none' }}
-                  onChange={handleProfilePicChange}
-                />
-              </div>
-
-              <h2
+        <SpotlightBackground className="admin-spotlight-surface">
+          <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <h1
                 style={{
-                  fontFamily: 'Poppins, sans-serif',
-                  fontSize: '1.3rem',
-                  fontWeight: '700',
-                  color: '#1a1a2e',
-                  margin: '0 0 4px',
+                  fontSize: '2.05rem',
+                  fontWeight: '100',
+                  lineHeight: '1.15',
+                  color: '#111827',
+                  margin: '0 0 6px',
                 }}
               >
-                {loadingProfile ? 'Loading...' : userProfile.name}
-              </h2>
-              <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0 0 2px' }}>
-                Role: {userProfile.role || 'Admin'}
+                Admin Profile & Settings
+              </h1>
+              <p style={{ fontSize: '0.92rem', color: '#6b7280', margin: 0, fontWeight: 100 }}>
+                Manage your administrative account and security preferences.
               </p>
-              <p style={{ fontSize: '0.82rem', color: '#9ca3af', margin: '0 0 20px' }}>
-                {loadingProfile ? 'Loading...' : userProfile.email}
-              </p>
-
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: 'none',
-                  borderRadius: '10px',
-                  background: '#f5a623',
-                  color: '#1a1a2e',
-                  fontSize: '0.9rem',
-                  fontWeight: '700',
-                  cursor: uploading ? 'not-allowed' : 'pointer',
-                  opacity: uploading ? 0.7 : 1,
-                  fontFamily: 'inherit',
-                  transition: 'transform 0.15s, box-shadow 0.2s',
-                  boxShadow: '0 2px 8px rgba(245,166,35,0.3)',
-                  marginBottom: '24px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-1px)'
-                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(245,166,35,0.4)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(245,166,35,0.3)'
-                }}
-              >
-                {uploading ? 'Uploading...' : 'Change Profile Picture'}
-              </button>
-
-              {uploadError && (
-                <div
-                  style={{
-                    width: '100%',
-                    marginTop: '-12px',
-                    marginBottom: '18px',
-                    padding: '8px 10px',
-                    borderRadius: '8px',
-                    backgroundColor: '#fef2f2',
-                    border: '1px solid #fecaca',
-                    color: '#dc2626',
-                    fontSize: '0.78rem',
-                    fontWeight: '600',
-                  }}
-                >
-                  {uploadError}
-                </div>
-              )}
             </div>
 
-            {/* Right Column */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              {/* Account Settings Card */}
+            {/* Grid Layout */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '320px 1fr',
+                gap: '24px',
+                alignItems: 'start',
+              }}
+            >
+              {/* Left: Profile Card */}
               <div
                 style={{
-                  background: '#fff',
+                  background: 'rgba(253, 247, 233, 0.62)',
+                  border: '1.5px solid #e5e1d8',
+                  backdropFilter: 'blur(5px) saturate(135%)',
+                  WebkitBackdropFilter: 'blur(5px) saturate(135%)',
                   borderRadius: '16px',
-                  padding: '28px 32px',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                  padding: '32px 28px 28px',
+                  boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  textAlign: 'center',
                 }}
               >
-                <h2
-                  style={{
-                    fontFamily: 'Poppins, sans-serif',
-                    fontSize: '1.25rem',
-                    fontWeight: '700',
-                    color: '#1a1a2e',
-                    margin: '0 0 18px',
-                  }}
-                >
-                  Account Settings
-                </h2>
-
-                <h3
-                  style={{
-                    fontSize: '0.95rem',
-                    fontWeight: '700',
-                    color: '#1a1a2e',
-                    margin: '0 0 4px',
-                  }}
-                >
-                  Update Password
-                </h3>
-                <p
-                  style={{
-                    fontSize: '0.84rem',
-                    color: '#6b7280',
-                    margin: '0 0 18px',
-                    lineHeight: '1.5',
-                  }}
-                >
-                  Ensure your account is using a long, random password to stay secure.
-                </p>
-
-                <form onSubmit={handleSave}>
-                  {/* Current Password */}
-                  <label
-                    style={{
-                      display: 'block',
-                      fontSize: '0.84rem',
-                      fontWeight: '600',
-                      color: '#1a1a2e',
-                      marginBottom: '6px',
-                    }}
-                  >
-                    Current Password
-                  </label>
-                  <div style={{ position: 'relative', marginBottom: '16px' }}>
-                    <input
-                      type={showCurrent ? 'text' : 'password'}
-                      placeholder="••••••••••"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px 44px 12px 16px',
-                        border: '1.5px solid #e5e1d8',
-                        borderRadius: '10px',
-                        fontSize: '0.92rem',
-                        color: '#1a1a2e',
-                        background: '#fafaf8',
-                        fontFamily: 'inherit',
-                        outline: 'none',
-                        transition: 'border-color 0.2s',
-                        boxSizing: 'border-box',
-                      }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = '#f5a623')}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = '#e5e1d8')}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowCurrent(!showCurrent)}
-                      style={{
-                        position: 'absolute',
-                        right: '14px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#9ca3af',
-                        fontSize: '1.1rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: 0,
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#6b7280')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>
-                        {showCurrent ? 'visibility_off' : 'visibility'}
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* New Password and Confirm Password Row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div>
-                      <label
-                        style={{
-                          display: 'block',
-                          fontSize: '0.84rem',
-                          fontWeight: '600',
-                          color: '#1a1a2e',
-                          marginBottom: '6px',
-                        }}
-                      >
-                        New Password
-                      </label>
-                      <div style={{ position: 'relative', marginBottom: '16px' }}>
-                        <input
-                          type={showNew ? 'text' : 'password'}
-                          placeholder="••••••••••"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '12px 44px 12px 16px',
-                            border: '1.5px solid #e5e1d8',
-                            borderRadius: '10px',
-                            fontSize: '0.92rem',
-                            color: '#1a1a2e',
-                            background: '#fafaf8',
-                            fontFamily: 'inherit',
-                            outline: 'none',
-                            transition: 'border-color 0.2s',
-                            boxSizing: 'border-box',
-                          }}
-                          onFocus={(e) => (e.currentTarget.style.borderColor = '#f5a623')}
-                          onBlur={(e) => (e.currentTarget.style.borderColor = '#e5e1d8')}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowNew(!showNew)}
-                          style={{
-                            position: 'absolute',
-                            right: '14px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: '#9ca3af',
-                            fontSize: '1.1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: 0,
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = '#6b7280')}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
-                        >
-                          <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: '1.1rem' }}
-                          >
-                            {showNew ? 'visibility_off' : 'visibility'}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label
-                        style={{
-                          display: 'block',
-                          fontSize: '0.84rem',
-                          fontWeight: '600',
-                          color: '#1a1a2e',
-                          marginBottom: '6px',
-                        }}
-                      >
-                        Confirm Password
-                      </label>
-                      <div style={{ position: 'relative', marginBottom: '16px' }}>
-                        <input
-                          type={showConfirm ? 'text' : 'password'}
-                          placeholder="••••••••••"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '12px 44px 12px 16px',
-                            border: '1.5px solid #e5e1d8',
-                            borderRadius: '10px',
-                            fontSize: '0.92rem',
-                            color: '#1a1a2e',
-                            background: '#fafaf8',
-                            fontFamily: 'inherit',
-                            outline: 'none',
-                            transition: 'border-color 0.2s',
-                            boxSizing: 'border-box',
-                          }}
-                          onFocus={(e) => (e.currentTarget.style.borderColor = '#f5a623')}
-                          onBlur={(e) => (e.currentTarget.style.borderColor = '#e5e1d8')}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirm(!showConfirm)}
-                          style={{
-                            position: 'absolute',
-                            right: '14px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: '#9ca3af',
-                            fontSize: '1.1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: 0,
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.color = '#6b7280')}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = '#9ca3af')}
-                        >
-                          <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: '1.1rem' }}
-                          >
-                            {showConfirm ? 'visibility_off' : 'visibility'}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {saveError && (
-                    <div
-                      style={{
-                        marginBottom: '12px',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        backgroundColor: '#fef2f2',
-                        border: '1px solid #fecaca',
-                        color: '#dc2626',
-                        fontSize: '0.84rem',
-                        fontWeight: '600',
-                      }}
-                    >
-                      {saveError}
-                    </div>
-                  )}
-
-                  {saveSuccess && (
-                    <div
-                      style={{
-                        marginBottom: '12px',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        backgroundColor: '#ecfdf5',
-                        border: '1px solid #a7f3d0',
-                        color: '#047857',
-                        fontSize: '0.84rem',
-                        fontWeight: '600',
-                      }}
-                    >
-                      {saveSuccess}
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
+                {/* Avatar */}
+                <div style={{ marginBottom: '18px' }}>
                   <div
+                    onClick={() => fileInputRef.current?.click()}
                     style={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      gap: '12px',
-                      marginTop: '8px',
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={handleDiscard}
-                      style={{
-                        padding: '10px 24px',
-                        border: 'none',
-                        background: 'transparent',
-                        color: '#1a1a2e',
-                        fontSize: '0.9rem',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        transition: 'color 0.2s',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#6b7280')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#1a1a2e')}
-                    >
-                      Discard
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      style={{
-                        padding: '10px 28px',
-                        border: 'none',
-                        borderRadius: '10px',
-                        background: '#1a1a2e',
-                        color: '#fff',
-                        fontSize: '0.9rem',
-                        fontWeight: '700',
-                        cursor: saving ? 'not-allowed' : 'pointer',
-                        opacity: saving ? 0.7 : 1,
-                        fontFamily: 'inherit',
-                        transition: 'transform 0.15s, box-shadow 0.2s',
-                        boxShadow: '0 2px 8px rgba(26,26,46,0.2)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)'
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(26,26,46,0.3)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(26,26,46,0.2)'
-                      }}
-                    >
-                      {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* Notifications Card */}
-              <div
-                style={{
-                  background: '#fff',
-                  borderRadius: '16px',
-                  padding: '28px 32px',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                }}
-              >
-                <h2
-                  style={{
-                    fontFamily: 'Poppins, sans-serif',
-                    fontSize: '1.25rem',
-                    fontWeight: '700',
-                    color: '#1a1a2e',
-                    margin: '0 0 18px',
-                  }}
-                >
-                  Notifications
-                </h2>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    justifyContent: 'space-between',
-                    gap: '24px',
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <h3
-                      style={{
-                        fontSize: '0.95rem',
-                        fontWeight: '700',
-                        color: '#1a1a2e',
-                        margin: 0,
-                      }}
-                    >
-                      Notification Preferences
-                    </h3>
-                    <p
-                      style={{
-                        fontSize: '0.84rem',
-                        color: '#6b7280',
-                        margin: '4px 0 0',
-                        lineHeight: '1.5',
-                      }}
-                    >
-                      Stay updated with important activity alerts and system announcements.
-                    </p>
-
-                    <button
-                      type="button"
-                      onClick={handleSaveNotifications}
-                      disabled={notificationsSaving}
-                      style={{
-                        marginTop: '14px',
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid #1a1a2e',
-                        background: '#1a1a2e',
-                        color: '#ffffff',
-                        fontSize: '0.82rem',
-                        fontWeight: '700',
-                        cursor: notificationsSaving ? 'not-allowed' : 'pointer',
-                        opacity: notificationsSaving ? 0.7 : 1,
-                      }}
-                    >
-                      {notificationsSaving ? 'Saving...' : 'Save Notification Settings'}
-                    </button>
-                  </div>
-
-                  <label
-                    style={{
+                      width: '120px',
+                      height: '120px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #fdf8f0 0%, #f5e6c8 100%)',
+                      border: '3px solid #f5a623',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '10px',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
                       cursor: 'pointer',
-                      flexShrink: 0,
+                      position: 'relative',
                     }}
                   >
-                    <input
-                      type="checkbox"
-                      checked={notifications}
-                      onChange={(e) => setNotifications(e.target.checked)}
-                      style={{ display: 'none' }}
-                    />
-                    <div
-                      style={{
-                        width: '48px',
-                        height: '26px',
-                        background: notifications ? '#f5a623' : '#d1d5db',
-                        borderRadius: '999px',
-                        position: 'relative',
-                        transition: 'background 0.25s',
-                        flexShrink: 0,
-                      }}
-                    >
+                    {userProfile.profilePicture ? (
+                      <img
+                        src={userProfile.profilePicture}
+                        alt={userProfile.name || 'Admin'}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <span
+                        style={{
+                          fontFamily: 'Poppins, sans-serif',
+                          fontSize: '3rem',
+                          fontWeight: '800',
+                          color: '#1a1a2e',
+                        }}
+                      >
+                        {initialsFromName(userProfile.name)}
+                      </span>
+                    )}
+
+                    {uploading && (
                       <div
                         style={{
                           position: 'absolute',
-                          width: '20px',
-                          height: '20px',
-                          background: '#fff',
-                          borderRadius: '50%',
-                          top: '3px',
-                          left: notifications ? 'calc(100% - 23px)' : '3px',
-                          transition: 'left 0.25s',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                          inset: 0,
+                          backgroundColor: 'rgba(255,255,255,0.6)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.85rem',
+                          fontWeight: '700',
+                          color: '#1a1a2e',
                         }}
-                      ></div>
+                      >
+                        Uploading...
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png"
+                    style={{ display: 'none' }}
+                    onChange={handleProfilePicChange}
+                  />
+                </div>
+
+                <h2
+                  style={{
+                    fontSize: '1.75rem',
+                    fontWeight: '100',
+                    lineHeight: '1.15',
+                    color: '#111827',
+                    margin: '0 0 4px',
+                  }}
+                >
+                  {loadingProfile ? 'Loading...' : userProfile.name}
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0 0 2px' }}>
+                  Role: {userProfile.role || 'Admin'}
+                </p>
+                <p style={{ fontSize: '0.82rem', color: '#9ca3af', margin: '0 0 20px' }}>
+                  {loadingProfile ? 'Loading...' : userProfile.email}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    border: 'none',
+                    borderRadius: '10px',
+                    background: '#f5a623',
+                    color: '#1a1a2e',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    height: '42px',
+                    cursor: uploading ? 'not-allowed' : 'pointer',
+                    opacity: uploading ? 0.7 : 1,
+                    fontFamily: 'inherit',
+                    transition: 'transform 0.15s, box-shadow 0.2s',
+                    boxShadow: '0 2px 8px rgba(245,166,35,0.3)',
+                    marginBottom: '24px',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)'
+                    e.currentTarget.style.boxShadow = '0 4px 14px rgba(245,166,35,0.4)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(245,166,35,0.3)'
+                  }}
+                >
+                  {uploading ? 'Uploading...' : 'Change Profile Picture'}
+                </button>
+
+                {uploadError && (
+                  <div
+                    style={{
+                      width: '100%',
+                      marginTop: '-12px',
+                      marginBottom: '18px',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      backgroundColor: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      color: '#dc2626',
+                      fontSize: '0.78rem',
+                      fontWeight: '600',
+                    }}
+                  >
+                    {uploadError}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {/* Account Settings Card */}
+                <div
+                  style={{
+                    background: 'rgba(253, 247, 233, 0.62)',
+                    border: '1.5px solid #e5e1d8',
+                    backdropFilter: 'blur(5px) saturate(135%)',
+                    WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                    borderRadius: '16px',
+                    padding: '28px 32px',
+                    boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+                  }}
+                >
+                  <h2
+                    style={{
+                      fontSize: '1.75rem',
+                      fontWeight: '100',
+                      lineHeight: '1.15',
+                      color: '#111827',
+                      margin: '0 0 18px',
+                    }}
+                  >
+                    Account Settings
+                  </h2>
+
+                  <h3
+                    style={{
+                      fontSize: '0.95rem',
+                      fontWeight: '700',
+                      color: '#1a1a2e',
+                      margin: '0 0 4px',
+                    }}
+                  >
+                    Update Password
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: '0.84rem',
+                      color: '#6b7280',
+                      margin: '0 0 28px',
+                      lineHeight: '1.5',
+                    }}
+                  >
+                    Ensure your account is using a long, random password to stay secure.
+                  </p>
+
+                  <form onSubmit={handleSave}>
+                    {/* Current Password */}
+                    <div style={{ position: 'relative', marginBottom: '16px' }}>
+                      <div
+                        style={{
+                          position: 'relative',
+                          width: '100%',
+                          height: '50px',
+                          border: '1.5px solid #e5e1d8',
+                          borderRadius: '7px',
+                          background: 'rgba(253, 247, 233, 0.48)',
+                          backdropFilter: 'blur(8px) saturate(125%)',
+                          WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+                          transition: 'border-color 0.2s, box-shadow 0.2s',
+                        }}
+                      >
+                        <input
+                          type={showCurrent ? 'text' : 'password'}
+                          placeholder="Current Password"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            border: 'none',
+                            outline: 'none',
+                            background: 'transparent',
+                            borderRadius: '7px',
+                            padding: '0 78px 0 16px',
+                            fontSize: '0.9rem',
+                            fontWeight: 100,
+                            fontFamily: 'inherit',
+                            color: '#1a1a2e',
+                          }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrent(!showCurrent)}
+                        style={{
+                          position: 'absolute',
+                          right: '14px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                          fontWeight: 100,
+                          fontFamily: 'inherit',
+                          color: '#111111',
+                          padding: 0,
+                        }}
+                        aria-label={showCurrent ? 'Hide password' : 'Show password'}
+                      >
+                        {showCurrent ? 'Hide' : 'Show'}
+                      </button>
                     </div>
-                    <span
+
+                    {/* New Password and Confirm Password Row */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div>
+                        <div style={{ position: 'relative', marginBottom: '16px' }}>
+                          <div
+                            style={{
+                              position: 'relative',
+                              width: '100%',
+                              height: '50px',
+                              border: '1.5px solid #e5e1d8',
+                              borderRadius: '7px',
+                              background: 'rgba(253, 247, 233, 0.48)',
+                              backdropFilter: 'blur(8px) saturate(125%)',
+                              WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+                              transition: 'border-color 0.2s, box-shadow 0.2s',
+                            }}
+                          >
+                            <input
+                              type={showNew ? 'text' : 'password'}
+                              placeholder="New Password"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                border: 'none',
+                                outline: 'none',
+                                background: 'transparent',
+                                borderRadius: '7px',
+                                padding: '0 78px 0 16px',
+                                fontSize: '0.9rem',
+                                fontWeight: 100,
+                                fontFamily: 'inherit',
+                                color: '#1a1a2e',
+                              }}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowNew(!showNew)}
+                            style={{
+                              position: 'absolute',
+                              right: '14px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: '0.8rem',
+                              fontWeight: 100,
+                              fontFamily: 'inherit',
+                              color: '#111111',
+                              padding: 0,
+                            }}
+                            aria-label={showNew ? 'Hide password' : 'Show password'}
+                          >
+                            {showNew ? 'Hide' : 'Show'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ position: 'relative', marginBottom: '16px' }}>
+                          <div
+                            style={{
+                              position: 'relative',
+                              width: '100%',
+                              height: '50px',
+                              border: '1.5px solid #e5e1d8',
+                              borderRadius: '7px',
+                              background: 'rgba(253, 247, 233, 0.48)',
+                              backdropFilter: 'blur(8px) saturate(125%)',
+                              WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+                              transition: 'border-color 0.2s, box-shadow 0.2s',
+                            }}
+                          >
+                            <input
+                              type={showConfirm ? 'text' : 'password'}
+                              placeholder="Confirm Password"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                border: 'none',
+                                outline: 'none',
+                                background: 'transparent',
+                                borderRadius: '7px',
+                                padding: '0 78px 0 16px',
+                                fontSize: '0.9rem',
+                                fontWeight: 100,
+                                fontFamily: 'inherit',
+                                color: '#1a1a2e',
+                              }}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirm(!showConfirm)}
+                            style={{
+                              position: 'absolute',
+                              right: '14px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              background: 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: '0.8rem',
+                              fontWeight: 100,
+                              fontFamily: 'inherit',
+                              color: '#111111',
+                              padding: 0,
+                            }}
+                            aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                          >
+                            {showConfirm ? 'Hide' : 'Show'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {saveError && (
+                      <div
+                        style={{
+                          marginBottom: '12px',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          backgroundColor: '#fef2f2',
+                          border: '1px solid #fecaca',
+                          color: '#dc2626',
+                          fontSize: '0.84rem',
+                          fontWeight: '600',
+                        }}
+                      >
+                        {saveError}
+                      </div>
+                    )}
+
+                    {saveSuccess && (
+                      <div
+                        style={{
+                          marginBottom: '12px',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          backgroundColor: '#ecfdf5',
+                          border: '1px solid #a7f3d0',
+                          color: '#047857',
+                          fontSize: '0.84rem',
+                          fontWeight: '600',
+                        }}
+                      >
+                        {saveSuccess}
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div
                       style={{
-                        fontSize: '0.84rem',
-                        fontWeight: '500',
-                        color: '#1a1a2e',
-                        lineHeight: '1.3',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: '12px',
+                        marginTop: '8px',
                       }}
                     >
-                      Receive system notifications
-                    </span>
-                  </label>
+                      <button
+                        type="button"
+                        onClick={handleDiscard}
+                        style={{
+                          padding: '10px 24px',
+                          border: 'none',
+                          background: 'transparent',
+                          color: '#1a1a2e',
+                          fontSize: '0.9rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          transition: 'color 0.2s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = '#6b7280')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = '#1a1a2e')}
+                      >
+                        Discard
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        style={{
+                          padding: '10px 28px',
+                          border: 'none',
+                          borderRadius: '10px',
+                          background: '#f5a623',
+                          color: '#111111',
+                          fontSize: '0.9rem',
+                          fontWeight: '600',
+                          cursor: saving ? 'not-allowed' : 'pointer',
+                          opacity: saving ? 0.7 : 1,
+                          fontFamily: 'inherit',
+                          transition: 'transform 0.15s, box-shadow 0.2s',
+                          boxShadow: '0 2px 8px rgba(245,166,35,0.35)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-1px)'
+                          e.currentTarget.style.boxShadow = '0 4px 14px rgba(245,166,35,0.45)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(245,166,35,0.35)'
+                        }}
+                      >
+                        {saving ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Notifications Card */}
+                <div
+                  style={{
+                    background: 'rgba(253, 247, 233, 0.62)',
+                    border: '1.5px solid #e5e1d8',
+                    backdropFilter: 'blur(5px) saturate(135%)',
+                    WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                    borderRadius: '16px',
+                    padding: '28px 32px',
+                    boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+                  }}
+                >
+                  <h2
+                    style={{
+                      fontSize: '1.75rem',
+                      fontWeight: '100',
+                      lineHeight: '1.15',
+                      color: '#111827',
+                      margin: '0 0 18px',
+                    }}
+                  >
+                    Notifications
+                  </h2>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      gap: '24px',
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <h3
+                        style={{
+                          fontSize: '0.95rem',
+                          fontWeight: '700',
+                          color: '#1a1a2e',
+                          margin: 0,
+                        }}
+                      >
+                        Notification Preferences
+                      </h3>
+                      <p
+                        style={{
+                          fontSize: '0.84rem',
+                          color: '#6b7280',
+                          margin: '4px 0 0',
+                          lineHeight: '1.5',
+                        }}
+                      >
+                        Stay updated with important activity alerts and system announcements.
+                      </p>
+                    </div>
+
+                    <label
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={notifications}
+                        onChange={(e) => setNotifications(e.target.checked)}
+                        style={{ display: 'none' }}
+                      />
+                      <div
+                        style={{
+                          width: '48px',
+                          height: '26px',
+                          background: notifications ? '#f5a623' : '#d1d5db',
+                          borderRadius: '999px',
+                          position: 'relative',
+                          transition: 'background 0.25s',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: 'absolute',
+                            width: '20px',
+                            height: '20px',
+                            background: '#fff',
+                            borderRadius: '50%',
+                            top: '3px',
+                            left: notifications ? 'calc(100% - 23px)' : '3px',
+                            transition: 'left 0.25s',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                          }}
+                        ></div>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: '0.84rem',
+                          fontWeight: '500',
+                          color: '#1a1a2e',
+                          lineHeight: '1.3',
+                        }}
+                      >
+                        Receive system notifications
+                      </span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Footer */}
-          <footer
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '28px 0 16px',
-              marginTop: '32px',
-              borderTop: '1px solid #e5e1d8',
-              fontSize: '0.78rem',
-              color: '#9ca3af',
-            }}
-          >
-            <span>© 2024 Student Activity Tracker. All rights reserved.</span>
-            <div style={{ display: 'flex', gap: '20px' }}>
-              <a
-                href="#"
-                style={{
-                  color: '#6b7280',
-                  textDecoration: 'none',
-                  fontWeight: '500',
-                  transition: 'color 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#1a1a2e')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                style={{
-                  color: '#6b7280',
-                  textDecoration: 'none',
-                  fontWeight: '500',
-                  transition: 'color 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#1a1a2e')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
-              >
-                Terms of Service
-              </a>
-              <a
-                href="#"
-                style={{
-                  color: '#6b7280',
-                  textDecoration: 'none',
-                  fontWeight: '500',
-                  transition: 'color 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#1a1a2e')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
-              >
-                Help Center
-              </a>
-            </div>
-          </footer>
-        </div>
+            {/* Footer */}
+            <footer
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '28px 0 16px',
+                marginTop: '32px',
+                borderTop: '1px solid #e5e1d8',
+                fontSize: '0.78rem',
+                color: '#9ca3af',
+              }}
+            >
+              <div style={{ display: 'flex', gap: '20px' }}>
+                <a
+                  href="#"
+                  style={{
+                    color: '#6b7280',
+                    textDecoration: 'none',
+                    fontWeight: '500',
+                    transition: 'color 0.2s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#1a1a2e')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
+                >
+                  Privacy Policy
+                </a>
+                <a
+                  href="#"
+                  style={{
+                    color: '#6b7280',
+                    textDecoration: 'none',
+                    fontWeight: '500',
+                    transition: 'color 0.2s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#1a1a2e')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
+                >
+                  Terms of Service
+                </a>
+                <a
+                  href="#"
+                  style={{
+                    color: '#6b7280',
+                    textDecoration: 'none',
+                    fontWeight: '500',
+                    transition: 'color 0.2s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#1a1a2e')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}
+                >
+                  Help Center
+                </a>
+              </div>
+            </footer>
+          </div>
+        </SpotlightBackground>
       </main>
 
       {cropImageSrc && (

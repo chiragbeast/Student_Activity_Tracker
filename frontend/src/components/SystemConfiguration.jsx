@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
+import SpotlightBackground from './ui/SpotlightBackground'
 
 const WORD_MIME_TYPES = [
   'application/msword',
@@ -120,10 +121,7 @@ export default function SystemConfiguration() {
   }
 
   return (
-    <div
-      className="h-screen overflow-hidden flex font-[Inter,sans-serif]"
-      style={{ backgroundColor: '#FFFBF2' }}
-    >
+    <div className="h-screen overflow-hidden flex" style={{ backgroundColor: '#f7f4eb' }}>
       <aside
         className="w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5"
         style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
@@ -342,95 +340,128 @@ export default function SystemConfiguration() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto p-10" style={{ backgroundColor: '#FFFBF2' }}>
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-[#111827] mb-2">System Configuration</h1>
-          <p className="text-gray-500 mb-8">Manage documents and global platform settings.</p>
-
-          <section className="rounded-2xl bg-white p-6 shadow-sm border border-[#f1ede5]">
-            <h2 className="text-xl font-bold text-[#111827] mb-4">Points Brochure</h2>
-            <p className="text-sm text-gray-600 mb-5">
-              Upload the latest PDF or Word brochure that students can access from the Download
-              Guidelines button.
-            </p>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,.doc,.docx"
-              style={{ display: 'none' }}
-              onChange={(e) => handleFilePick(e.target.files?.[0])}
-            />
-
-            <div
-              onDragEnter={(e) => {
-                e.preventDefault()
-                setIsDragging(true)
-              }}
-              onDragOver={(e) => {
-                e.preventDefault()
-                setIsDragging(true)
-              }}
-              onDragLeave={(e) => {
-                e.preventDefault()
-                setIsDragging(false)
-              }}
-              onDrop={(e) => {
-                e.preventDefault()
-                setIsDragging(false)
-                handleFilePick(e.dataTransfer.files?.[0])
-              }}
-              onClick={() => fileInputRef.current?.click()}
-              className="rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all"
-              style={{
-                borderColor: isDragging ? '#f5a623' : '#d1d5db',
-                backgroundColor: isDragging ? '#fff8eb' : '#fafafa',
-              }}
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{ backgroundColor: '#f7f4eb', fontFamily: 'Poppins, sans-serif' }}
+      >
+        <SpotlightBackground className="admin-spotlight-surface">
+          <header className="mb-10">
+            <h1
+              className="text-[#111827]"
+              style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
             >
-              <p className="text-sm font-semibold text-[#111827]">
-                Drag and drop brochure file here
+              System Configuration
+            </h1>
+            <p className="text-gray-500 mt-1" style={{ fontWeight: 100, fontSize: '0.92rem' }}>
+              Manage documents and global platform settings.
+            </p>
+          </header>
+
+          <section
+            className="rounded-[16px] overflow-hidden mb-8"
+            style={{
+              background: 'rgba(253, 247, 233, 0.62)',
+              border: '1.5px solid #e5e1d8',
+              backdropFilter: 'blur(5px) saturate(135%)',
+              WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+              boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+            }}
+          >
+            <div className="p-8">
+              <h2
+                className="text-[#111827] mb-4"
+                style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
+              >
+                Points Brochure
+              </h2>
+              <p className="text-gray-600 mb-5" style={{ fontWeight: 300, fontSize: '0.95rem' }}>
+                Upload the latest PDF or Word brochure that students can access from the Download
+                Guidelines button.
               </p>
-              <p className="text-sm text-gray-500 mt-1">or click to browse file</p>
-            </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <span className="text-sm text-gray-700">
-                {selectedFile
-                  ? `Selected: ${selectedFile.name}`
-                  : brochure?.fileName
-                    ? `Current: ${brochure.fileName}`
-                    : loading
-                      ? 'Loading brochure details...'
-                      : 'No brochure uploaded yet.'}
-              </span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                style={{ display: 'none' }}
+                onChange={(e) => handleFilePick(e.target.files?.[0])}
+              />
 
-              <button
-                type="button"
-                onClick={handleUpload}
-                disabled={!selectedFile || uploading}
-                className="px-5 py-2 text-sm font-bold rounded-lg text-white"
+              <div
+                onDragEnter={(e) => {
+                  e.preventDefault()
+                  setIsDragging(true)
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  setIsDragging(true)
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault()
+                  setIsDragging(false)
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  setIsDragging(false)
+                  handleFilePick(e.dataTransfer.files?.[0])
+                }}
+                onClick={() => fileInputRef.current?.click()}
+                className="rounded-xl border-2 border-dashed p-8 text-center cursor-pointer transition-all"
                 style={{
-                  backgroundColor: !selectedFile || uploading ? '#9ca3af' : '#f5a623',
-                  cursor: !selectedFile || uploading ? 'not-allowed' : 'pointer',
+                  borderColor: isDragging ? '#f5a623' : '#d1d5db',
+                  backgroundColor: '#f5ead5',
+                  backdropFilter: 'blur(5px) saturate(120%)',
+                  WebkitBackdropFilter: 'blur(5px) saturate(120%)',
                 }}
               >
-                {uploading ? 'Uploading...' : 'Upload Brochure'}
-              </button>
+                <p className="text-sm font-semibold text-[#111827]">
+                  Drag and drop brochure file here
+                </p>
+                <p className="text-sm text-gray-500 mt-1">or click to browse file</p>
+              </div>
+
+              <div className="mt-4 flex flex-col items-start gap-3 w-full text-left">
+                <span className="text-sm text-gray-700" style={{ fontWeight: 300 }}>
+                  {selectedFile
+                    ? `Selected: ${selectedFile.name}`
+                    : brochure?.fileName
+                      ? `Current: ${brochure.fileName}`
+                      : loading
+                        ? 'Loading brochure details...'
+                        : 'No brochure uploaded yet.'}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={handleUpload}
+                  disabled={!selectedFile || uploading}
+                  className="flex items-center justify-center gap-2 px-5 text-sm rounded-lg self-start"
+                  style={{
+                    backgroundColor: !selectedFile || uploading ? '#9ca3af' : '#F4AD39',
+                    color: '#111111',
+                    fontWeight: 500,
+                    height: '42px',
+                    cursor: !selectedFile || uploading ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {uploading ? 'Uploading...' : 'Upload Brochure'}
+                </button>
+              </div>
+
+              {error && (
+                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
+              {success && (
+                <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+                  {success}
+                </div>
+              )}
             </div>
-
-            {error && (
-              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
-                {success}
-              </div>
-            )}
           </section>
-        </div>
+        </SpotlightBackground>
       </main>
     </div>
   )

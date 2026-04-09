@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
+import SpotlightBackground from './ui/SpotlightBackground'
 
 const ReportsAnalytics = () => {
   const navigate = useNavigate()
@@ -125,10 +126,7 @@ const ReportsAnalytics = () => {
   }))
 
   return (
-    <div
-      className="h-screen overflow-hidden flex font-[Inter,sans-serif]"
-      style={{ backgroundColor: '#FFFBF2' }}
-    >
+    <div className="h-screen overflow-hidden flex" style={{ backgroundColor: '#f7f4eb' }}>
       {/* Sidebar */}
       <aside
         className="w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5"
@@ -392,365 +390,509 @@ const ReportsAnalytics = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-10" style={{ backgroundColor: '#FFFBF2' }}>
-        {/* Header */}
-        <header className="flex justify-between items-center mb-10">
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{ backgroundColor: '#f7f4eb', fontFamily: 'Poppins, sans-serif' }}
+      >
+        <SpotlightBackground className="admin-spotlight-surface">
+          {/* Header */}
+          <header className="flex justify-between items-center mb-10">
+            <div>
+              <h1
+                className="text-[#111827]"
+                style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+              >
+                Reports Analytics
+              </h1>
+              <p className="text-gray-500 mt-1" style={{ fontWeight: 100, fontSize: '0.92rem' }}>
+                Comprehensive performance insights and data visualization.
+              </p>
+            </div>
+          </header>
+
           <div>
-            <h1 className="text-3xl font-bold text-[#111827]">Reports Analytics</h1>
-            <p className="text-gray-500 mt-1">
-              Comprehensive performance insights and data visualization.
-            </p>
-          </div>
-        </header>
-
-        <div>
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs">
-                Total Points Awarded
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : Number(stats.totalPointsAwarded || 0).toLocaleString()}
-              </h3>
-            </div>
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs">
-                Active Students
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : Number(stats.activeStudents || 0).toLocaleString()}
-              </h3>
-            </div>
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs">
-                Avg Points/Student
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : Number(stats.avgPointsPerStudent || 0).toLocaleString()}
-              </h3>
-            </div>
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs">
-                Activities
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : Number(stats.approvedActivities || 0).toLocaleString()}
-              </h3>
-            </div>
-          </div>
-
-          {fetchError && (
+            {/* Stats Strip */}
             <div
-              className="mb-6 rounded-lg border px-4 py-3 text-sm font-medium"
-              style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca', color: '#dc2626' }}
+              className="mb-8 rounded-[24px]"
+              style={{
+                background: 'rgba(253, 247, 233, 0.62)',
+                border: '1.5px solid #e5e1d8',
+                backdropFilter: 'blur(5px) saturate(135%)',
+                WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+              }}
             >
-              {fetchError}
-            </div>
-          )}
-
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Department Chart */}
-            <div className="bg-white p-8 rounded-[24px] shadow-sm">
-              <h4 className="text-lg font-bold text-[#111827] mb-6">Department Distribution</h4>
-              <div className="flex items-end justify-between h-64 gap-2 px-4">
-                {departmentData.map((dept, idx) => (
-                  <div key={idx} className="flex flex-col items-center gap-2 flex-1 group relative">
-                    <div className="flex items-end h-48 w-full justify-center">
-                      <div
-                        className="w-full rounded-t-sm relative group/bar"
-                        style={{ height: `${dept.height}%`, backgroundColor: '#F4AD39' }}
-                      >
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap">
-                          {dept.value} pts
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-400">{dept.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Year-wise Average Points Line Graph */}
-            <div className="bg-white p-8 rounded-[24px] shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h4 className="text-lg font-bold text-[#111827]">
-                  Average Activity Points by Year
-                </h4>
-                <select
-                  value={selectedBranch}
-                  onChange={(e) => setSelectedBranch(e.target.value)}
-                  className="px-4 py-2 rounded-lg border-2 border-gray-200 text-sm font-medium text-[#111827] focus:outline-none focus:border-[#F4AD39] transition-colors cursor-pointer"
-                  style={{ backgroundColor: '#FFFBF2' }}
-                >
-                  {branches.map((branch) => (
-                    <option key={branch} value={branch}>
-                      {deptAbbr(branch)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="relative" style={{ height: '400px' }}>
-                {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-12 w-12 flex flex-col justify-between text-right pr-2 text-xs text-gray-500 font-medium">
-                  <span>{Math.round(yAxisStep * 6)}</span>
-                  <span>{Math.round(yAxisStep * 5)}</span>
-                  <span>{Math.round(yAxisStep * 4)}</span>
-                  <span>{Math.round(yAxisStep * 3)}</span>
-                  <span>{Math.round(yAxisStep * 2)}</span>
-                  <span>{Math.round(yAxisStep)}</span>
-                  <span>0</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                <div className="p-6 md:p-7">
+                  <p
+                    className="text-gray-500 uppercase tracking-wider text-left"
+                    style={{ fontWeight: 100, fontSize: '0.7rem' }}
+                  >
+                    Total Points Awarded
+                  </p>
+                  <h3
+                    className="text-[#15173D] mt-2"
+                    style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                  >
+                    {loading ? '...' : Number(stats.totalPointsAwarded || 0).toLocaleString()}
+                  </h3>
                 </div>
 
-                {/* Graph area */}
-                <div className="absolute left-14 right-0 top-0 bottom-0">
-                  <svg
-                    width="100%"
-                    height="100%"
-                    viewBox="0 0 800 400"
-                    preserveAspectRatio="none"
-                    className="overflow-visible"
+                <div className="p-6 md:p-7 relative">
+                  <div
+                    className="hidden md:block"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '18px',
+                      bottom: '18px',
+                      width: '1.5px',
+                      backgroundColor: '#e5e1d8',
+                    }}
+                  />
+                  <p
+                    className="text-gray-500 uppercase tracking-wider text-left"
+                    style={{ fontWeight: 100, fontSize: '0.7rem' }}
                   >
-                    {/* Grid lines */}
-                    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                      <line
-                        key={i}
-                        x1="0"
-                        y1={i * 60}
-                        x2="800"
-                        y2={i * 60}
-                        stroke="#e5e7eb"
-                        strokeWidth="1"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                    ))}
+                    Active Students
+                  </p>
+                  <h3
+                    className="text-[#15173D] mt-2"
+                    style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                  >
+                    {loading ? '...' : Number(stats.activeStudents || 0).toLocaleString()}
+                  </h3>
+                </div>
 
-                    {/* Line path */}
-                    <polyline
-                      points={selectedYearSeries
-                        .map((value, index) => {
+                <div className="p-6 md:p-7 relative">
+                  <div
+                    className="hidden lg:block"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '18px',
+                      bottom: '18px',
+                      width: '1.5px',
+                      backgroundColor: '#e5e1d8',
+                    }}
+                  />
+                  <p
+                    className="text-gray-500 uppercase tracking-wider text-left"
+                    style={{ fontWeight: 100, fontSize: '0.7rem' }}
+                  >
+                    Avg Points/Student
+                  </p>
+                  <h3
+                    className="text-[#15173D] mt-2"
+                    style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                  >
+                    {loading ? '...' : Number(stats.avgPointsPerStudent || 0).toLocaleString()}
+                  </h3>
+                </div>
+
+                <div className="p-6 md:p-7 relative">
+                  <div
+                    className="hidden md:block"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '18px',
+                      bottom: '18px',
+                      width: '1.5px',
+                      backgroundColor: '#e5e1d8',
+                    }}
+                  />
+                  <p
+                    className="text-gray-500 uppercase tracking-wider text-left"
+                    style={{ fontWeight: 100, fontSize: '0.7rem' }}
+                  >
+                    Activities
+                  </p>
+                  <h3
+                    className="text-[#15173D] mt-2"
+                    style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                  >
+                    {loading ? '...' : Number(stats.approvedActivities || 0).toLocaleString()}
+                  </h3>
+                </div>
+              </div>
+            </div>
+
+            {fetchError && (
+              <div
+                className="mb-6 rounded-lg border px-4 py-3 text-sm font-medium"
+                style={{ backgroundColor: '#fef2f2', borderColor: '#fecaca', color: '#dc2626' }}
+              >
+                {fetchError}
+              </div>
+            )}
+
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* Department Chart */}
+              <div
+                className="rounded-[16px] overflow-hidden"
+                style={{
+                  background: 'rgba(253, 247, 233, 0.62)',
+                  border: '1.5px solid #e5e1d8',
+                  backdropFilter: 'blur(5px) saturate(135%)',
+                  WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                  boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+                }}
+              >
+                <div className="p-8">
+                  <h4
+                    className="text-[#111827] mb-6"
+                    style={{ fontWeight: 100, fontSize: '1.35rem', lineHeight: 1.15 }}
+                  >
+                    Department Distribution
+                  </h4>
+                  <div className="flex items-end justify-between h-64 gap-2 px-4">
+                    {departmentData.map((dept, idx) => (
+                      <div
+                        key={idx}
+                        className="flex flex-col items-center gap-2 flex-1 group relative"
+                      >
+                        <div className="flex items-end h-48 w-full justify-center">
+                          <div
+                            className="w-full rounded-t-sm relative group/bar"
+                            style={{ height: `${dept.height}%`, backgroundColor: '#F4AD39' }}
+                          >
+                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover/bar:opacity-100 transition-opacity whitespace-nowrap">
+                              {dept.value} pts
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold text-gray-400">{dept.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Year-wise Average Points Line Graph */}
+              <div
+                className="rounded-[16px] overflow-hidden"
+                style={{
+                  background: 'rgba(253, 247, 233, 0.62)',
+                  border: '1.5px solid #e5e1d8',
+                  backdropFilter: 'blur(5px) saturate(135%)',
+                  WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                  boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+                }}
+              >
+                <div className="p-8">
+                  <div className="flex justify-between items-center mb-6">
+                    <h4
+                      className="text-[#111827]"
+                      style={{ fontWeight: 100, fontSize: '1.35rem', lineHeight: 1.15 }}
+                    >
+                      Average Activity Points by Year
+                    </h4>
+                    <select
+                      value={selectedBranch}
+                      onChange={(e) => setSelectedBranch(e.target.value)}
+                      className="px-4 py-2 rounded-lg border text-sm text-[#111827] focus:outline-none transition-colors cursor-pointer"
+                      style={{
+                        background: 'rgba(253, 247, 233, 0.48)',
+                        border: '1.5px solid #e5e1d8',
+                        fontWeight: 400,
+                      }}
+                    >
+                      {branches.map((branch) => (
+                        <option key={branch} value={branch}>
+                          {deptAbbr(branch)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="relative" style={{ height: '400px' }}>
+                    {/* Y-axis labels */}
+                    <div className="absolute left-0 top-0 bottom-12 w-12 flex flex-col justify-between text-right pr-2 text-xs text-gray-500 font-medium">
+                      <span>{Math.round(yAxisStep * 6)}</span>
+                      <span>{Math.round(yAxisStep * 5)}</span>
+                      <span>{Math.round(yAxisStep * 4)}</span>
+                      <span>{Math.round(yAxisStep * 3)}</span>
+                      <span>{Math.round(yAxisStep * 2)}</span>
+                      <span>{Math.round(yAxisStep)}</span>
+                      <span>0</span>
+                    </div>
+
+                    {/* Graph area */}
+                    <div className="absolute left-14 right-0 top-0 bottom-0">
+                      <svg
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 800 400"
+                        preserveAspectRatio="none"
+                        className="overflow-visible"
+                      >
+                        {/* Grid lines */}
+                        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                          <line
+                            key={i}
+                            x1="0"
+                            y1={i * 60}
+                            x2="800"
+                            y2={i * 60}
+                            stroke="#e5e7eb"
+                            strokeWidth="1"
+                            vectorEffect="non-scaling-stroke"
+                          />
+                        ))}
+
+                        {/* Line path */}
+                        <polyline
+                          points={selectedYearSeries
+                            .map((value, index) => {
+                              const x = (index * 800) / 3
+                              const y = 360 - (value / yAxisMax) * 360
+                              return `${x},${y}`
+                            })
+                            .join(' ')}
+                          fill="none"
+                          stroke="#F4AD39"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          vectorEffect="non-scaling-stroke"
+                        />
+
+                        {/* Data points */}
+                        {selectedYearSeries.map((value, index) => {
                           const x = (index * 800) / 3
                           const y = 360 - (value / yAxisMax) * 360
-                          return `${x},${y}`
-                        })
-                        .join(' ')}
-                      fill="none"
-                      stroke="#F4AD39"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      vectorEffect="non-scaling-stroke"
-                    />
+                          return (
+                            <g key={index}>
+                              <circle
+                                cx={x}
+                                cy={y}
+                                r="6"
+                                fill="#F4AD39"
+                                vectorEffect="non-scaling-stroke"
+                              />
+                              <circle
+                                cx={x}
+                                cy={y}
+                                r="3"
+                                fill="white"
+                                vectorEffect="non-scaling-stroke"
+                              />
+                              {/* Value label */}
+                              <text
+                                x={x}
+                                y={y - 15}
+                                textAnchor="middle"
+                                className="text-xs font-bold"
+                                fill="#111827"
+                                style={{ fontSize: '12px' }}
+                              >
+                                {value}
+                              </text>
+                            </g>
+                          )
+                        })}
+                      </svg>
 
-                    {/* Data points */}
-                    {selectedYearSeries.map((value, index) => {
-                      const x = (index * 800) / 3
-                      const y = 360 - (value / yAxisMax) * 360
-                      return (
-                        <g key={index}>
-                          <circle
-                            cx={x}
-                            cy={y}
-                            r="6"
-                            fill="#F4AD39"
-                            vectorEffect="non-scaling-stroke"
-                          />
-                          <circle
-                            cx={x}
-                            cy={y}
-                            r="3"
-                            fill="white"
-                            vectorEffect="non-scaling-stroke"
-                          />
-                          {/* Value label */}
-                          <text
-                            x={x}
-                            y={y - 15}
-                            textAnchor="middle"
-                            className="text-xs font-bold"
-                            fill="#111827"
-                            style={{ fontSize: '12px' }}
-                          >
-                            {value}
-                          </text>
-                        </g>
-                      )
-                    })}
-                  </svg>
-
-                  {/* X-axis labels */}
-                  <div className="absolute bottom-0 left-0 right-0 flex justify-between px-0">
-                    <span className="text-sm font-bold text-gray-600">1st Year</span>
-                    <span className="text-sm font-bold text-gray-600">2nd Year</span>
-                    <span className="text-sm font-bold text-gray-600">3rd Year</span>
-                    <span className="text-sm font-bold text-gray-600">4th Year</span>
+                      {/* X-axis labels */}
+                      <div className="absolute bottom-0 left-0 right-0 flex justify-between px-0">
+                        <span className="text-sm font-bold text-gray-600">1st Year</span>
+                        <span className="text-sm font-bold text-gray-600">2nd Year</span>
+                        <span className="text-sm font-bold text-gray-600">3rd Year</span>
+                        <span className="text-sm font-bold text-gray-600">4th Year</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Top Performers Table */}
-          <div className="rounded-[24px] shadow-sm overflow-hidden bg-white">
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-8">
-                <h4 className="text-2xl font-bold text-[#111827]">Top Performers</h4>
-              </div>
-              <div
-                className="overflow-hidden rounded-[10px]"
-                style={{ border: '1px solid #f3f4f6' }}
-              >
-                <table className="w-full text-left">
-                  <thead>
-                    <tr
-                      className="text-white text-[10px] font-bold uppercase tracking-widest"
-                      style={{ backgroundColor: '#14213D' }}
-                    >
-                      <th className="py-4 px-6" style={{ borderTopLeftRadius: '10px' }}>
-                        Name
-                      </th>
-                      <th className="py-4 px-6">Points</th>
-                      <th className="py-4 px-6">Department</th>
-                      <th className="py-4 px-6">Status</th>
-                      <th className="py-4 px-6 text-right" style={{ borderTopRightRadius: '10px' }}>
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={5} className="py-8 text-center text-sm text-gray-400">
-                          Loading top performers...
-                        </td>
-                      </tr>
-                    ) : topPerformers.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="py-8 text-center text-sm text-gray-400">
-                          No student points data found.
-                        </td>
-                      </tr>
-                    ) : (
-                      topPerformers.map((student) => (
-                        <tr
-                          key={student._id}
-                          className="border-b last:border-0 transition-colors hover:bg-[#fffbf2]"
-                          style={{ borderColor: '#f3f4f6' }}
+            {/* Top Performers Table */}
+            <div
+              className="rounded-[16px] overflow-hidden mb-8"
+              style={{
+                background: 'rgba(253, 247, 233, 0.62)',
+                border: '1.5px solid #e5e1d8',
+                backdropFilter: 'blur(5px) saturate(135%)',
+                WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+              }}
+            >
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h4
+                    className="text-[#111827]"
+                    style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
+                  >
+                    Top Performers
+                  </h4>
+                </div>
+                <div
+                  className="overflow-hidden rounded-[10px]"
+                  style={{ border: '1px solid #f3f4f6' }}
+                >
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr
+                        className="text-white text-[10px] font-bold uppercase tracking-widest"
+                        style={{ backgroundColor: '#1a1a2e' }}
+                      >
+                        <th className="py-4 px-6" style={{ borderTopLeftRadius: '10px' }}>
+                          Name
+                        </th>
+                        <th className="py-4 px-6">Points</th>
+                        <th className="py-4 px-6">Department</th>
+                        <th className="py-4 px-6">Status</th>
+                        <th
+                          className="py-4 px-6 text-right"
+                          style={{ borderTopRightRadius: '10px' }}
                         >
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-                                style={{
-                                  background: 'linear-gradient(135deg, #f5a623, #f7b731)',
-                                  color: '#1a1a2e',
-                                }}
-                              >
-                                {student.name ? student.name.charAt(0).toUpperCase() : '?'}
-                              </div>
-                              <div>
-                                <p className="text-sm font-bold text-[#111827]">{student.name}</p>
-                                <p className="text-xs text-gray-400">{student.email}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-lg font-bold text-[#111827]">
-                              {student.totalPoints}
-                            </span>
-                            <span className="text-xs ml-1 text-gray-500">pts</span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-sm font-medium text-gray-700">
-                              {student.department || '—'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '5px 14px',
-                                borderRadius: '999px',
-                                fontSize: '0.78rem',
-                                fontWeight: '600',
-                                color: student.isActive ? '#16a34a' : '#6b7280',
-                                border: student.isActive
-                                  ? '1.5px solid #bbf7d0'
-                                  : '1.5px solid #e5e7eb',
-                                backgroundColor: student.isActive ? '#f0fdf4' : '#f9fafb',
-                              }}
-                            >
-                              <span
-                                style={{
-                                  width: '7px',
-                                  height: '7px',
-                                  borderRadius: '50%',
-                                  backgroundColor: student.isActive ? '#16a34a' : '#9ca3af',
-                                }}
-                              ></span>
-                              {student.isActive ? 'Active' : 'Inactive'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() =>
-                                  console.log('Download transcript for student:', student._id)
-                                }
-                                className="inline-block p-1.5 hover:opacity-70 transition-colors"
-                                style={{ color: '#F4AD39' }}
-                                title="Download Transcript"
-                              >
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                  ></path>
-                                </svg>
-                              </button>
-                              <Link
-                                to={`/edit_student/${student._id}`}
-                                className="inline-block p-1.5 hover:opacity-70 transition-colors"
-                                style={{ color: '#F4AD39' }}
-                                title="Edit Student"
-                              >
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                  ></path>
-                                </svg>
-                              </Link>
-                            </div>
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm">
+                      {loading ? (
+                        <tr>
+                          <td colSpan={5} className="py-8 text-center text-sm text-gray-400">
+                            Loading top performers...
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : topPerformers.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="py-8 text-center text-sm text-gray-400">
+                            No student points data found.
+                          </td>
+                        </tr>
+                      ) : (
+                        topPerformers.map((student, index) => {
+                          const rowColor = index % 2 === 0 ? '#f5ead5' : '#fff8e2'
+                          const rowCellStyle = {
+                            backgroundColor: rowColor,
+                            backdropFilter: 'blur(5px) saturate(125%)',
+                            WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                            borderBottom:
+                              index === topPerformers.length - 1 ? 'none' : '1px solid #f0ede5',
+                          }
+
+                          return (
+                            <tr key={student._id}>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
+                                    style={{
+                                      background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                                      color: '#1a1a2e',
+                                    }}
+                                  >
+                                    {student.name ? student.name.charAt(0).toUpperCase() : '?'}
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-bold text-[#111827]">
+                                      {student.name}
+                                    </p>
+                                    <p className="text-xs text-gray-400">{student.email}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <span className="text-lg font-bold text-[#111827]">
+                                  {student.totalPoints}
+                                </span>
+                                <span className="text-xs ml-1 text-gray-500">pts</span>
+                              </td>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <span className="text-sm font-medium text-gray-700">
+                                  {student.department || '—'}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <span
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '5px 14px',
+                                    borderRadius: '999px',
+                                    fontSize: '0.78rem',
+                                    fontWeight: '600',
+                                    color: student.isActive ? '#16a34a' : '#6b7280',
+                                    border: student.isActive
+                                      ? '1.5px solid #bbf7d0'
+                                      : '1.5px solid #e5e7eb',
+                                    backgroundColor: student.isActive ? '#f0fdf4' : '#f9fafb',
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      width: '7px',
+                                      height: '7px',
+                                      borderRadius: '50%',
+                                      backgroundColor: student.isActive ? '#16a34a' : '#9ca3af',
+                                    }}
+                                  ></span>
+                                  {student.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6 text-right" style={rowCellStyle}>
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() =>
+                                      console.log('Download transcript for student:', student._id)
+                                    }
+                                    className="inline-block p-1.5 hover:opacity-70 transition-colors"
+                                    style={{ color: '#F4AD39' }}
+                                    title="Download Transcript"
+                                  >
+                                    <svg
+                                      className="w-5 h-5"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                      ></path>
+                                    </svg>
+                                  </button>
+                                  <Link
+                                    to={`/edit_student/${student._id}`}
+                                    className="inline-block p-1.5 hover:opacity-70 transition-colors"
+                                    style={{ color: '#F4AD39' }}
+                                    title="Edit Student"
+                                  >
+                                    <svg
+                                      className="w-5 h-5"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                      ></path>
+                                    </svg>
+                                  </Link>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </SpotlightBackground>
       </main>
     </div>
   )
