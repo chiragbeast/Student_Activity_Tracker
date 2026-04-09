@@ -46,6 +46,9 @@ const submissionSchema = new mongoose.Schema({
             enum: ['pdf', 'jpg', 'jpeg', 'png'],
         },
         fileSize: { type: Number }, // in bytes, max 1MB per SRS
+        fileHash: { type: String, required: true }, // [NEW] Hash for duplicate detection
+        contentHash: { type: String, default: null }, // Content hash via OCR/PDF extract
+        pHash: { type: String, default: null }, // [NEW] Perceptual visual hash mapping via Jimp
         cloudinaryId: { type: String, default: '' }, // Cloudinary public_id for deletion
         uploadedAt: { type: Date, default: Date.now },
     }],
@@ -109,6 +112,8 @@ submissionSchema.index({ student: 1, status: 1 });
 submissionSchema.index({ reviewedBy: 1, status: 1 });
 submissionSchema.index({ activityLevel: 1 });
 submissionSchema.index({ academicYear: 1, semester: 1 });
+submissionSchema.index({ 'documents.fileHash': 1 }); // For duplicate document lookup
+submissionSchema.index({ 'documents.contentHash': 1 }, { sparse: true }); // For content duplicate lookup
 submissionSchema.index({ eventHash: 1 }, { sparse: true }); // For duplicate detection (FR-6.5)
 
 // ── Virtual: was points modified? ──

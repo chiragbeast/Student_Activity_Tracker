@@ -1,3 +1,7 @@
+const crypto = require('crypto');
+const pdfParse = require('pdf-parse');
+const Tesseract = require('tesseract.js');
+const { Jimp } = require('jimp');
 const asyncHandler = require('express-async-handler');
 const Submission = require('../models/Submission');
 const User = require('../models/User');
@@ -27,21 +31,212 @@ function uploadToCloudinary(fileBuffer, options = {}) {
     });
 }
 
+// ── Helper: Calculate Hamming distance mathematically for binary strings ──
+function calculateHammingDistance(str1, str2) {
+    if (!str1 || !str2) return 64;
+    // Pad both to 64 chars to guard against leading-zero truncation in base-2 output
+    const a = str1.padStart(64, '0');
+    const b = str2.padStart(64, '0');
+    let distance = 0;
+    for (let i = 0; i < 64; i++) {
+        if (a[i] !== b[i]) distance++;
+    }
+    return distance; // 0-64
+}
+
+// ── Helper: Autocrop near-white borders from an image for crop-resistant pHash ──
+// Certificates typically have white/light borders. Cropping them normalises both
+// the original and any slightly-cropped variant to the same core content region,
+// so dHash produces a near-identical fingerprint for both.
+function autoCropWhitespace(image, threshold = 230) {
+    const { width, height } = image.bitmap;
+    let minX = width, maxX = 0, minY = height, maxY = 0;
+
+    // Sample every few pixels for performance on large images
+    const step = Math.max(1, Math.floor(Math.min(width, height) / 300));
+    image.scan(0, 0, width, height, (x, y, idx) => {
+        if (x % step !== 0 || y % step !== 0) return;
+        const r = image.bitmap.data[idx];
+        const g = image.bitmap.data[idx + 1];
+        const b = image.bitmap.data[idx + 2];
+        if ((r + g + b) / 3 < threshold) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+    });
+
+    if (maxX > minX && maxY > minY) {
+        const pad = Math.max(5, step);
+        const x = Math.max(0, minX - pad);
+        const y = Math.max(0, minY - pad);
+        const w = Math.min(width - x, maxX - minX + 2 * pad + 1);
+        const h = Math.min(height - y, maxY - minY + 2 * pad + 1);
+        // Only crop if we found a meaningful border (>3% on at least one axis)
+        if (w < width * 0.97 || h < height * 0.97) {
+            image.crop({ x, y, w, h });
+        }
+    }
+    return image;
+}
+
+// ── Helper: Calculate Levenshtein textual distance mathematically ──
+function calculateLevenshteinDistance(a, b) {
+    if (!a || !b) return 1000;
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    var matrix = [];
+    for (var i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+    for (var j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+    for (var i = 1; i <= b.length; i++) {
+        for (var j = 1; j <= a.length; j++) {
+            if (b.charAt(i-1) === a.charAt(j-1)) {
+                matrix[i][j] = matrix[i-1][j-1];
+            } else {
+                matrix[i][j] = Math.min(matrix[i-1][j-1] + 1, Math.min(matrix[i][j-1] + 1, matrix[i-1][j] + 1));
+            }
+        }
+    }
+    return matrix[b.length][a.length];
+}
+
+// ── Helper: Extract pure text from buffer ──
+async function extractTextFromFile(buffer, fileType) {
+    try {
+        let text = '';
+        if (fileType === 'pdf') {
+            const data = await pdfParse(buffer);
+            text = data.text || '';
+        } else if (['jpg', 'jpeg', 'png'].includes(fileType)) {
+            const result = await Tesseract.recognize(buffer, 'eng');
+            text = result.data.text || '';
+        }
+        
+        if (!text) return null;
+        // Normalize: lowercase, strip all non-alphanumeric chars
+        const normalized = text.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (normalized.length < 10) return null; // Too short to be reliable
+
+        return normalized.substring(0, 500); // Store up to 500 chars natively for Levenshtein processing
+    } catch (err) {
+        console.error('Text extraction failed:', err);
+        return null; // Gracefully fail parsing rather than crashing upload
+    }
+}
+
 // ── Helper: Build documents array from multer files ──
-async function processUploadedFiles(files) {
+async function processUploadedFiles(files, res) {
     if (!files || files.length === 0) return [];
 
     const docs = [];
     for (const file of files) {
+        // Calculate SHA-256 Hash of the file buffer
+        const hash = crypto.createHash('sha256').update(file.buffer).digest('hex');
+
+        // Check for duplicates globally across submissions
+        const existingDoc = await Submission.findOne({ 'documents.fileHash': hash });
+        const exactMemMatch = docs.find(d => d.fileHash === hash);
+        if ((existingDoc || exactMemMatch) && res) {
+            res.status(400);
+            throw new Error(`Duplicate Document Detected: The file ${file.originalname} has already been submitted.`);
+        }
+
+        const ext = file.originalname.split('.').pop().toLowerCase();
+        
+        // Check for fundamentally identical text content via OCR/PDF Parsing utilizing Levenshtein limits
+        const contentHash = await extractTextFromFile(file.buffer, ext);
+        console.log(`\n🔍 [OCR] File: ${file.originalname} | Length: ${contentHash ? contentHash.length : 'NULL'} | Text: ${(contentHash || '').substring(0, 30)}...`);
+        
+        if (contentHash) {
+            for (const localDoc of docs) {
+                if (localDoc.contentHash) {
+                    const lDist = calculateLevenshteinDistance(contentHash, localDoc.contentHash);
+                    console.log(`   ► [In-Memory Text Check] Distance: ${lDist} | MaxLen: ${Math.max(contentHash.length, localDoc.contentHash.length)}`);
+                    if (lDist < Math.max(contentHash.length, localDoc.contentHash.length) * 0.20) {
+                        if (res) res.status(400);
+                        throw new Error(`Duplicate Content Detected: A fundamentally identical text document to ${file.originalname} is attached in this batch.`);
+                    }
+                }
+            }
+
+            const existingContentDocs = await Submission.find(
+                { 'documents.contentHash': { $ne: null } },
+                'documents.contentHash documents.fileName'
+            );
+            
+            for (const sub of existingContentDocs) {
+                for (const doc of sub.documents) {
+                    if (doc.contentHash) {
+                        const distance = calculateLevenshteinDistance(contentHash, doc.contentHash);
+                        const maxLength = Math.max(contentHash.length, doc.contentHash.length);
+                        console.log(`   ► [DB Text Check] vs ${doc.fileName} | Distance: ${distance} | Threshold: ${maxLength * 0.20}`);
+                        if (distance < maxLength * 0.20) {
+                            if (res) res.status(400);
+                            throw new Error(`Duplicate Content Detected: A fundamentally identical document to ${file.originalname} has already been submitted.`);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Perceptual Visual Hashing (dHash) — crop-resistant via whitespace normalisation
+        // autoCropWhitespace removes light borders so original + border-cropped variant
+        // both resolve to the same core content before the 9×8 dHash is computed.
+        let pHash = null;
+        if (['jpg', 'jpeg', 'png'].includes(ext)) {
+            try {
+                const image = await Jimp.read(file.buffer);
+                autoCropWhitespace(image); // normalise: strip whitespace borders
+                pHash = image.hash(2).padStart(64, '0'); // always 64-char binary string
+                console.log(`🎨 [pHash] File: ${file.originalname} | Result: ${pHash}`);
+            } catch (err) {
+                console.error("pHash/Jimp Image Buffer processing failed", err.message);
+            }
+        }
+
+        if (pHash) {
+            for (const localDoc of docs) {
+                if (localDoc.pHash) {
+                    const mDist = calculateHammingDistance(pHash, localDoc.pHash);
+                    console.log(`   ► [In-Memory pHash Check] Distance: ${mDist}`);
+                    if (mDist <= 12) {
+                        if (res) res.status(400);
+                        throw new Error(`Duplicate Visual Detected: Image corresponding to ${file.originalname} is attached identically in this batch.`);
+                    }
+                }
+            }
+
+            const existingDocs = await Submission.find(
+                { 'documents.pHash': { $ne: null } },
+                'documents.pHash documents.fileName'
+            );
+            
+            for (const sub of existingDocs) {
+                for (const doc of sub.documents) {
+                    if (doc.pHash) {
+                        const distance = calculateHammingDistance(pHash, doc.pHash);
+                        console.log(`   ► [DB pHash Check] vs ${doc.fileName} | Distance: ${distance}`);
+                        if (distance <= 12) {
+                            if (res) res.status(400);
+                            throw new Error(`Duplicate Visual Detected: An identical or slightly altered image corresponding to ${file.originalname} has already been uploaded.`);
+                        }
+                    }
+                }
+            }
+        }
+
         const result = await uploadToCloudinary(file.buffer, {
             public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`,
         });
-        const ext = file.originalname.split('.').pop().toLowerCase();
         docs.push({
             fileName: file.originalname,
             fileUrl: result.secure_url,
             fileType: ext,
             fileSize: file.size,
+            fileHash: hash,
+            contentHash: contentHash,
+            pHash: pHash,
             cloudinaryId: result.public_id,
         });
     }
@@ -69,7 +264,7 @@ const createSubmission = asyncHandler(async (req, res) => {
     }
 
     // Upload files to Cloudinary
-    const documents = await processUploadedFiles(req.files);
+    const documents = await processUploadedFiles(req.files, res);
 
     const submissionData = {
         student: req.user._id,
@@ -182,7 +377,7 @@ const updateSubmission = asyncHandler(async (req, res) => {
     });
 
     // Upload and append any new files
-    const newDocs = await processUploadedFiles(req.files);
+    const newDocs = await processUploadedFiles(req.files, res);
     if (newDocs.length > 0) {
         submission.documents.push(...newDocs);
     }
