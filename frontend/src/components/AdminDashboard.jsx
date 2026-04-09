@@ -103,8 +103,8 @@ export default function AdminDashboard() {
 
   return (
     <div
-      className="h-screen overflow-hidden flex font-[Inter,sans-serif]"
-      style={{ backgroundColor: '#FFFBF2' }}
+      className="h-screen overflow-hidden flex font-[Poppins,sans-serif]"
+      style={{ backgroundColor: '#f7f4eb' }}
     >
       {/* Sidebar */}
       <aside
@@ -374,14 +374,23 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-10" style={{ backgroundColor: '#FFFBF2' }}>
+      <main
+        className="flex-1 overflow-y-auto p-10"
+        style={{ backgroundColor: '#f7f4eb', fontFamily: 'Poppins, sans-serif' }}
+      >
         {/* Header */}
         <header className="flex justify-between items-center mb-10">
           <div>
-            <h1 data-testid="admin-dashboard-title" className="text-3xl font-bold text-[#111827]">
+            <h1
+              data-testid="admin-dashboard-title"
+              className="text-[#111827]"
+              style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+            >
               Welcome back, Admin
             </h1>
-            <p className="text-gray-500 mt-1">Monitor and manage your institution's activities.</p>
+            <p className="text-[0.92rem] text-gray-500 mt-1" style={{ fontWeight: 100 }}>
+              Monitor and manage your institution's activities.
+            </p>
           </div>
           <NotificationPanel />
         </header>
@@ -389,41 +398,105 @@ export default function AdminDashboard() {
         {/* Dashboard Body */}
         <div>
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs text-left">
-                Total Students
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : stats.totalStudents}
-              </h3>
-            </div>
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs text-left">
-                Total Faculties
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : stats.totalFaculty}
-              </h3>
-            </div>
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs text-left">
-                Total Pending Submissions
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : stats.totalPendingSubmissions}
-              </h3>
+          <div
+            className="mb-8 rounded-[24px]"
+            style={{
+              background: 'rgba(253, 247, 233, 0.62)',
+              border: '1.5px solid #e5e1d8',
+              backdropFilter: 'blur(5px) saturate(135%)',
+              WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+              boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+            }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3">
+              <div className="p-6 md:p-7">
+                <p
+                  className="text-gray-500 uppercase tracking-wider text-left"
+                  style={{ fontWeight: 100, fontSize: '0.7rem' }}
+                >
+                  Total Students
+                </p>
+                <h3
+                  className="text-[#15173D] mt-2"
+                  style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                >
+                  {loading ? '...' : stats.totalStudents}
+                </h3>
+              </div>
+
+              <div className="p-6 md:p-7 relative">
+                <div
+                  className="hidden md:block"
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: '18px',
+                    bottom: '18px',
+                    width: '1.5px',
+                    backgroundColor: '#e5e1d8',
+                  }}
+                />
+                <p
+                  className="text-gray-500 uppercase tracking-wider text-left"
+                  style={{ fontWeight: 100, fontSize: '0.7rem' }}
+                >
+                  Total Faculties
+                </p>
+                <h3
+                  className="text-[#15173D] mt-2"
+                  style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                >
+                  {loading ? '...' : stats.totalFaculty}
+                </h3>
+              </div>
+
+              <div className="p-6 md:p-7 relative">
+                <div
+                  className="hidden md:block"
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: '18px',
+                    bottom: '18px',
+                    width: '1.5px',
+                    backgroundColor: '#e5e1d8',
+                  }}
+                />
+                <p
+                  className="text-gray-500 uppercase tracking-wider text-left"
+                  style={{ fontWeight: 100, fontSize: '0.7rem' }}
+                >
+                  Total Pending Submissions
+                </p>
+                <h3
+                  className="text-[#15173D] mt-2"
+                  style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                >
+                  {loading ? '...' : stats.totalPendingSubmissions}
+                </h3>
+              </div>
             </div>
           </div>
 
           {/* Admins Table */}
           <div
             className="rounded-[16px] overflow-hidden mb-8"
-            style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)' }}
+            style={{
+              background: 'rgba(253, 247, 233, 0.62)',
+              border: '1.5px solid #e5e1d8',
+              backdropFilter: 'blur(5px) saturate(135%)',
+              WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+              boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+            }}
           >
             <div className="p-8">
               <div className="mb-8">
-                <h4 className="text-2xl font-bold text-[#111827]">Admins</h4>
+                <h4
+                  className="text-[#111827]"
+                  style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
+                >
+                  Admins
+                </h4>
               </div>
 
               {/* Table Header */}
@@ -472,12 +545,14 @@ export default function AdminDashboard() {
                   admins.map((admin, index) => (
                     <div
                       key={admin._id}
-                      className="transition-colors hover:bg-[#fffbf2]"
                       style={{
                         display: 'grid',
                         gridTemplateColumns: '2fr 1fr 1fr 1fr',
                         padding: '18px 24px',
                         alignItems: 'center',
+                        backgroundColor: '#f5ead5',
+                        backdropFilter: 'blur(5px) saturate(125%)',
+                        WebkitBackdropFilter: 'blur(5px) saturate(125%)',
                         borderBottom: index === admins.length - 1 ? 'none' : '1px solid #f0ede5',
                         fontSize: '0.88rem',
                         color: '#1a1a2e',
@@ -519,7 +594,7 @@ export default function AdminDashboard() {
                         <div>
                           <p
                             style={{
-                              fontSize: '0.9rem',
+                              fontSize: '0.96rem',
                               fontWeight: '600',
                               color: '#1a1a2e',
                               marginBottom: '2px',
