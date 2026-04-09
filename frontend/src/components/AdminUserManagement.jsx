@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
 import * as XLSX from 'xlsx'
+import SpotlightBackground from './ui/SpotlightBackground'
 
 const AdminUserManagement = () => {
   const navigate = useNavigate()
@@ -575,241 +576,310 @@ const AdminUserManagement = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-10" style={{ backgroundColor: '#FFFBF2' }}>
-        {/* Header */}
-        <header className="flex justify-between items-center mb-10">
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{ backgroundColor: '#f7f4eb', fontFamily: 'Poppins, sans-serif' }}
+      >
+        <SpotlightBackground className="admin-spotlight-surface">
+          {/* Header */}
+          <header className="flex justify-between items-center mb-10">
+            <div>
+              <h1
+                className="text-[#111827]"
+                style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+              >
+                Student Management
+              </h1>
+              <p className="text-gray-500 mt-1" style={{ fontWeight: 100, fontSize: '0.92rem' }}>
+                Manage access and assignments for {loading ? '...' : `${students.length} active`}{' '}
+                students.
+              </p>
+            </div>
+            <div className="flex items-center gap-6">
+              <Link
+                to="/add_new_student"
+                data-testid="create-new-student-btn"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
+                style={{ backgroundColor: '#F4AD39', color: '#111111' }}
+              >
+                <span>+</span>
+                <span>Create New Student</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center justify-center gap-2 px-5 text-sm rounded-lg border transition-all"
+                style={{
+                  border: '1.5px solid #d1d5db',
+                  color: '#111827',
+                  background: 'rgba(253, 247, 233, 0.48)',
+                  backdropFilter: 'blur(5px) saturate(125%)',
+                  WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                  fontWeight: 500,
+                  fontFamily: 'inherit',
+                  height: '42px',
+                  transition: 'background-color 0.2s ease',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f5ab27'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(253, 247, 233, 0.48)'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                  upload_file
+                </span>
+                <span>Import from Excel</span>
+              </button>
+            </div>
+          </header>
+
           <div>
-            <h1 className="text-3xl font-bold text-[#111827]">Student Management</h1>
-            <p className="text-gray-500 mt-1">
-              Manage access and assignments for {loading ? '...' : `${students.length} active`}{' '}
-              students.
-            </p>
-          </div>
-          <div className="flex items-center gap-6">
-            <Link
-              to="/add_new_student"
-              data-testid="create-new-student-btn"
-              className="flex items-center justify-center gap-2 px-5 py-2.5 text-white text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
-              style={{ backgroundColor: '#F4AD39' }}
-            >
-              <span>+</span>
-              <span>Create New Student</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => setShowImportModal(true)}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg border transition-all"
+            {/* Search  */}
+            <div className="mb-6">
+              <div
+                className="relative flex items-center w-full rounded-lg"
+                style={{
+                  border: '1.5px solid #e5e1d8',
+                  background: 'rgba(253, 247, 233, 0.48)',
+                  backdropFilter: 'blur(8px) saturate(125%)',
+                  WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+                  height: '42px',
+                }}
+              >
+                <svg
+                  className="w-5 h-5 absolute left-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                  ></path>
+                </svg>
+                <input
+                  data-testid="student-search-input"
+                  className="w-full h-full bg-transparent border-none focus:ring-0 pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400"
+                  style={{
+                    fontFamily: 'inherit',
+                    fontWeight: 100,
+                    fontSize: '0.9rem',
+                    border: 'none',
+                    outline: 'none',
+                    boxShadow: 'none',
+                    borderRadius: '0.5rem',
+                  }}
+                  placeholder="Search by name, email, or department..."
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* User Table */}
+            <div
+              className="rounded-[16px] overflow-hidden mb-8"
               style={{
-                borderColor: '#F4AD39',
-                color: '#14213D',
-                backgroundColor: '#ffffff',
+                background: 'rgba(253, 247, 233, 0.62)',
+                border: '1.5px solid #e5e1d8',
+                backdropFilter: 'blur(5px) saturate(135%)',
+                WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                upload_file
-              </span>
-              <span>Import from Excel</span>
-            </button>
-          </div>
-        </header>
-
-        <div>
-          {/* Search  */}
-          <div className="mb-6">
-            <div className="relative flex items-center w-full h-11 rounded-lg border bg-white border-gray-200">
-              <svg
-                className="w-5 h-5 absolute left-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                ></path>
-              </svg>
-              <input
-                data-testid="student-search-input"
-                className="w-full h-full bg-transparent border-none focus:ring-0 pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400"
-                placeholder="Search by name, email, or department..."
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* User Table */}
-          <div className="rounded-[24px] shadow-sm overflow-hidden bg-white">
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-8">
-                <h4 className="text-2xl font-bold text-[#111827]">Students</h4>
-                <button
-                  type="button"
-                  onClick={() => setShowTranscriptModal(true)}
-                  className="flex items-center justify-center gap-2 px-5 py-2.5 text-white text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
-                  style={{ backgroundColor: '#F4AD39' }}
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h4
+                    className="text-[#111827]"
+                    style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
+                  >
+                    Students
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowTranscriptModal(true)}
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
+                    style={{ backgroundColor: '#F4AD39', color: '#111111' }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                      download
+                    </span>
+                    <span className="whitespace-nowrap">Download Transcript</span>
+                  </button>
+                </div>
+                <div
+                  className="overflow-hidden rounded-[10px]"
+                  style={{ border: '1px solid #f3f4f6' }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                    download
-                  </span>
-                  <span className="whitespace-nowrap">Download Transcript</span>
-                </button>
-              </div>
-              <div
-                className="overflow-hidden rounded-[10px]"
-                style={{ border: '1px solid #f3f4f6' }}
-              >
-                <table className="w-full text-left">
-                  <thead>
-                    <tr
-                      className="text-white text-[10px] font-bold uppercase tracking-widest"
-                      style={{ backgroundColor: '#14213D' }}
-                    >
-                      <th className="py-4 px-6" style={{ borderTopLeftRadius: '10px' }}>
-                        Name
-                      </th>
-                      <th className="py-4 px-6">Points</th>
-                      <th className="py-4 px-6">Department</th>
-                      <th className="py-4 px-6">Status</th>
-                      <th className="py-4 px-6 text-right" style={{ borderTopRightRadius: '10px' }}>
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={5} className="py-10 text-center text-gray-400">
-                          Loading...
-                        </td>
-                      </tr>
-                    ) : error ? (
-                      <tr>
-                        <td colSpan={5} className="py-10 text-center text-red-400">
-                          {error}
-                        </td>
-                      </tr>
-                    ) : filteredStudents.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="py-10 text-center text-gray-400">
-                          No students found.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredStudents.map((student) => (
-                        <tr
-                          key={student._id}
-                          className="border-b last:border-0 transition-colors hover:bg-[#fffbf2]"
-                          style={{ borderColor: '#f3f4f6' }}
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr
+                        className="text-white text-[10px] font-bold uppercase tracking-widest"
+                        style={{ backgroundColor: '#1a1a2e' }}
+                      >
+                        <th className="py-4 px-6" style={{ borderTopLeftRadius: '10px' }}>
+                          Name
+                        </th>
+                        <th className="py-4 px-6">Points</th>
+                        <th className="py-4 px-6">Department</th>
+                        <th className="py-4 px-6">Status</th>
+                        <th
+                          className="py-4 px-6 text-right"
+                          style={{ borderTopRightRadius: '10px' }}
                         >
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-3">
-                              {student.profilePicture ? (
-                                <img
-                                  src={student.profilePicture}
-                                  alt={student.name || 'Student'}
-                                  className="w-10 h-10 rounded-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none'
-                                  }}
-                                />
-                              ) : (
-                                <div
-                                  className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-                                  style={{
-                                    background: 'linear-gradient(135deg, #f5a623, #f7b731)',
-                                    color: '#1a1a2e',
-                                  }}
-                                >
-                                  {initialsFromName(student.name)}
-                                </div>
-                              )}
-                              <div>
-                                <p className="text-sm font-bold text-[#111827]">{student.name}</p>
-                                <p className="text-xs text-gray-400">{student.email}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-lg font-bold" style={{ color: '#e391c8' }}>
-                              {student.institutePoints ?? 0}
-                            </span>
-                            <span className="text-lg font-bold mx-1" style={{ color: '#000000' }}>
-                              /
-                            </span>
-                            <span className="text-lg font-bold" style={{ color: '#5990d9' }}>
-                              {student.departmentPoints ?? 0}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-sm font-medium text-gray-700">
-                              {student.department ? student.department.toUpperCase() : '—'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '5px 14px',
-                                borderRadius: '999px',
-                                fontSize: '0.78rem',
-                                fontWeight: '600',
-                                color: student.isActive ? '#16a34a' : '#6b7280',
-                                border: student.isActive
-                                  ? '1.5px solid #bbf7d0'
-                                  : '1.5px solid #e5e7eb',
-                                backgroundColor: student.isActive ? '#f0fdf4' : '#f9fafb',
-                              }}
-                            >
-                              <span
-                                style={{
-                                  width: '7px',
-                                  height: '7px',
-                                  borderRadius: '50%',
-                                  backgroundColor: student.isActive ? '#16a34a' : '#9ca3af',
-                                }}
-                              ></span>
-                              {student.isActive ? 'Active' : 'Inactive'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Link
-                                to={`/edit_student/${student._id}`}
-                                className="inline-block p-1.5 hover:opacity-70 transition-colors"
-                                style={{ color: '#F4AD39' }}
-                                title="Edit Student"
-                              >
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                  ></path>
-                                </svg>
-                              </Link>
-                            </div>
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm">
+                      {loading ? (
+                        <tr>
+                          <td colSpan={5} className="py-10 text-center text-gray-400">
+                            Loading...
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : error ? (
+                        <tr>
+                          <td colSpan={5} className="py-10 text-center text-red-400">
+                            {error}
+                          </td>
+                        </tr>
+                      ) : filteredStudents.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="py-10 text-center text-gray-400">
+                            No students found.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredStudents.map((student, index) => {
+                          const rowColor = index % 2 === 0 ? '#f5ead5' : '#fff8e2'
+                          const rowCellStyle = {
+                            backgroundColor: rowColor,
+                            backdropFilter: 'blur(5px) saturate(125%)',
+                            WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                            borderBottom:
+                              index === filteredStudents.length - 1 ? 'none' : '1px solid #f0ede5',
+                          }
+
+                          return (
+                            <tr key={student._id}>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <div className="flex items-center gap-3">
+                                  {student.profilePicture ? (
+                                    <img
+                                      src={student.profilePicture}
+                                      alt={student.name || 'Student'}
+                                      className="w-10 h-10 rounded-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none'
+                                      }}
+                                    />
+                                  ) : (
+                                    <div
+                                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
+                                      style={{
+                                        background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                                        color: '#1a1a2e',
+                                      }}
+                                    >
+                                      {initialsFromName(student.name)}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <p className="text-sm font-bold text-[#111827]">
+                                      {student.name}
+                                    </p>
+                                    <p className="text-xs text-gray-400">{student.email}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <span className="text-lg font-bold" style={{ color: '#e391c8' }}>
+                                  {student.institutePoints ?? 0}
+                                </span>
+                                <span
+                                  className="text-lg font-bold mx-1"
+                                  style={{ color: '#000000' }}
+                                >
+                                  /
+                                </span>
+                                <span className="text-lg font-bold" style={{ color: '#5990d9' }}>
+                                  {student.departmentPoints ?? 0}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <span className="text-sm font-medium text-gray-700">
+                                  {student.department ? student.department.toUpperCase() : '—'}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <span
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '5px 14px',
+                                    borderRadius: '999px',
+                                    fontSize: '0.78rem',
+                                    fontWeight: '600',
+                                    color: student.isActive ? '#16a34a' : '#6b7280',
+                                    border: student.isActive
+                                      ? '1.5px solid #bbf7d0'
+                                      : '1.5px solid #e5e7eb',
+                                    backgroundColor: student.isActive ? '#f0fdf4' : '#f9fafb',
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      width: '7px',
+                                      height: '7px',
+                                      borderRadius: '50%',
+                                      backgroundColor: student.isActive ? '#16a34a' : '#9ca3af',
+                                    }}
+                                  ></span>
+                                  {student.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6 text-right" style={rowCellStyle}>
+                                <div className="flex items-center justify-end gap-2">
+                                  <Link
+                                    to={`/edit_student/${student._id}`}
+                                    className="inline-block p-1.5 hover:opacity-70 transition-colors"
+                                    style={{ color: '#F4AD39' }}
+                                    title="Edit Student"
+                                  >
+                                    <svg
+                                      className="w-5 h-5"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                      ></path>
+                                    </svg>
+                                  </Link>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </SpotlightBackground>
       </main>
 
       {showTranscriptModal && (

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
 import NotificationPanel from './NotificationPanel'
+import SpotlightBackground from './ui/SpotlightBackground'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -103,8 +104,8 @@ export default function AdminDashboard() {
 
   return (
     <div
-      className="h-screen overflow-hidden flex font-[Inter,sans-serif]"
-      style={{ backgroundColor: '#FFFBF2' }}
+      className="h-screen overflow-hidden flex font-[Poppins,sans-serif]"
+      style={{ backgroundColor: '#f7f4eb' }}
     >
       {/* Sidebar */}
       <aside
@@ -374,221 +375,300 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-10" style={{ backgroundColor: '#FFFBF2' }}>
-        {/* Header */}
-        <header className="flex justify-between items-center mb-10">
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{ backgroundColor: '#f7f4eb', fontFamily: 'Poppins, sans-serif' }}
+      >
+        <SpotlightBackground className="admin-spotlight-surface">
+          {/* Header */}
+          <header className="flex justify-between items-center mb-10">
+            <div>
+              <h1
+                data-testid="admin-dashboard-title"
+                className="text-[#111827]"
+                style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+              >
+                Welcome back, Admin
+              </h1>
+              <p className="text-[0.92rem] text-gray-500 mt-1" style={{ fontWeight: 100 }}>
+                Monitor and manage your institution's activities.
+              </p>
+            </div>
+            <NotificationPanel />
+          </header>
+
+          {/* Dashboard Body */}
           <div>
-            <h1 data-testid="admin-dashboard-title" className="text-3xl font-bold text-[#111827]">
-              Welcome back, Admin
-            </h1>
-            <p className="text-gray-500 mt-1">Monitor and manage your institution's activities.</p>
-          </div>
-          <NotificationPanel />
-        </header>
+            {/* Stats Cards */}
+            <div
+              className="mb-8 rounded-[24px]"
+              style={{
+                background: 'rgba(253, 247, 233, 0.62)',
+                border: '1.5px solid #e5e1d8',
+                backdropFilter: 'blur(5px) saturate(135%)',
+                WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+              }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3">
+                <div className="p-6 md:p-7">
+                  <p
+                    className="text-gray-500 uppercase tracking-wider text-left"
+                    style={{ fontWeight: 100, fontSize: '0.7rem' }}
+                  >
+                    Total Students
+                  </p>
+                  <h3
+                    className="text-[#15173D] mt-2"
+                    style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                  >
+                    {loading ? '...' : stats.totalStudents}
+                  </h3>
+                </div>
 
-        {/* Dashboard Body */}
-        <div>
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs text-left">
-                Total Students
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : stats.totalStudents}
-              </h3>
-            </div>
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs text-left">
-                Total Faculties
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : stats.totalFaculty}
-              </h3>
-            </div>
-            <div className="bg-white p-6 rounded-[24px] shadow-sm">
-              <p className="text-gray-500 font-medium uppercase tracking-wider text-xs text-left">
-                Total Pending Submissions
-              </p>
-              <h3 className="text-5xl font-bold text-[#15173D] mt-2">
-                {loading ? '...' : stats.totalPendingSubmissions}
-              </h3>
-            </div>
-          </div>
+                <div className="p-6 md:p-7 relative">
+                  <div
+                    className="hidden md:block"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '18px',
+                      bottom: '18px',
+                      width: '1.5px',
+                      backgroundColor: '#e5e1d8',
+                    }}
+                  />
+                  <p
+                    className="text-gray-500 uppercase tracking-wider text-left"
+                    style={{ fontWeight: 100, fontSize: '0.7rem' }}
+                  >
+                    Total Faculties
+                  </p>
+                  <h3
+                    className="text-[#15173D] mt-2"
+                    style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                  >
+                    {loading ? '...' : stats.totalFaculty}
+                  </h3>
+                </div>
 
-          {/* Admins Table */}
-          <div
-            className="rounded-[16px] overflow-hidden mb-8"
-            style={{ backgroundColor: '#fff', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)' }}
-          >
-            <div className="p-8">
-              <div className="mb-8">
-                <h4 className="text-2xl font-bold text-[#111827]">Admins</h4>
+                <div className="p-6 md:p-7 relative">
+                  <div
+                    className="hidden md:block"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '18px',
+                      bottom: '18px',
+                      width: '1.5px',
+                      backgroundColor: '#e5e1d8',
+                    }}
+                  />
+                  <p
+                    className="text-gray-500 uppercase tracking-wider text-left"
+                    style={{ fontWeight: 100, fontSize: '0.7rem' }}
+                  >
+                    Total Pending Submissions
+                  </p>
+                  <h3
+                    className="text-[#15173D] mt-2"
+                    style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                  >
+                    {loading ? '...' : stats.totalPendingSubmissions}
+                  </h3>
+                </div>
               </div>
+            </div>
 
-              {/* Table Header */}
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 1fr 1fr',
-                  padding: '16px 24px',
-                  backgroundColor: '#1a1a2e',
-                  color: '#fff',
-                  fontSize: '0.76rem',
-                  fontWeight: '600',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                  borderRadius: '10px 10px 0 0',
-                }}
-              >
-                <span>Admin</span>
-                <span>Role</span>
-                <span>Status</span>
-                <span style={{ textAlign: 'right' }}>Last Login</span>
-              </div>
+            {/* Admins Table */}
+            <div
+              className="rounded-[16px] overflow-hidden mb-8"
+              style={{
+                background: 'rgba(253, 247, 233, 0.62)',
+                border: '1.5px solid #e5e1d8',
+                backdropFilter: 'blur(5px) saturate(135%)',
+                WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+              }}
+            >
+              <div className="p-8">
+                <div className="mb-8">
+                  <h4
+                    className="text-[#111827]"
+                    style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
+                  >
+                    Admins
+                  </h4>
+                </div>
 
-              {/* Table Rows */}
-              <div
-                style={{
-                  border: '1px solid #f0ede5',
-                  borderTop: 'none',
-                  borderRadius: '0 0 10px 10px',
-                  overflow: 'hidden',
-                }}
-              >
-                {loading ? (
-                  <div style={{ padding: '32px', textAlign: 'center', color: '#6b7280' }}>
-                    Loading...
-                  </div>
-                ) : error ? (
-                  <div style={{ padding: '32px', textAlign: 'center', color: '#ef4444' }}>
-                    {error}
-                  </div>
-                ) : admins.length === 0 ? (
-                  <div style={{ padding: '32px', textAlign: 'center', color: '#6b7280' }}>
-                    No admins found.
-                  </div>
-                ) : (
-                  admins.map((admin, index) => (
-                    <div
-                      key={admin._id}
-                      className="transition-colors hover:bg-[#fffbf2]"
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '2fr 1fr 1fr 1fr',
-                        padding: '18px 24px',
-                        alignItems: 'center',
-                        borderBottom: index === admins.length - 1 ? 'none' : '1px solid #f0ede5',
-                        fontSize: '0.88rem',
-                        color: '#1a1a2e',
-                      }}
-                    >
-                      {/* Admin Column with Avatar */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        {admin.profilePicture ? (
-                          <img
-                            src={admin.profilePicture}
-                            alt={admin.name || 'Admin'}
-                            style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                              flexShrink: 0,
-                            }}
-                          />
-                        ) : (
-                          <div
-                            style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '50%',
-                              background: 'linear-gradient(135deg, #f5a623, #f7b731)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontWeight: '700',
-                              fontSize: '1rem',
-                              color: '#1a1a2e',
-                              flexShrink: 0,
-                            }}
-                          >
-                            {initialsFromName(admin.name)}
+                {/* Table Header */}
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '2fr 1fr 1fr 1fr',
+                    padding: '16px 24px',
+                    backgroundColor: '#1a1a2e',
+                    color: '#fff',
+                    fontSize: '0.76rem',
+                    fontWeight: '600',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                    borderRadius: '10px 10px 0 0',
+                  }}
+                >
+                  <span>Admin</span>
+                  <span>Role</span>
+                  <span>Status</span>
+                  <span style={{ textAlign: 'right' }}>Last Login</span>
+                </div>
+
+                {/* Table Rows */}
+                <div
+                  style={{
+                    border: '1px solid #f0ede5',
+                    borderTop: 'none',
+                    borderRadius: '0 0 10px 10px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {loading ? (
+                    <div style={{ padding: '32px', textAlign: 'center', color: '#6b7280' }}>
+                      Loading...
+                    </div>
+                  ) : error ? (
+                    <div style={{ padding: '32px', textAlign: 'center', color: '#ef4444' }}>
+                      {error}
+                    </div>
+                  ) : admins.length === 0 ? (
+                    <div style={{ padding: '32px', textAlign: 'center', color: '#6b7280' }}>
+                      No admins found.
+                    </div>
+                  ) : (
+                    admins.map((admin, index) => (
+                      <div
+                        key={admin._id}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '2fr 1fr 1fr 1fr',
+                          padding: '18px 24px',
+                          alignItems: 'center',
+                          backgroundColor: '#f5ead5',
+                          backdropFilter: 'blur(5px) saturate(125%)',
+                          WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                          borderBottom: index === admins.length - 1 ? 'none' : '1px solid #f0ede5',
+                          fontSize: '0.88rem',
+                          color: '#1a1a2e',
+                        }}
+                      >
+                        {/* Admin Column with Avatar */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          {admin.profilePicture ? (
+                            <img
+                              src={admin.profilePicture}
+                              alt={admin.name || 'Admin'}
+                              style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '50%',
+                                objectFit: 'cover',
+                                flexShrink: 0,
+                              }}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: '700',
+                                fontSize: '1rem',
+                                color: '#1a1a2e',
+                                flexShrink: 0,
+                              }}
+                            >
+                              {initialsFromName(admin.name)}
+                            </div>
+                          )}
+                          <div>
+                            <p
+                              style={{
+                                fontSize: '0.96rem',
+                                fontWeight: '600',
+                                color: '#1a1a2e',
+                                marginBottom: '2px',
+                              }}
+                            >
+                              {admin.name}
+                            </p>
+                            <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>{admin.email}</p>
                           </div>
-                        )}
-                        <div>
-                          <p
-                            style={{
-                              fontSize: '0.9rem',
-                              fontWeight: '600',
-                              color: '#1a1a2e',
-                              marginBottom: '2px',
-                            }}
-                          >
-                            {admin.name}
-                          </p>
-                          <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>{admin.email}</p>
                         </div>
-                      </div>
 
-                      {/* Role Column */}
-                      <div>
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '4px 14px',
-                            borderRadius: '999px',
-                            fontSize: '0.76rem',
-                            fontWeight: '600',
-                            color: '#f5a623',
-                            border: '1.5px solid #f5a623',
-                          }}
-                        >
-                          {admin.role}
-                        </span>
-                      </div>
-
-                      {/* Status Column */}
-                      <div>
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            padding: '5px 14px',
-                            borderRadius: '999px',
-                            fontSize: '0.78rem',
-                            fontWeight: '600',
-                            color: admin.isActive ? '#16a34a' : '#6b7280',
-                            border: admin.isActive ? '1.5px solid #bbf7d0' : '1.5px solid #e5e7eb',
-                            backgroundColor: admin.isActive ? '#f0fdf4' : '#f9fafb',
-                          }}
-                        >
+                        {/* Role Column */}
+                        <div>
                           <span
                             style={{
-                              width: '7px',
-                              height: '7px',
-                              borderRadius: '50%',
-                              backgroundColor: admin.isActive ? '#16a34a' : '#9ca3af',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: '4px 14px',
+                              borderRadius: '999px',
+                              fontSize: '0.76rem',
+                              fontWeight: '600',
+                              color: '#f5a623',
+                              border: '1.5px solid #f5a623',
                             }}
-                          ></span>
-                          {admin.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
+                          >
+                            {admin.role}
+                          </span>
+                        </div>
 
-                      {/* Last Login Column */}
-                      <div style={{ textAlign: 'right', fontSize: '0.88rem', color: '#6b7280' }}>
-                        {formatLastLogin(admin.lastLogin)}
+                        {/* Status Column */}
+                        <div>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '5px 14px',
+                              borderRadius: '999px',
+                              fontSize: '0.78rem',
+                              fontWeight: '600',
+                              color: admin.isActive ? '#16a34a' : '#6b7280',
+                              border: admin.isActive
+                                ? '1.5px solid #bbf7d0'
+                                : '1.5px solid #e5e7eb',
+                              backgroundColor: admin.isActive ? '#f0fdf4' : '#f9fafb',
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: '7px',
+                                height: '7px',
+                                borderRadius: '50%',
+                                backgroundColor: admin.isActive ? '#16a34a' : '#9ca3af',
+                              }}
+                            ></span>
+                            {admin.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+
+                        {/* Last Login Column */}
+                        <div style={{ textAlign: 'right', fontSize: '0.88rem', color: '#6b7280' }}>
+                          {formatLastLogin(admin.lastLogin)}
+                        </div>
                       </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </SpotlightBackground>
       </main>
     </div>
   )
