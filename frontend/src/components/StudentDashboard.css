@@ -365,13 +365,20 @@
   }
 }
 
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-points,
+  .card-graduation {
+    margin-bottom: 0;
+  }
+}
+
 @media (max-width: 640px) {
   .dashboard {
     padding: 20px 16px;
-  }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
   }
 }
 
