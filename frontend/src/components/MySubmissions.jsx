@@ -238,215 +238,227 @@ export default function MySubmissions() {
       {/* Table */}
       {activeTab === 'all' ? (
         <div className="sub-table-wrapper">
-          <div className="sub-table-header">
-            <span className="col-name">Activity Name</span>
-            <span className="col-cat">Category</span>
-            <span className="col-pts">Points Approved/Requested</span>
-            <span className="col-time">Upload Time</span>
-            <span className="col-file">Documents</span>
-            <span className="col-status">Status</span>
-            <span className="col-expand" />
-          </div>
-
-          {allSubmissions.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-              No submissions yet. Create one!
+          <div className="sub-table-inner">
+            <div className="sub-table-header">
+              <span className="col-name">Activity Name</span>
+              <span className="col-cat">Category</span>
+              <span className="col-pts">Points Approved/Requested</span>
+              <span className="col-time">Upload Time</span>
+              <span className="col-file">Documents</span>
+              <span className="col-status">Status</span>
+              <span className="col-expand" />
             </div>
-          ) : (
-            allSubmissions.map((sub) => (
-              <div key={sub._id}>
-                <div className="sub-table-row">
-                  <span className="col-name">{sub.activityName || '—'}</span>
-                  <span className="col-cat">
-                    <span className={`category-badge ${(sub.activityLevel || '').toLowerCase()}`}>
-                      {sub.activityLevel || '—'}
-                    </span>
-                  </span>
-                  <span className="col-pts">
-                    {sub.pointsApproved || 0}/{sub.pointsRequested || 0}
-                  </span>
-                  <span className="col-time">
-                    {sub.createdAt ? new Date(sub.createdAt).toLocaleString() : '—'}
-                  </span>
-                  <span className="col-file">
-                    {sub.documents && sub.documents.length > 0 ? (
-                      <span
-                        className="preview-link"
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => toggleExpand(sub._id)}
-                      >
-                        {sub.documents.length} file{sub.documents.length > 1 ? 's' : ''}
+
+            {allSubmissions.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                No submissions yet. Create one!
+              </div>
+            ) : (
+              allSubmissions.map((sub) => (
+                <div key={sub._id}>
+                  <div className="sub-table-row">
+                    <span className="col-name">{sub.activityName || '—'}</span>
+                    <span className="col-cat">
+                      <span className={`category-badge ${(sub.activityLevel || '').toLowerCase()}`}>
+                        {sub.activityLevel || '—'}
                       </span>
-                    ) : (
-                      '—'
-                    )}
-                  </span>
-                  <span className="col-status">
-                    <span className={`status-badge ${statusClass(sub.status)}`}>
-                      <span className="status-dot-inline" />
-                      {sub.status}
                     </span>
-                  </span>
-                  <span className="col-expand">
-                    <button
-                      className="expand-btn"
-                      onClick={() => toggleExpand(sub._id)}
-                      aria-label="Toggle details"
-                    >
-                      {expandedRow === sub._id ? <FiChevronUp /> : <FiChevronDown />}
-                    </button>
-                  </span>
-                </div>
+                    <span className="col-pts">
+                      {sub.pointsApproved || 0}/{sub.pointsRequested || 0}
+                    </span>
+                    <span className="col-time">
+                      {sub.createdAt ? new Date(sub.createdAt).toLocaleString() : '—'}
+                    </span>
+                    <span className="col-file">
+                      {sub.documents && sub.documents.length > 0 ? (
+                        <span
+                          className="preview-link"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => toggleExpand(sub._id)}
+                        >
+                          {sub.documents.length} file{sub.documents.length > 1 ? 's' : ''}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </span>
+                    <span className="col-status">
+                      <span className={`status-badge ${statusClass(sub.status)}`}>
+                        <span className="status-dot-inline" />
+                        {sub.status}
+                      </span>
+                    </span>
+                    <span className="col-expand">
+                      <button
+                        className="expand-btn"
+                        onClick={() => toggleExpand(sub._id)}
+                        aria-label="Toggle details"
+                      >
+                        {expandedRow === sub._id ? <FiChevronUp /> : <FiChevronDown />}
+                      </button>
+                    </span>
+                  </div>
 
-                {/* Expanded details */}
-                {expandedRow === sub._id && (
-                  <div className="sub-expanded">
-                    {/* Document previews */}
-                    {sub.documents && sub.documents.length > 0 && (
-                      <div className="docs-preview-section" style={{ marginBottom: '1rem' }}>
-                        <h4
-                          style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '0.5rem' }}
-                        >
-                          Attached Documents
-                        </h4>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          {sub.documents.map((doc) => (
-                            <a
-                              key={doc._id}
-                              href={doc.fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.3rem',
-                                padding: '0.4rem 0.8rem',
-                                borderRadius: '6px',
-                                background: '#f0f4ff',
-                                color: '#4C9AFF',
-                                fontSize: '0.8rem',
-                                textDecoration: 'none',
-                                border: '1px solid #dbeafe',
-                                transition: 'background 0.2s',
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = '#dbeafe')}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = '#f0f4ff')}
-                            >
-                              <FiFileText size={14} />
-                              {doc.fileName}
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {sub.status === 'Pending' && (
-                      <div className="pending-actions">
-                        <button
-                          className="action-edit-btn"
-                          onClick={() => navigate(`/new-submission/${sub._id}`)}
-                        >
-                          <FiEdit2 className="action-btn-icon" />
-                          Edit Submission
-                        </button>
-                        <button
-                          className="action-withdraw-btn"
-                          onClick={() => setConfirmWithdraw(sub._id)}
-                        >
-                          <FiXCircle className="action-btn-icon" />
-                          Withdraw
-                        </button>
-                      </div>
-                    )}
-
-                    {sub.reviewedBy && (
-                      <div className="fa-feedback-section">
-                        <h4 className="fa-feedback-heading">Faculty Advisor Review</h4>
-                        {sub.reviewedAt && (
-                          <div className="fa-info-row">
-                            <span className="fa-label">Reviewed On:</span>
-                            <span className="fa-value">
-                              {new Date(sub.reviewedAt).toLocaleString()}
-                            </span>
+                  {/* Expanded details */}
+                  {expandedRow === sub._id && (
+                    <div className="sub-expanded">
+                      {/* Document previews */}
+                      {sub.documents && sub.documents.length > 0 && (
+                        <div className="docs-preview-section" style={{ marginBottom: '1rem' }}>
+                          <h4
+                            style={{
+                              fontSize: '0.85rem',
+                              color: '#6b7280',
+                              marginBottom: '0.5rem',
+                            }}
+                          >
+                            Attached Documents
+                          </h4>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            {sub.documents.map((doc) => (
+                              <a
+                                key={doc._id}
+                                href={doc.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.3rem',
+                                  padding: '0.4rem 0.8rem',
+                                  borderRadius: '6px',
+                                  background: '#f0f4ff',
+                                  color: '#4C9AFF',
+                                  fontSize: '0.8rem',
+                                  textDecoration: 'none',
+                                  border: '1px solid #dbeafe',
+                                  transition: 'background 0.2s',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = '#dbeafe')}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = '#f0f4ff')}
+                              >
+                                <FiFileText size={14} />
+                                {doc.fileName}
+                              </a>
+                            ))}
                           </div>
-                        )}
+                        </div>
+                      )}
+                      {sub.status === 'Pending' && (
+                        <div className="pending-actions">
+                          <button
+                            className="action-edit-btn"
+                            onClick={() => navigate(`/new-submission/${sub._id}`)}
+                          >
+                            <FiEdit2 className="action-btn-icon" />
+                            Edit Submission
+                          </button>
+                          <button
+                            className="action-withdraw-btn"
+                            onClick={() => setConfirmWithdraw(sub._id)}
+                          >
+                            <FiXCircle className="action-btn-icon" />
+                            Withdraw
+                          </button>
+                        </div>
+                      )}
 
-                        {sub.pointsApproved > 0 && sub.pointsApproved !== sub.pointsRequested && (
-                          <div className="points-diff-block">
-                            <div className="points-diff-item">
-                              <span className="points-diff-label">Requested</span>
-                              <span className="points-diff-val requested">
-                                {sub.pointsRequested}
+                      {sub.reviewedBy && (
+                        <div className="fa-feedback-section">
+                          <h4 className="fa-feedback-heading">Faculty Advisor Review</h4>
+                          {sub.reviewedAt && (
+                            <div className="fa-info-row">
+                              <span className="fa-label">Reviewed On:</span>
+                              <span className="fa-value">
+                                {new Date(sub.reviewedAt).toLocaleString()}
                               </span>
                             </div>
-                            <span className="points-diff-arrow">→</span>
-                            <div className="points-diff-item">
-                              <span className="points-diff-label">Approved</span>
-                              <span className="points-diff-val approved">{sub.pointsApproved}</span>
-                            </div>
-                            <span
-                              className={`points-diff-delta ${sub.pointsApproved < sub.pointsRequested ? 'negative' : 'positive'}`}
-                            >
-                              {sub.pointsApproved > sub.pointsRequested ? '+' : ''}
-                              {sub.pointsApproved - sub.pointsRequested}
-                            </span>
-                          </div>
-                        )}
+                          )}
 
-                        {sub.reviewComments && (
-                          <div className="fa-comments-block">
-                            <span className="fa-label">Comments:</span>
-                            <p className="fa-comments-text">{sub.reviewComments}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+                          {sub.pointsApproved > 0 && sub.pointsApproved !== sub.pointsRequested && (
+                            <div className="points-diff-block">
+                              <div className="points-diff-item">
+                                <span className="points-diff-label">Requested</span>
+                                <span className="points-diff-val requested">
+                                  {sub.pointsRequested}
+                                </span>
+                              </div>
+                              <span className="points-diff-arrow">→</span>
+                              <div className="points-diff-item">
+                                <span className="points-diff-label">Approved</span>
+                                <span className="points-diff-val approved">
+                                  {sub.pointsApproved}
+                                </span>
+                              </div>
+                              <span
+                                className={`points-diff-delta ${sub.pointsApproved < sub.pointsRequested ? 'negative' : 'positive'}`}
+                              >
+                                {sub.pointsApproved > sub.pointsRequested ? '+' : ''}
+                                {sub.pointsApproved - sub.pointsRequested}
+                              </span>
+                            </div>
+                          )}
+
+                          {sub.reviewComments && (
+                            <div className="fa-comments-block">
+                              <span className="fa-label">Comments:</span>
+                              <p className="fa-comments-text">{sub.reviewComments}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </div>
       ) : (
         /* Drafts tab */
         <div className="sub-table-wrapper">
-          <div className="sub-table-header drafts-header">
-            <span className="col-name">Activity Name</span>
-            <span className="col-cat">Category</span>
-            <span className="col-pts">Points Requested</span>
-            <span className="col-status">Status</span>
-            <span className="col-action">Action</span>
-          </div>
+          <div className="sub-table-inner">
+            <div className="sub-table-header drafts-header">
+              <span className="col-name">Activity Name</span>
+              <span className="col-cat">Category</span>
+              <span className="col-pts">Points Requested</span>
+              <span className="col-status">Status</span>
+              <span className="col-action">Action</span>
+            </div>
 
-          {draftSubmissions.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>No drafts.</div>
-          ) : (
-            draftSubmissions.map((d) => (
-              <div className="sub-table-row drafts-row" key={d._id}>
-                <span className="col-name">{d.activityName || '—'}</span>
-                <span className="col-cat">
-                  <span className={`category-badge ${(d.activityLevel || '').toLowerCase()}`}>
-                    {d.activityLevel || '—'}
-                  </span>
-                </span>
-                <span className="col-pts">{d.pointsRequested || 0}</span>
-                <span className="col-status">
-                  <span className={`status-badge ${statusClass(d.status)}`}>
-                    <span className="status-dot-inline" />
-                    {d.status}
-                  </span>
-                </span>
-                <span className="col-action">
-                  <button
-                    className="upload-doc-btn"
-                    onClick={() => navigate(`/new-submission/${d._id}`)}
-                  >
-                    <FiUploadCloud className="btn-ic" />
-                    Edit/Upload
-                  </button>
-                </span>
+            {draftSubmissions.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                No drafts.
               </div>
-            ))
-          )}
+            ) : (
+              draftSubmissions.map((d) => (
+                <div className="sub-table-row drafts-row" key={d._id}>
+                  <span className="col-name">{d.activityName || '—'}</span>
+                  <span className="col-cat">
+                    <span className={`category-badge ${(d.activityLevel || '').toLowerCase()}`}>
+                      {d.activityLevel || '—'}
+                    </span>
+                  </span>
+                  <span className="col-pts">{d.pointsRequested || 0}</span>
+                  <span className="col-status">
+                    <span className={`status-badge ${statusClass(d.status)}`}>
+                      <span className="status-dot-inline" />
+                      {d.status}
+                    </span>
+                  </span>
+                  <span className="col-action">
+                    <button
+                      className="upload-doc-btn"
+                      onClick={() => navigate(`/new-submission/${d._id}`)}
+                    >
+                      <FiUploadCloud className="btn-ic" />
+                      Edit/Upload
+                    </button>
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>
