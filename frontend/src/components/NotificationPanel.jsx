@@ -25,11 +25,28 @@ function getInitials(name) {
   return parts[0].substring(0, 2).toUpperCase()
 }
 
-export default function NotificationPanel() {
-  const [open, setOpen] = useState(false)
+export default function NotificationPanel({
+  hideTrigger = false,
+  open: controlledOpen,
+  onOpenChange,
+  onViewAllNotifications,
+  closeOnOutsideClick = true,
+  panelClassName = '',
+}) {
+  const [internalOpen, setInternalOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [showPopup, setShowPopup] = useState(false)
   const panelRef = useRef(null)
+
+  const isOpenControlled = typeof controlledOpen === 'boolean'
+  const open = isOpenControlled ? controlledOpen : internalOpen
+
+  const setOpen = (nextValue) => {
+    if (!isOpenControlled) {
+      setInternalOpen(nextValue)
+    }
+    onOpenChange?.(nextValue)
+  }
 
   const unreadCount = notifications.filter((n) => !n.read).length
 
@@ -54,6 +71,10 @@ export default function NotificationPanel() {
   }, [])
 
   useEffect(() => {
+    if (!closeOnOutsideClick) {
+      return undefined
+    }
+
     const handleClickOutside = (e) => {
       if (panelRef.current && !panelRef.current.contains(e.target)) {
         setOpen(false)
@@ -61,7 +82,7 @@ export default function NotificationPanel() {
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [closeOnOutsideClick])
 
   const markAllRead = async () => {
     try {
@@ -84,17 +105,19 @@ export default function NotificationPanel() {
   return (
     <>
       <div className="notif-wrapper" ref={panelRef}>
-        <button
-          className="notification-btn"
-          aria-label="Notifications"
-          onClick={() => setOpen(!open)}
-        >
-          {unreadCount > 0 ? <BsBellFill /> : <FiBell />}
-          {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
-        </button>
+        {!hideTrigger && (
+          <button
+            className="notification-btn"
+            aria-label="Notifications"
+            onClick={() => setOpen(!open)}
+          >
+            {unreadCount > 0 ? <BsBellFill /> : <FiBell />}
+            {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+          </button>
+        )}
 
         {open && (
-          <div className="notif-panel">
+          <div className={`notif-panel ${panelClassName}`.trim()}>
             <div className="notif-panel-header">
               <h3 className="notif-panel-title">Notifications</h3>
               {unreadCount > 0 && (
@@ -186,7 +209,11 @@ export default function NotificationPanel() {
                     }}
                     onClick={() => {
                       setOpen(false)
-                      setShowPopup(true)
+                      if (onViewAllNotifications) {
+                        onViewAllNotifications()
+                      } else {
+                        setShowPopup(true)
+                      }
                     }}
                   >
                     View All Notifications

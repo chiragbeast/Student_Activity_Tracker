@@ -129,7 +129,9 @@ export default function AssignedStudentsPage() {
       {/* -- Page Header -- */}
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Assigned Students</h1>
+          <h1 className={styles.pageTitle} data-testid="faculty-assigned-students-title">
+            Assigned Students
+          </h1>
           <p className={styles.pageSubtitle}>
             Manage and monitor student progress for your current cohort.
           </p>

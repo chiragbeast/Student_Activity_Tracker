@@ -8,9 +8,10 @@ import MySubmissions from './components/MySubmissions'
 import ActivitySubmissionForm from './components/ActivitySubmissionForm'
 import ProfilePage from './components/ProfilePage'
 import RegisterPage from './components/RegisterPage'
+import ForgotPasswordPage from './components/ForgotPasswordPage'
+import ResetPasswordPage from './components/ResetPasswordPage'
 
 // Admin components
-import AdminLoginPage from './components/AdminLoginPage'
 import MFAPage from './components/MFAPage'
 import AdminDashboard from './components/AdminDashboard'
 import AdminUserManagement from './components/AdminUserManagement'
@@ -36,8 +37,9 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/mfa" element={<MFAPage />} />
-        <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
         {/* Student routes (with sidebar layout) */}
         <Route element={<DashboardLayout />}>

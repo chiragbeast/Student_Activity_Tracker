@@ -2,19 +2,29 @@ const express = require('express');
 const router = express.Router();
 const {
 	loginUser,
+	loginWithGoogle,
+	verify2FA,
+	resend2FA,
 	registerUser,
 	getMe,
 	updateMe,
 	updateMyProfilePicture,
 	changePassword,
+	forgotPassword,
+	resetPassword,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
 router.post('/login', loginUser);
+router.post('/google-login', loginWithGoogle);
+router.post('/verify-2fa', verify2FA);
+router.post('/resend-2fa', resend2FA);
 router.post('/register', registerUser);
 router.route('/me').get(protect, getMe).put(protect, updateMe);
 router.put('/me/picture', protect, upload.single('profilePicture'), updateMyProfilePicture);
 router.put('/change-password', protect, changePassword);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 
 module.exports = router;

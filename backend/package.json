@@ -17,9 +17,11 @@
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
+    "google-auth-library": "^10.5.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.4",
     "multer": "^2.1.1",
-    "pdfkit": "^0.18.0"
+    "pdfkit": "^0.18.0",
+    "resend": "^6.10.0"
   }
 }
