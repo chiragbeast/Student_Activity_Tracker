@@ -802,7 +802,7 @@ const FacultyAdvisorManagement = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.45)',
+            background: 'rgba(12, 10, 6, 0.32)',
             zIndex: 100,
             display: 'flex',
             alignItems: 'center',
@@ -814,23 +814,33 @@ const FacultyAdvisorManagement = () => {
             style={{
               width: '100%',
               maxWidth: '620px',
-              backgroundColor: '#ffffff',
+              background: 'rgba(253, 247, 233, 0.62)',
+              border: '1.5px solid #e5e1d8',
+              backdropFilter: 'blur(5px) saturate(135%)',
+              WebkitBackdropFilter: 'blur(5px) saturate(135%)',
               borderRadius: '16px',
-              boxShadow: '0 20px 45px rgba(0,0,0,0.2)',
+              boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
               padding: '24px',
+              fontFamily: 'Poppins, sans-serif',
+              fontWeight: 100,
             }}
           >
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
-                <h3 className="text-xl font-bold text-[#111827]">Import Faculty from Excel</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3
+                  className="text-[#111827]"
+                  style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
+                >
+                  Import Faculty from Excel
+                </h3>
+                <p className="text-gray-600 mt-2" style={{ fontWeight: 300, fontSize: '0.95rem' }}>
                   Upload the final template file faculty_bulk_import (.xlsx/.xls).
                 </p>
               </div>
               <button
                 type="button"
                 onClick={resetImportModal}
-                className="text-gray-400 hover:text-gray-700 transition-colors"
+                className="text-black hover:text-black transition-colors"
                 aria-label="Close"
               >
                 <span className="material-symbols-outlined">close</span>
@@ -865,26 +875,32 @@ const FacultyAdvisorManagement = () => {
               }}
               onClick={() => fileInputRef.current?.click()}
               style={{
-                border: `2px dashed ${isDraggingFile ? '#F4AD39' : '#d1d5db'}`,
-                backgroundColor: isDraggingFile ? '#fff8eb' : '#fafafa',
+                border: `2px dashed ${isDraggingFile ? '#f5a623' : '#d1d5db'}`,
+                backgroundColor: '#f5ead5',
+                backdropFilter: 'blur(5px) saturate(120%)',
+                WebkitBackdropFilter: 'blur(5px) saturate(120%)',
                 borderRadius: '12px',
+                marginTop: '40px',
                 padding: '28px',
                 textAlign: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
               }}
             >
-              <span className="material-symbols-outlined text-4xl" style={{ color: '#F4AD39' }}>
-                cloud_upload
-              </span>
-              <p className="text-sm font-semibold text-[#111827] mt-2">
+              <p className="text-sm font-semibold text-[#111827]">
                 Drag and drop your Excel file here
               </p>
-              <p className="text-xs text-gray-500 mt-1">Accepts only .xlsx or .xls files</p>
+              <p className="text-sm text-gray-500 mt-1">or click to browse file</p>
             </div>
 
             {importFileName && (
-              <div className="mt-4 rounded-lg border border-[#fde9c3] bg-[#fffaf0] p-3">
+              <div
+                className="mt-4 rounded-lg p-3"
+                style={{
+                  border: '1px solid #f2d59a',
+                  background: 'rgba(255, 246, 226, 0.76)',
+                }}
+              >
                 <p className="text-sm font-semibold text-[#8a5a00]">
                   Uploaded file: {importFileName}
                 </p>
@@ -895,7 +911,13 @@ const FacultyAdvisorManagement = () => {
             )}
 
             {importSummary && (
-              <div className="mt-4 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-4">
+              <div
+                className="mt-4 rounded-lg p-4"
+                style={{
+                  border: '1px solid #e5e1d8',
+                  background: 'rgba(253, 247, 233, 0.68)',
+                }}
+              >
                 <p className="text-sm text-[#111827] font-semibold">Import completed</p>
                 <p className="text-sm text-[#374151] mt-2">Total rows: {importSummary.totalRows}</p>
                 <p className="text-sm text-green-700 mt-1">
@@ -919,12 +941,20 @@ const FacultyAdvisorManagement = () => {
               </div>
             )}
 
-            <div className="mt-6 flex items-center justify-end gap-3">
+            <div className="mt-10 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={resetImportModal}
-                className="px-4 py-2 rounded-lg border text-sm font-semibold"
-                style={{ borderColor: '#e5e7eb', color: '#374151', backgroundColor: '#fff' }}
+                className="px-4 py-2 rounded-lg border text-sm"
+                style={{
+                  border: '1.5px solid #d1d5db',
+                  height: '42px',
+                  color: '#111827',
+                  background: 'rgba(253, 247, 233, 0.48)',
+                  backdropFilter: 'blur(5px) saturate(125%)',
+                  WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                  fontWeight: 500,
+                }}
               >
                 Close
               </button>
@@ -932,8 +962,22 @@ const FacultyAdvisorManagement = () => {
                 type="button"
                 onClick={handleImportConfirm}
                 disabled={importSubmitting || importRows.length === 0}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ backgroundColor: '#F4AD39' }}
+                className="px-4 py-2 rounded-lg text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{
+                  border: '1.5px solid #e0a129',
+                  background: importSubmitting || importRows.length === 0 ? '#f6c66f' : '#F4AD39',
+                  color: '#111111',
+                  fontWeight: 500,
+                  height: '42px',
+                }}
+                onMouseOver={(e) => {
+                  if (importSubmitting || importRows.length === 0) return
+                  e.currentTarget.style.backgroundColor = '#f5ab27'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    importSubmitting || importRows.length === 0 ? '#f6c66f' : '#F4AD39'
+                }}
               >
                 {importSubmitting ? 'Importing...' : 'Confirm Import'}
               </button>

@@ -96,10 +96,27 @@ const EditStudent = () => {
     }
   }
 
+  const controlHeight = '50px'
+  const fieldClassName =
+    'w-full border rounded-[7px] px-4 text-[0.9rem] font-[100] placeholder:text-[#9ca3af] placeholder:font-[100] focus:outline-none transition-all'
+  const fieldStyle = {
+    background: 'rgba(253, 247, 233, 0.48)',
+    borderColor: '#e5e1d8',
+    borderRadius: '7px',
+    height: controlHeight,
+    minHeight: controlHeight,
+    maxHeight: controlHeight,
+    boxSizing: 'border-box',
+    color: '#1a1a2e',
+    lineHeight: '1.2',
+    backdropFilter: 'blur(8px) saturate(125%)',
+    WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+  }
+
   return (
     <div
       className="min-h-screen flex font-display p-6 relative overflow-hidden"
-      style={{ backgroundColor: '#FFFBF2' }}
+      style={{ backgroundColor: '#FFFBF2', fontFamily: 'Poppins, sans-serif', fontWeight: 100 }}
     >
       {loading ? (
         <div
@@ -119,10 +136,13 @@ const EditStudent = () => {
         <main className="w-full max-w-2xl mx-auto">
           {/* Main Edit Card */}
           <div
-            className="rounded-xl p-8 shadow-2xl border"
+            className="rounded-[16px] p-8 border"
             style={{
-              backgroundColor: '#ffffff',
-              borderColor: '#e5e1d8',
+              background: 'rgba(253, 247, 233, 0.62)',
+              border: '1.5px solid #e5e1d8',
+              backdropFilter: 'blur(5px) saturate(135%)',
+              WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+              boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
             }}
           >
             {/* Header */}
@@ -132,12 +152,12 @@ const EditStudent = () => {
             >
               <div>
                 <h1
-                  className="font-poppins text-3xl font-bold tracking-tight"
-                  style={{ color: '#1a1a2e' }}
+                  className="text-3xl tracking-tight"
+                  style={{ color: '#1a1a2e', fontWeight: 100 }}
                 >
                   Edit <span className="text-primary">Student</span>
                 </h1>
-                <p className="text-sm mt-1" style={{ color: '#6b7280' }}>
+                <p className="text-sm mt-1" style={{ color: '#6b7280', fontWeight: 100 }}>
                   Manage student identity and academic permissions
                 </p>
               </div>
@@ -146,278 +166,139 @@ const EditStudent = () => {
             <form className="space-y-8" onSubmit={handleSave}>
               {/* Basic Information Section */}
               <section>
-                <div className="flex items-center gap-2 mb-6">
-                  <span className="material-symbols-outlined text-primary text-xl">badge</span>
-                  <h2 className="font-poppins font-semibold text-lg" style={{ color: '#1a1a2e' }}>
-                    Basic Information
-                  </h2>
-                </div>
+                <h2 className="text-lg mb-6" style={{ color: '#1a1a2e', fontWeight: 100 }}>
+                  Basic Information
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Full Name */}
                   <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wider ml-1"
-                      style={{ color: '#1a1a2e' }}
-                    >
-                      Full Name
-                    </label>
-                    <div className="relative">
-                      <span
-                        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        person
-                      </span>
-                      <input
-                        className="w-full border rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-1 transition-all font-display"
-                        style={{
-                          backgroundColor: '#fafaf8',
-                          borderColor: '#e5e1d8',
-                          color: '#1a1a2e',
-                        }}
-                        type="text"
-                        value={form.name}
-                        onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
-                        onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
-                      />
-                    </div>
+                    <input
+                      className={fieldClassName}
+                      style={fieldStyle}
+                      type="text"
+                      placeholder="Full Name"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                      onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                    />
                   </div>
 
                   {/* Roll Number */}
                   <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wider ml-1"
-                      style={{ color: '#1a1a2e' }}
-                    >
-                      Roll Number
-                    </label>
-                    <div className="relative">
-                      <span
-                        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        fingerprint
-                      </span>
-                      <input
-                        className="w-full border rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-1 transition-all font-display"
-                        style={{
-                          backgroundColor: '#fafaf8',
-                          borderColor: '#e5e1d8',
-                          color: '#1a1a2e',
-                        }}
-                        type="text"
-                        value={form.rollNumber}
-                        onChange={(e) => setForm({ ...form, rollNumber: e.target.value })}
-                        onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
-                        onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
-                      />
-                    </div>
+                    <input
+                      className={fieldClassName}
+                      style={fieldStyle}
+                      type="text"
+                      placeholder="Roll Number"
+                      value={form.rollNumber}
+                      onChange={(e) => setForm({ ...form, rollNumber: e.target.value })}
+                      onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                      onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                    />
                   </div>
 
                   {/* Mobile Number */}
                   <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wider ml-1"
-                      style={{ color: '#1a1a2e' }}
-                    >
-                      Batch
-                    </label>
-                    <div className="relative">
-                      <span
-                        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        groups
-                      </span>
-                      <input
-                        className="w-full border rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-1 transition-all font-display"
-                        style={{
-                          backgroundColor: '#fafaf8',
-                          borderColor: '#e5e1d8',
-                          color: '#1a1a2e',
-                        }}
-                        type="text"
-                        value={form.batch}
-                        onChange={(e) => setForm({ ...form, batch: e.target.value })}
-                        onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
-                        onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
-                      />
-                    </div>
+                    <input
+                      className={fieldClassName}
+                      style={fieldStyle}
+                      type="text"
+                      placeholder="Batch"
+                      value={form.batch}
+                      onChange={(e) => setForm({ ...form, batch: e.target.value })}
+                      onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                      onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wider ml-1"
-                      style={{ color: '#1a1a2e' }}
+                    <select
+                      className={`${fieldClassName} cursor-pointer`}
+                      style={{ ...fieldStyle, color: form.semester ? '#1a1a2e' : '#9ca3af' }}
+                      value={form.semester}
+                      onChange={(e) => setForm({ ...form, semester: e.target.value })}
+                      onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                      onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
                     >
-                      Semester
-                    </label>
-                    <div className="relative">
-                      <span
-                        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg z-10 pointer-events-none"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        calendar_month
-                      </span>
-                      <select
-                        className="w-full border rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:ring-1 transition-all font-display appearance-none cursor-pointer"
-                        style={{
-                          backgroundColor: '#fafaf8',
-                          borderColor: '#e5e1d8',
-                          color: '#1a1a2e',
-                        }}
-                        value={form.semester}
-                        onChange={(e) => setForm({ ...form, semester: e.target.value })}
-                        onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
-                        onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
-                      >
-                        <option value="" style={{ color: '#6b7280' }}>
-                          Select Semester
-                        </option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                      </select>
-                      <span
-                        className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-lg pointer-events-none"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        expand_more
-                      </span>
-                    </div>
+                      <option value="" style={{ color: '#6b7280' }}>
+                        Semester
+                      </option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6</option>
+                      <option value="7">7</option>
+                      <option value="8">8</option>
+                    </select>
                   </div>
 
                   <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wider ml-1"
-                      style={{ color: '#1a1a2e' }}
+                    <select
+                      className={`${fieldClassName} cursor-pointer`}
+                      style={{ ...fieldStyle, color: form.department ? '#1a1a2e' : '#9ca3af' }}
+                      value={form.department}
+                      onChange={(e) => setForm({ ...form, department: e.target.value })}
+                      onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                      onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
                     >
-                      Branch
-                    </label>
-                    <div className="relative">
-                      <span
-                        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg z-10 pointer-events-none"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        account_tree
-                      </span>
-                      <select
-                        className="w-full border rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:ring-1 transition-all font-display appearance-none cursor-pointer"
-                        style={{
-                          backgroundColor: '#fafaf8',
-                          borderColor: '#e5e1d8',
-                          color: '#1a1a2e',
-                        }}
-                        value={form.department}
-                        onChange={(e) => setForm({ ...form, department: e.target.value })}
-                        onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
-                        onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
-                      >
-                        <option value="" style={{ color: '#6b7280' }}>
-                          Select Branch
-                        </option>
-                        <option value="Computer Science & Engineering (CSE)">
-                          Computer Science & Engineering (CSE)
-                        </option>
-                        <option value="Electronics & Communication Engineering (ECE)">
-                          Electronics & Communication Engineering (ECE)
-                        </option>
-                        <option value="Electrical & Electronics Engineering (EEE)">
-                          Electrical & Electronics Engineering (EEE)
-                        </option>
-                        <option value="Chemical Engineering (CH)">Chemical Engineering (CH)</option>
-                        <option value="Mechanical Engineering (ME)">
-                          Mechanical Engineering (ME)
-                        </option>
-                        <option value="Civil Engineering (CE)">Civil Engineering (CE)</option>
-                        <option value="Biotechnology (BT)">Biotechnology (BT)</option>
-                        <option value="Materials Science & Engineering (MSE)">
-                          Materials Science & Engineering (MSE)
-                        </option>
-                        <option value="Production Engineering (PE)">
-                          Production Engineering (PE)
-                        </option>
-                        <option value="Engineering Physics (EP)">Engineering Physics (EP)</option>
-                      </select>
-                      <span
-                        className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-lg pointer-events-none"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        expand_more
-                      </span>
-                    </div>
+                      <option value="" style={{ color: '#6b7280' }}>
+                        Branch
+                      </option>
+                      <option value="Computer Science & Engineering (CSE)">
+                        Computer Science & Engineering (CSE)
+                      </option>
+                      <option value="Electronics & Communication Engineering (ECE)">
+                        Electronics & Communication Engineering (ECE)
+                      </option>
+                      <option value="Electrical & Electronics Engineering (EEE)">
+                        Electrical & Electronics Engineering (EEE)
+                      </option>
+                      <option value="Chemical Engineering (CH)">Chemical Engineering (CH)</option>
+                      <option value="Mechanical Engineering (ME)">
+                        Mechanical Engineering (ME)
+                      </option>
+                      <option value="Civil Engineering (CE)">Civil Engineering (CE)</option>
+                      <option value="Biotechnology (BT)">Biotechnology (BT)</option>
+                      <option value="Materials Science & Engineering (MSE)">
+                        Materials Science & Engineering (MSE)
+                      </option>
+                      <option value="Production Engineering (PE)">
+                        Production Engineering (PE)
+                      </option>
+                      <option value="Engineering Physics (EP)">Engineering Physics (EP)</option>
+                    </select>
                   </div>
 
                   {/* Mobile Number */}
                   <div className="space-y-2">
-                    <label
-                      className="text-xs font-semibold uppercase tracking-wider ml-1"
-                      style={{ color: '#1a1a2e' }}
-                    >
-                      Mobile Number
-                    </label>
-                    <div className="relative">
-                      <span
-                        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg"
-                        style={{ color: '#9ca3af' }}
-                      >
-                        phone_iphone
-                      </span>
-                      <input
-                        className="w-full border rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-1 transition-all font-display"
-                        style={{
-                          backgroundColor: '#fafaf8',
-                          borderColor: '#e5e1d8',
-                          color: '#1a1a2e',
-                        }}
-                        type="tel"
-                        value={form.phone}
-                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
-                        onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
-                      />
-                    </div>
+                    <input
+                      className={fieldClassName}
+                      style={fieldStyle}
+                      type="tel"
+                      placeholder="Mobile Number"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
+                      onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
+                    />
                   </div>
                 </div>
               </section>
 
               {/* Academic Assignment Section */}
               <section>
-                <div className="flex items-center gap-2 mb-6">
-                  <span className="material-symbols-outlined text-primary text-xl">school</span>
-                  <h2 className="font-poppins font-semibold text-lg" style={{ color: '#1a1a2e' }}>
-                    Academic Assignment
-                  </h2>
-                </div>
+                <h2 className="text-lg mb-6" style={{ color: '#1a1a2e', fontWeight: 100 }}>
+                  Academic Assignment
+                </h2>
                 <div className="space-y-2">
-                  <label
-                    className="text-xs font-semibold uppercase tracking-wider ml-1"
-                    style={{ color: '#1a1a2e' }}
-                  >
-                    Assigned Faculty Advisor
-                  </label>
                   <div className="relative">
-                    {/* Search Input */}
-                    <span
-                      className="material-symbols-outlined absolute left-3 top-3 text-lg z-10"
-                      style={{ color: '#9ca3af' }}
-                    >
-                      search
-                    </span>
                     <input
                       type="text"
-                      className="w-full border rounded-lg py-3 pl-10 pr-10 focus:outline-none focus:ring-1 transition-all font-display cursor-pointer"
-                      style={{
-                        backgroundColor: '#fafaf8',
-                        borderColor: '#e5e1d8',
-                        color: '#1a1a2e',
-                      }}
+                      className={`${fieldClassName} cursor-pointer pr-10`}
+                      style={fieldStyle}
                       placeholder="Search faculty advisors..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -431,8 +312,8 @@ const EditStudent = () => {
                       }}
                     />
                     <span
-                      className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{ color: '#9ca3af' }}
+                      className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: '#9ca3af', fontSize: '18px' }}
                     >
                       expand_more
                     </span>
@@ -448,12 +329,12 @@ const EditStudent = () => {
                             <div
                               key={advisor._id}
                               className="px-4 py-3 cursor-pointer transition-colors border-b last:border-b-0"
-                              style={{ borderColor: '#e5e1d8' }}
+                              style={{ borderColor: '#e5e1d8', backgroundColor: '#f5ead5' }}
                               onMouseOver={(e) =>
-                                (e.currentTarget.style.backgroundColor = '#fff4e6')
+                                (e.currentTarget.style.backgroundColor = '#f1dfbf')
                               }
                               onMouseOut={(e) =>
-                                (e.currentTarget.style.backgroundColor = 'transparent')
+                                (e.currentTarget.style.backgroundColor = '#f5ead5')
                               }
                               onClick={() => {
                                 setSelectedAdvisor(advisor)
@@ -461,10 +342,10 @@ const EditStudent = () => {
                                 setShowDropdown(false)
                               }}
                             >
-                              <p className="text-sm font-medium" style={{ color: '#1a1a2e' }}>
+                              <p className="text-sm" style={{ color: '#1a1a2e', fontWeight: 100 }}>
                                 {advisor.name}
                               </p>
-                              <p className="text-xs" style={{ color: '#6b7280' }}>
+                              <p className="text-xs" style={{ color: '#6b7280', fontWeight: 100 }}>
                                 {advisor.department || ''}
                               </p>
                             </div>
@@ -484,42 +365,41 @@ const EditStudent = () => {
                         color: '#1a1a2e',
                         backgroundColor: '#fff4e6',
                         borderColor: '#f5a623',
+                        fontWeight: 100,
                       }}
                     >
                       Selected: {selectedAdvisor.name}
                       {selectedAdvisor.department ? ` (${selectedAdvisor.department})` : ''}
                     </p>
                   )}
-                  <p
-                    className="text-[10px] mt-1 flex items-center gap-1"
-                    style={{ color: '#6b7280' }}
-                  >
-                    <span className="material-symbols-outlined text-xs">info</span>
-                    Faculty advisors oversee academic progress and credit approvals.
-                  </p>
                 </div>
               </section>
 
               {/* Account Status Section */}
               <section
-                className="rounded-lg p-5 border"
-                style={{ backgroundColor: '#fafaf8', borderColor: '#e5e1d8' }}
+                className="p-4 border"
+                style={{
+                  background: 'rgba(253, 247, 233, 0.48)',
+                  borderColor: '#e5e1d8',
+                  borderRadius: '7px',
+                  backdropFilter: 'blur(8px) saturate(125%)',
+                  WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+                }}
               >
                 <div className="flex items-center justify-between">
-                  <div>
-                    <div>
-                      <h3 className="font-poppins font-medium" style={{ color: '#1a1a2e' }}>
-                        Account Status
-                      </h3>
-                      <p className="text-xs" style={{ color: '#6b7280' }}>
-                        Current state:{' '}
-                        <span
-                          className={`font-semibold uppercase ${isActive ? 'text-emerald-500' : 'text-red-500'}`}
-                        >
-                          {isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </p>
-                    </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm" style={{ color: '#1a1a2e', fontWeight: 100 }}>
+                      Account Status
+                    </span>
+                    <span className="text-xs" style={{ color: '#6b7280', fontWeight: 100 }}>
+                      Current state:{' '}
+                      <span
+                        className={`uppercase ${isActive ? 'text-emerald-500' : 'text-red-500'}`}
+                        style={{ fontWeight: 100 }}
+                      >
+                        {isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -529,7 +409,7 @@ const EditStudent = () => {
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 rounded-full peer-focus:outline-none peer-checked:bg-[#f5a623] bg-[#d1d5db] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                    <span className="ml-3 text-sm font-medium" style={{ color: '#1a1a2e' }}>
+                    <span className="ml-3 text-sm" style={{ color: '#1a1a2e', fontWeight: 100 }}>
                       Activate Account
                     </span>
                   </label>
@@ -558,8 +438,8 @@ const EditStudent = () => {
                 style={{ borderColor: '#e5e1d8' }}
               >
                 <button
-                  className="px-6 py-2.5 rounded-lg border font-medium hover:brightness-95 transition-all text-sm text-white flex items-center gap-2"
-                  style={{ borderColor: '#ef4444', backgroundColor: '#ef4444' }}
+                  className="px-6 py-2.5 rounded-lg border hover:brightness-95 transition-all text-sm flex items-center gap-2"
+                  style={{ borderColor: '#ef4444', backgroundColor: '#ef4444', color: '#111111' }}
                   type="button"
                   onClick={() => setShowDeleteConfirm(true)}
                 >
@@ -568,20 +448,38 @@ const EditStudent = () => {
                 </button>
                 <div className="flex items-center gap-4">
                   <button
-                    className="px-6 py-2.5 rounded-lg border font-medium hover:brightness-95 transition-all text-sm"
-                    style={{ borderColor: '#e5e1d8', color: '#1a1a2e', backgroundColor: '#fafaf8' }}
+                    className="flex items-center justify-center gap-2 px-5 text-sm rounded-lg border transition-all"
+                    style={{
+                      border: '1.5px solid #d1d5db',
+                      color: '#111827',
+                      background: 'rgba(253, 247, 233, 0.48)',
+                      backdropFilter: 'blur(5px) saturate(125%)',
+                      WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                      fontWeight: 500,
+                      fontFamily: 'inherit',
+                      transition: 'background-color 0.2s ease',
+                      height: '50px',
+                    }}
                     type="button"
                     onClick={handleCancel}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f5ab27'
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = 'rgba(253, 247, 233, 0.48)'
+                    }}
                   >
                     Cancel
                   </button>
                   <button
-                    className="px-8 py-2.5 rounded-lg text-white font-semibold hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm flex items-center gap-2"
+                    className="px-8 py-2.5 rounded-lg text-white hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm flex items-center gap-2"
                     style={{
                       background: 'linear-gradient(135deg, #f5a623 0%, #f7b731 100%)',
                       boxShadow: '0 4px 15px rgba(245, 166, 35, 0.4)',
                       opacity: saving ? 0.7 : 1,
                       cursor: saving ? 'not-allowed' : 'pointer',
+                      color: '#111111',
+                      fontWeight: 100,
                     }}
                     type="submit"
                     disabled={saving}
@@ -602,10 +500,12 @@ const EditStudent = () => {
           <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <span className="material-symbols-outlined text-red-600 text-2xl">warning</span>
+                <span className="text-red-600 text-2xl" style={{ fontWeight: 100 }}>
+                  !
+                </span>
               </div>
               <div>
-                <h3 className="text-lg font-bold" style={{ color: '#1a1a2e' }}>
+                <h3 className="text-lg" style={{ color: '#1a1a2e', fontWeight: 100 }}>
                   Delete Student Account
                 </h3>
                 <p className="text-sm" style={{ color: '#6b7280' }}>
@@ -619,15 +519,15 @@ const EditStudent = () => {
             </p>
             <div className="flex items-center gap-3 justify-end">
               <button
-                className="px-4 py-2 rounded-lg border font-medium hover:brightness-95 transition-all text-sm"
+                className="px-4 py-2 rounded-lg border hover:brightness-95 transition-all text-sm"
                 style={{ borderColor: '#e5e1d8', color: '#1a1a2e', backgroundColor: '#fafaf8' }}
                 onClick={() => setShowDeleteConfirm(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 rounded-lg font-medium hover:brightness-90 transition-all text-sm text-white"
-                style={{ backgroundColor: '#ef4444' }}
+                className="px-4 py-2 rounded-lg hover:brightness-90 transition-all text-sm text-white"
+                style={{ backgroundColor: '#ef4444', fontWeight: 100 }}
                 onClick={handleDelete}
                 disabled={deleting}
               >

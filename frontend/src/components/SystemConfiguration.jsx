@@ -435,16 +435,33 @@ export default function SystemConfiguration() {
                   type="button"
                   onClick={handleUpload}
                   disabled={!selectedFile || uploading}
-                  className="flex items-center justify-center gap-2 px-5 text-sm rounded-lg self-start"
+                  className="flex items-center justify-center gap-2 px-5 text-sm rounded-lg border transition-all self-start"
                   style={{
-                    backgroundColor: !selectedFile || uploading ? '#9ca3af' : '#F4AD39',
+                    border: '1.5px solid #e0a129',
                     color: '#111111',
+                    background: !selectedFile || uploading ? '#f6c66f' : '#F4AD39',
+                    backdropFilter: 'blur(5px) saturate(125%)',
+                    WebkitBackdropFilter: 'blur(5px) saturate(125%)',
                     fontWeight: 500,
+                    fontFamily: 'inherit',
                     height: '42px',
+                    transition: 'background-color 0.2s ease',
                     cursor: !selectedFile || uploading ? 'not-allowed' : 'pointer',
+                    opacity: !selectedFile || uploading ? 0.8 : 1,
+                  }}
+                  onMouseOver={(e) => {
+                    if (!selectedFile || uploading) return
+                    e.currentTarget.style.backgroundColor = '#f5ab27'
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      !selectedFile || uploading ? '#f6c66f' : '#F4AD39'
                   }}
                 >
-                  {uploading ? 'Uploading...' : 'Upload Brochure'}
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                    upload_file
+                  </span>
+                  <span>{uploading ? 'Uploading...' : 'Upload Brochure'}</span>
                 </button>
               </div>
 
