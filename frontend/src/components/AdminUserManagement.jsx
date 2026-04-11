@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
 import * as XLSX from 'xlsx'
+import SpotlightBackground from './ui/SpotlightBackground'
 
 const AdminUserManagement = () => {
   const navigate = useNavigate()
@@ -575,241 +576,310 @@ const AdminUserManagement = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-10" style={{ backgroundColor: '#FFFBF2' }}>
-        {/* Header */}
-        <header className="flex justify-between items-center mb-10">
+      <main
+        className="flex-1 overflow-y-auto"
+        style={{ backgroundColor: '#f7f4eb', fontFamily: 'Poppins, sans-serif' }}
+      >
+        <SpotlightBackground className="admin-spotlight-surface">
+          {/* Header */}
+          <header className="flex justify-between items-center mb-10">
+            <div>
+              <h1
+                className="text-[#111827]"
+                style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+              >
+                Student Management
+              </h1>
+              <p className="text-gray-500 mt-1" style={{ fontWeight: 100, fontSize: '0.92rem' }}>
+                Manage access and assignments for {loading ? '...' : `${students.length} active`}{' '}
+                students.
+              </p>
+            </div>
+            <div className="flex items-center gap-6">
+              <Link
+                to="/add_new_student"
+                data-testid="create-new-student-btn"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
+                style={{ backgroundColor: '#F4AD39', color: '#111111' }}
+              >
+                <span>+</span>
+                <span>Create New Student</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center justify-center gap-2 px-5 text-sm rounded-lg border transition-all"
+                style={{
+                  border: '1.5px solid #d1d5db',
+                  color: '#111827',
+                  background: 'rgba(253, 247, 233, 0.48)',
+                  backdropFilter: 'blur(5px) saturate(125%)',
+                  WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                  fontWeight: 500,
+                  fontFamily: 'inherit',
+                  height: '42px',
+                  transition: 'background-color 0.2s ease',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f5ab27'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(253, 247, 233, 0.48)'
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                  upload_file
+                </span>
+                <span>Import from Excel</span>
+              </button>
+            </div>
+          </header>
+
           <div>
-            <h1 className="text-3xl font-bold text-[#111827]">Student Management</h1>
-            <p className="text-gray-500 mt-1">
-              Manage access and assignments for {loading ? '...' : `${students.length} active`}{' '}
-              students.
-            </p>
-          </div>
-          <div className="flex items-center gap-6">
-            <Link
-              to="/add_new_student"
-              data-testid="create-new-student-btn"
-              className="flex items-center justify-center gap-2 px-5 py-2.5 text-white text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
-              style={{ backgroundColor: '#F4AD39' }}
-            >
-              <span>+</span>
-              <span>Create New Student</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => setShowImportModal(true)}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg border transition-all"
+            {/* Search  */}
+            <div className="mb-6">
+              <div
+                className="relative flex items-center w-full rounded-lg"
+                style={{
+                  border: '1.5px solid #e5e1d8',
+                  background: 'rgba(253, 247, 233, 0.48)',
+                  backdropFilter: 'blur(8px) saturate(125%)',
+                  WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+                  height: '42px',
+                }}
+              >
+                <svg
+                  className="w-5 h-5 absolute left-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                  ></path>
+                </svg>
+                <input
+                  data-testid="student-search-input"
+                  className="w-full h-full bg-transparent border-none focus:ring-0 pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400"
+                  style={{
+                    fontFamily: 'inherit',
+                    fontWeight: 100,
+                    fontSize: '0.9rem',
+                    border: 'none',
+                    outline: 'none',
+                    boxShadow: 'none',
+                    borderRadius: '0.5rem',
+                  }}
+                  placeholder="Search by name, email, or department..."
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* User Table */}
+            <div
+              className="rounded-[16px] overflow-hidden mb-8"
               style={{
-                borderColor: '#F4AD39',
-                color: '#14213D',
-                backgroundColor: '#ffffff',
+                background: 'rgba(253, 247, 233, 0.62)',
+                border: '1.5px solid #e5e1d8',
+                backdropFilter: 'blur(5px) saturate(135%)',
+                WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                upload_file
-              </span>
-              <span>Import from Excel</span>
-            </button>
-          </div>
-        </header>
-
-        <div>
-          {/* Search  */}
-          <div className="mb-6">
-            <div className="relative flex items-center w-full h-11 rounded-lg border bg-white border-gray-200">
-              <svg
-                className="w-5 h-5 absolute left-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                ></path>
-              </svg>
-              <input
-                data-testid="student-search-input"
-                className="w-full h-full bg-transparent border-none focus:ring-0 pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400"
-                placeholder="Search by name, email, or department..."
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* User Table */}
-          <div className="rounded-[24px] shadow-sm overflow-hidden bg-white">
-            <div className="p-8">
-              <div className="flex items-center justify-between mb-8">
-                <h4 className="text-2xl font-bold text-[#111827]">Students</h4>
-                <button
-                  type="button"
-                  onClick={() => setShowTranscriptModal(true)}
-                  className="flex items-center justify-center gap-2 px-5 py-2.5 text-white text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
-                  style={{ backgroundColor: '#F4AD39' }}
+              <div className="p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <h4
+                    className="text-[#111827]"
+                    style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
+                  >
+                    Students
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowTranscriptModal(true)}
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg shadow-lg hover:opacity-90 transition-all"
+                    style={{ backgroundColor: '#F4AD39', color: '#111111' }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                      download
+                    </span>
+                    <span className="whitespace-nowrap">Download Transcript</span>
+                  </button>
+                </div>
+                <div
+                  className="overflow-hidden rounded-[10px]"
+                  style={{ border: '1px solid #f3f4f6' }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                    download
-                  </span>
-                  <span className="whitespace-nowrap">Download Transcript</span>
-                </button>
-              </div>
-              <div
-                className="overflow-hidden rounded-[10px]"
-                style={{ border: '1px solid #f3f4f6' }}
-              >
-                <table className="w-full text-left">
-                  <thead>
-                    <tr
-                      className="text-white text-[10px] font-bold uppercase tracking-widest"
-                      style={{ backgroundColor: '#14213D' }}
-                    >
-                      <th className="py-4 px-6" style={{ borderTopLeftRadius: '10px' }}>
-                        Name
-                      </th>
-                      <th className="py-4 px-6">Points</th>
-                      <th className="py-4 px-6">Department</th>
-                      <th className="py-4 px-6">Status</th>
-                      <th className="py-4 px-6 text-right" style={{ borderTopRightRadius: '10px' }}>
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={5} className="py-10 text-center text-gray-400">
-                          Loading...
-                        </td>
-                      </tr>
-                    ) : error ? (
-                      <tr>
-                        <td colSpan={5} className="py-10 text-center text-red-400">
-                          {error}
-                        </td>
-                      </tr>
-                    ) : filteredStudents.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="py-10 text-center text-gray-400">
-                          No students found.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredStudents.map((student) => (
-                        <tr
-                          key={student._id}
-                          className="border-b last:border-0 transition-colors hover:bg-[#fffbf2]"
-                          style={{ borderColor: '#f3f4f6' }}
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr
+                        className="text-white text-[10px] font-bold uppercase tracking-widest"
+                        style={{ backgroundColor: '#1a1a2e' }}
+                      >
+                        <th className="py-4 px-6" style={{ borderTopLeftRadius: '10px' }}>
+                          Name
+                        </th>
+                        <th className="py-4 px-6">Points</th>
+                        <th className="py-4 px-6">Department</th>
+                        <th className="py-4 px-6">Status</th>
+                        <th
+                          className="py-4 px-6 text-right"
+                          style={{ borderTopRightRadius: '10px' }}
                         >
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-3">
-                              {student.profilePicture ? (
-                                <img
-                                  src={student.profilePicture}
-                                  alt={student.name || 'Student'}
-                                  className="w-10 h-10 rounded-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none'
-                                  }}
-                                />
-                              ) : (
-                                <div
-                                  className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-                                  style={{
-                                    background: 'linear-gradient(135deg, #f5a623, #f7b731)',
-                                    color: '#1a1a2e',
-                                  }}
-                                >
-                                  {initialsFromName(student.name)}
-                                </div>
-                              )}
-                              <div>
-                                <p className="text-sm font-bold text-[#111827]">{student.name}</p>
-                                <p className="text-xs text-gray-400">{student.email}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-lg font-bold" style={{ color: '#e391c8' }}>
-                              {student.institutePoints ?? 0}
-                            </span>
-                            <span className="text-lg font-bold mx-1" style={{ color: '#000000' }}>
-                              /
-                            </span>
-                            <span className="text-lg font-bold" style={{ color: '#5990d9' }}>
-                              {student.departmentPoints ?? 0}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="text-sm font-medium text-gray-700">
-                              {student.department ? student.department.toUpperCase() : '—'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                padding: '5px 14px',
-                                borderRadius: '999px',
-                                fontSize: '0.78rem',
-                                fontWeight: '600',
-                                color: student.isActive ? '#16a34a' : '#6b7280',
-                                border: student.isActive
-                                  ? '1.5px solid #bbf7d0'
-                                  : '1.5px solid #e5e7eb',
-                                backgroundColor: student.isActive ? '#f0fdf4' : '#f9fafb',
-                              }}
-                            >
-                              <span
-                                style={{
-                                  width: '7px',
-                                  height: '7px',
-                                  borderRadius: '50%',
-                                  backgroundColor: student.isActive ? '#16a34a' : '#9ca3af',
-                                }}
-                              ></span>
-                              {student.isActive ? 'Active' : 'Inactive'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Link
-                                to={`/edit_student/${student._id}`}
-                                className="inline-block p-1.5 hover:opacity-70 transition-colors"
-                                style={{ color: '#F4AD39' }}
-                                title="Edit Student"
-                              >
-                                <svg
-                                  className="w-5 h-5"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                  ></path>
-                                </svg>
-                              </Link>
-                            </div>
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm">
+                      {loading ? (
+                        <tr>
+                          <td colSpan={5} className="py-10 text-center text-gray-400">
+                            Loading...
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : error ? (
+                        <tr>
+                          <td colSpan={5} className="py-10 text-center text-red-400">
+                            {error}
+                          </td>
+                        </tr>
+                      ) : filteredStudents.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="py-10 text-center text-gray-400">
+                            No students found.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredStudents.map((student, index) => {
+                          const rowColor = index % 2 === 0 ? '#f5ead5' : '#fff8e2'
+                          const rowCellStyle = {
+                            backgroundColor: rowColor,
+                            backdropFilter: 'blur(5px) saturate(125%)',
+                            WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                            borderBottom:
+                              index === filteredStudents.length - 1 ? 'none' : '1px solid #f0ede5',
+                          }
+
+                          return (
+                            <tr key={student._id}>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <div className="flex items-center gap-3">
+                                  {student.profilePicture ? (
+                                    <img
+                                      src={student.profilePicture}
+                                      alt={student.name || 'Student'}
+                                      className="w-10 h-10 rounded-full object-cover"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none'
+                                      }}
+                                    />
+                                  ) : (
+                                    <div
+                                      className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
+                                      style={{
+                                        background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                                        color: '#1a1a2e',
+                                      }}
+                                    >
+                                      {initialsFromName(student.name)}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <p className="text-sm font-bold text-[#111827]">
+                                      {student.name}
+                                    </p>
+                                    <p className="text-xs text-gray-400">{student.email}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <span className="text-lg font-bold" style={{ color: '#e391c8' }}>
+                                  {student.institutePoints ?? 0}
+                                </span>
+                                <span
+                                  className="text-lg font-bold mx-1"
+                                  style={{ color: '#000000' }}
+                                >
+                                  /
+                                </span>
+                                <span className="text-lg font-bold" style={{ color: '#5990d9' }}>
+                                  {student.departmentPoints ?? 0}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <span className="text-sm font-medium text-gray-700">
+                                  {student.department ? student.department.toUpperCase() : '—'}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6" style={rowCellStyle}>
+                                <span
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '5px 14px',
+                                    borderRadius: '999px',
+                                    fontSize: '0.78rem',
+                                    fontWeight: '600',
+                                    color: student.isActive ? '#16a34a' : '#6b7280',
+                                    border: student.isActive
+                                      ? '1.5px solid #bbf7d0'
+                                      : '1.5px solid #e5e7eb',
+                                    backgroundColor: student.isActive ? '#f0fdf4' : '#f9fafb',
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      width: '7px',
+                                      height: '7px',
+                                      borderRadius: '50%',
+                                      backgroundColor: student.isActive ? '#16a34a' : '#9ca3af',
+                                    }}
+                                  ></span>
+                                  {student.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6 text-right" style={rowCellStyle}>
+                                <div className="flex items-center justify-end gap-2">
+                                  <Link
+                                    to={`/edit_student/${student._id}`}
+                                    className="inline-block p-1.5 hover:opacity-70 transition-colors"
+                                    style={{ color: '#F4AD39' }}
+                                    title="Edit Student"
+                                  >
+                                    <svg
+                                      className="w-5 h-5"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                      ></path>
+                                    </svg>
+                                  </Link>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </SpotlightBackground>
       </main>
 
       {showTranscriptModal && (
@@ -817,7 +887,7 @@ const AdminUserManagement = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.45)',
+            background: 'rgba(12, 10, 6, 0.32)',
             zIndex: 110,
             display: 'flex',
             alignItems: 'center',
@@ -828,24 +898,34 @@ const AdminUserManagement = () => {
           <div
             style={{
               width: '100%',
-              maxWidth: '520px',
-              backgroundColor: '#ffffff',
+              maxWidth: '620px',
+              background: 'rgba(253, 247, 233, 0.62)',
+              border: '1.5px solid #e5e1d8',
+              backdropFilter: 'blur(5px) saturate(135%)',
+              WebkitBackdropFilter: 'blur(5px) saturate(135%)',
               borderRadius: '16px',
-              boxShadow: '0 20px 45px rgba(0,0,0,0.2)',
+              boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
               padding: '24px',
+              fontFamily: 'Poppins, sans-serif',
+              fontWeight: 100,
             }}
           >
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
-                <h3 className="text-xl font-bold text-[#111827]">Download Student Transcript</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3
+                  className="text-[#111827]"
+                  style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
+                >
+                  Download Student Transcript
+                </h3>
+                <p className="text-gray-600 mt-2" style={{ fontWeight: 300, fontSize: '0.95rem' }}>
                   Select semester and branch to export students into an Excel file.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={resetTranscriptModal}
-                className="text-gray-400 hover:text-gray-700 transition-colors"
+                className="text-black hover:text-black transition-colors"
                 aria-label="Close"
               >
                 <span className="material-symbols-outlined">close</span>
@@ -854,13 +934,25 @@ const AdminUserManagement = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
               <div>
-                <label className="block text-sm font-semibold text-[#111827] mb-2">Year</label>
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#F4AD39]"
+                  className="w-full border rounded-[7px] px-4 text-[0.9rem] focus:outline-none cursor-pointer"
+                  style={{
+                    background: 'rgba(253, 247, 233, 0.48)',
+                    borderColor: '#e5e1d8',
+                    borderRadius: '7px',
+                    height: '50px',
+                    minHeight: '50px',
+                    maxHeight: '50px',
+                    boxSizing: 'border-box',
+                    color: selectedYear ? '#1a1a2e' : '#9ca3af',
+                    fontWeight: 100,
+                    backdropFilter: 'blur(8px) saturate(125%)',
+                    WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+                  }}
                 >
-                  <option value="">Select Year</option>
+                  <option value="">Year</option>
                   {yearOptions.map((year) => (
                     <option key={year} value={year}>
                       Year {year}
@@ -870,13 +962,25 @@ const AdminUserManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#111827] mb-2">Branch</label>
                 <select
                   value={selectedBranch}
                   onChange={(e) => setSelectedBranch(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#F4AD39]"
+                  className="w-full border rounded-[7px] px-4 text-[0.9rem] focus:outline-none cursor-pointer"
+                  style={{
+                    background: 'rgba(253, 247, 233, 0.48)',
+                    borderColor: '#e5e1d8',
+                    borderRadius: '7px',
+                    height: '50px',
+                    minHeight: '50px',
+                    maxHeight: '50px',
+                    boxSizing: 'border-box',
+                    color: selectedBranch ? '#1a1a2e' : '#9ca3af',
+                    fontWeight: 100,
+                    backdropFilter: 'blur(8px) saturate(125%)',
+                    WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+                  }}
                 >
-                  <option value="">Select Branch</option>
+                  <option value="">Branch</option>
                   {branchOptions.map((branch) => (
                     <option key={branch} value={branch}>
                       {branch}
@@ -892,29 +996,47 @@ const AdminUserManagement = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="mt-10 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={resetTranscriptModal}
-                className="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+                className="px-4 py-2 rounded-lg border text-sm"
+                style={{
+                  border: '1.5px solid #d1d5db',
+                  color: '#111827',
+                  background: 'rgba(253, 247, 233, 0.48)',
+                  backdropFilter: 'blur(5px) saturate(125%)',
+                  WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                  fontWeight: 500,
+                  height: '42px',
+                }}
               >
-                Cancel
+                Close
               </button>
               <button
                 type="button"
                 onClick={handleDownloadTranscript}
                 disabled={!selectedYear || !selectedBranch || transcriptDownloading}
-                className="px-4 py-2 text-sm font-semibold rounded-lg text-white transition-all"
+                className="px-4 py-2 rounded-lg text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
-                  backgroundColor:
+                  border: '1.5px solid #e0a129',
+                  background:
                     !selectedYear || !selectedBranch || transcriptDownloading
-                      ? '#9ca3af'
+                      ? '#f6c66f'
                       : '#F4AD39',
-                  cursor:
+                  color: '#111111',
+                  fontWeight: 500,
+                  height: '42px',
+                }}
+                onMouseOver={(e) => {
+                  if (!selectedYear || !selectedBranch || transcriptDownloading) return
+                  e.currentTarget.style.backgroundColor = '#f5ab27'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor =
                     !selectedYear || !selectedBranch || transcriptDownloading
-                      ? 'not-allowed'
-                      : 'pointer',
-                  opacity: transcriptDownloading ? 0.8 : 1,
+                      ? '#f6c66f'
+                      : '#F4AD39'
                 }}
               >
                 {transcriptDownloading ? 'Preparing...' : 'Download Excel'}
@@ -929,7 +1051,7 @@ const AdminUserManagement = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.45)',
+            background: 'rgba(12, 10, 6, 0.32)',
             zIndex: 100,
             display: 'flex',
             alignItems: 'center',
@@ -941,23 +1063,33 @@ const AdminUserManagement = () => {
             style={{
               width: '100%',
               maxWidth: '620px',
-              backgroundColor: '#ffffff',
+              background: 'rgba(253, 247, 233, 0.62)',
+              border: '1.5px solid #e5e1d8',
+              backdropFilter: 'blur(5px) saturate(135%)',
+              WebkitBackdropFilter: 'blur(5px) saturate(135%)',
               borderRadius: '16px',
-              boxShadow: '0 20px 45px rgba(0,0,0,0.2)',
+              boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
               padding: '24px',
+              fontFamily: 'Poppins, sans-serif',
+              fontWeight: 100,
             }}
           >
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
-                <h3 className="text-xl font-bold text-[#111827]">Import Students from Excel</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3
+                  className="text-[#111827]"
+                  style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
+                >
+                  Import Students from Excel
+                </h3>
+                <p className="text-gray-600 mt-2" style={{ fontWeight: 300, fontSize: '0.95rem' }}>
                   Upload the final template file student_bulk_import (.xlsx/.xls).
                 </p>
               </div>
               <button
                 type="button"
                 onClick={resetImportModal}
-                className="text-gray-400 hover:text-gray-700 transition-colors"
+                className="text-black hover:text-black transition-colors"
                 aria-label="Close"
               >
                 <span className="material-symbols-outlined">close</span>
@@ -992,26 +1124,32 @@ const AdminUserManagement = () => {
               }}
               onClick={() => fileInputRef.current?.click()}
               style={{
-                border: `2px dashed ${isDraggingFile ? '#F4AD39' : '#d1d5db'}`,
-                backgroundColor: isDraggingFile ? '#fff8eb' : '#fafafa',
+                border: `2px dashed ${isDraggingFile ? '#f5a623' : '#d1d5db'}`,
+                backgroundColor: '#f5ead5',
+                backdropFilter: 'blur(5px) saturate(120%)',
+                WebkitBackdropFilter: 'blur(5px) saturate(120%)',
                 borderRadius: '12px',
+                marginTop: '40px',
                 padding: '28px',
                 textAlign: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
               }}
             >
-              <span className="material-symbols-outlined text-4xl" style={{ color: '#F4AD39' }}>
-                cloud_upload
-              </span>
-              <p className="text-sm font-semibold text-[#111827] mt-2">
+              <p className="text-sm font-semibold text-[#111827]">
                 Drag and drop your Excel file here
               </p>
-              <p className="text-xs text-gray-500 mt-1">Accepts only .xlsx or .xls files</p>
+              <p className="text-sm text-gray-500 mt-1">or click to browse file</p>
             </div>
 
             {importFileName && (
-              <div className="mt-4 rounded-lg border border-[#fde9c3] bg-[#fffaf0] p-3">
+              <div
+                className="mt-4 rounded-lg p-3"
+                style={{
+                  border: '1px solid #f2d59a',
+                  background: 'rgba(255, 246, 226, 0.76)',
+                }}
+              >
                 <p className="text-sm font-semibold text-[#8a5a00]">
                   Uploaded file: {importFileName}
                 </p>
@@ -1022,7 +1160,13 @@ const AdminUserManagement = () => {
             )}
 
             {importSummary && (
-              <div className="mt-4 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-4">
+              <div
+                className="mt-4 rounded-lg p-4"
+                style={{
+                  border: '1px solid #e5e1d8',
+                  background: 'rgba(253, 247, 233, 0.68)',
+                }}
+              >
                 <p className="text-sm text-[#111827] font-semibold">Import completed</p>
                 <p className="text-sm text-[#374151] mt-2">Total rows: {importSummary.totalRows}</p>
                 <p className="text-sm text-green-700 mt-1">
@@ -1046,12 +1190,20 @@ const AdminUserManagement = () => {
               </div>
             )}
 
-            <div className="mt-6 flex items-center justify-end gap-3">
+            <div className="mt-10 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={resetImportModal}
-                className="px-4 py-2 rounded-lg border text-sm font-semibold"
-                style={{ borderColor: '#e5e7eb', color: '#374151', backgroundColor: '#fff' }}
+                className="px-4 py-2 rounded-lg border text-sm"
+                style={{
+                  border: '1.5px solid #d1d5db',
+                  height: '42px',
+                  color: '#111827',
+                  background: 'rgba(253, 247, 233, 0.48)',
+                  backdropFilter: 'blur(5px) saturate(125%)',
+                  WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                  fontWeight: 500,
+                }}
               >
                 Close
               </button>
@@ -1059,8 +1211,22 @@ const AdminUserManagement = () => {
                 type="button"
                 onClick={handleImportConfirm}
                 disabled={importSubmitting || importRows.length === 0}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ backgroundColor: '#F4AD39' }}
+                className="px-4 py-2 rounded-lg text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{
+                  border: '1.5px solid #e0a129',
+                  background: importSubmitting || importRows.length === 0 ? '#f6c66f' : '#F4AD39',
+                  color: '#111111',
+                  fontWeight: 500,
+                  height: '42px',
+                }}
+                onMouseOver={(e) => {
+                  if (importSubmitting || importRows.length === 0) return
+                  e.currentTarget.style.backgroundColor = '#f5ab27'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    importSubmitting || importRows.length === 0 ? '#f6c66f' : '#F4AD39'
+                }}
               >
                 {importSubmitting ? 'Importing...' : 'Confirm Import'}
               </button>

@@ -1,0 +1,73 @@
+.spotlight-container {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  border-radius: 0;
+  background: transparent;
+}
+
+.admin-spotlight-surface {
+  min-height: 100%;
+}
+
+.admin-spotlight-surface .spotlight-content {
+  padding: 2.5rem;
+}
+
+.spotlight-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.spotlight {
+  position: absolute;
+  width: 28vw;
+  height: 28vw;
+  min-width: 220px;
+  min-height: 220px;
+  border-radius: 9999px;
+  filter: none;
+  opacity: 0.82;
+  will-change: transform;
+  mix-blend-mode: multiply;
+}
+
+.spotlight-left {
+  top: -6%;
+  left: -5%;
+  background: #f5ead5;
+}
+
+.spotlight-mid {
+  top: 14%;
+  right: 8%;
+  background: #f5ead5;
+}
+
+.spotlight-right {
+  bottom: -8%;
+  left: 42%;
+  background: #f5ead5;
+}
+
+.spotlight-content {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 1024px) {
+  .admin-spotlight-surface .spotlight-content {
+    padding: 1.5rem;
+  }
+
+  .spotlight {
+    width: 36vw;
+    height: 36vw;
+    min-width: 180px;
+    min-height: 180px;
+    opacity: 0.72;
+  }
+}

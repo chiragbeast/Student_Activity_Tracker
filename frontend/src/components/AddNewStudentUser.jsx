@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../api'
+import SpotlightBackground from './ui/SpotlightBackground'
 
 const AddNewStudentUser = () => {
   const [sendActivationEmail, setSendActivationEmail] = useState(true)
@@ -95,11 +96,43 @@ const AddNewStudentUser = () => {
     navigate('/admin_student_management')
   }
 
+  const controlHeight = '50px'
+  const fieldClassName =
+    'w-full border px-4 text-[0.9rem] font-[100] placeholder:text-[#9ca3af] placeholder:font-[100] focus:outline-none transition-all'
+  const fieldStyle = {
+    background: 'rgba(253, 247, 233, 0.48)',
+    borderColor: '#e5e1d8',
+    borderRadius: '7px',
+    height: controlHeight,
+    minHeight: controlHeight,
+    maxHeight: controlHeight,
+    boxSizing: 'border-box',
+    color: '#1a1a2e',
+    lineHeight: '1.2',
+    backdropFilter: 'blur(8px) saturate(125%)',
+    WebkitBackdropFilter: 'blur(8px) saturate(125%)',
+  }
+
   return (
     <div
       className="h-screen overflow-hidden flex font-display text-white"
-      style={{ backgroundColor: '#FFFBF2' }}
+      style={{ backgroundColor: '#FFFBF2', fontFamily: 'Poppins, sans-serif' }}
     >
+      <style>
+        {`
+          .add-student-form .add-student-email-field::placeholder,
+          .add-student-form .add-student-email-field::-webkit-input-placeholder,
+          .add-student-form .add-student-email-field::-moz-placeholder,
+          .add-student-form .add-student-email-field:-ms-input-placeholder,
+          .add-student-form .add-student-email-field::-ms-input-placeholder {
+            color: #9ca3af !important;
+            -webkit-text-fill-color: #9ca3af !important;
+            opacity: 1 !important;
+            font-weight: 100 !important;
+          }
+        `}
+      </style>
+
       {/* Sidebar Navigation */}
       <aside
         className="w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5"
@@ -363,50 +396,44 @@ const AddNewStudentUser = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto relative p-8" style={{ backgroundColor: '#FFFBF2' }}>
-        <div className="w-full max-w-2xl z-10 mx-auto pb-8">
-          <header className="mb-8 text-center">
-            <h2 className="text-4xl font-black tracking-tight mb-2" style={{ color: '#1a1a2e' }}>
-              Add New Student User
-            </h2>
-            <p className="text-base" style={{ color: '#6b7280' }}>
-              Register a new student to the SAPT administrative management system.
-            </p>
-          </header>
+      <main className="flex-1 overflow-y-auto relative" style={{ backgroundColor: '#FFFBF2' }}>
+        <SpotlightBackground
+          className="admin-spotlight-surface min-h-full"
+          style={{ fontWeight: 100 }}
+        >
+          <div className="w-full max-w-2xl z-10 mx-auto pb-8">
+            <header className="mb-8 text-center">
+              <h2
+                className="text-4xl tracking-tight mb-2"
+                style={{ color: '#1a1a2e', fontWeight: 100 }}
+              >
+                Add New Student User
+              </h2>
+              <p className="text-base" style={{ color: '#6b7280', fontWeight: 100 }}>
+                Register a new student to the SAPT administrative management system.
+              </p>
+            </header>
 
-          {/* Form Card */}
-          <div
-            className="rounded-xl p-8 shadow-lg"
-            style={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e5e1d8',
-            }}
-          >
-            <form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Full Name */}
-                <div className="flex flex-col gap-2 md:col-span-2">
-                  <label
-                    className="text-xs font-bold uppercase tracking-widest ml-1"
-                    style={{ color: '#1a1a2e' }}
-                  >
-                    Full Name
-                  </label>
-                  <div className="relative group">
-                    <span
-                      className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-xl"
-                      style={{ color: '#9ca3af' }}
-                    >
-                      person
-                    </span>
+            {/* Form Card */}
+            <div
+              className="rounded-[22px] p-8 shadow-lg"
+              style={{
+                background: 'rgba(253, 247, 233, 0.62)',
+                borderRadius: '22px',
+                border: '1px solid rgba(255, 255, 255, 0.35)',
+                backdropFilter: 'blur(5px) saturate(135%)',
+                WebkitBackdropFilter: 'blur(5px) saturate(135%)',
+                boxShadow: '0 14px 40px rgba(26, 26, 46, 0.08)',
+              }}
+            >
+              <form className="space-y-6 add-student-form" autoComplete="off">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Full Name */}
+                  <div>
                     <input
-                      className="w-full border rounded-lg py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 transition-all"
-                      style={{
-                        backgroundColor: '#fafaf8',
-                        borderColor: '#e5e1d8',
-                        color: '#1a1a2e',
-                      }}
-                      placeholder="Johnathan Doe"
+                      className={fieldClassName}
+                      style={fieldStyle}
+                      placeholder="Full Name"
                       type="text"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -414,31 +441,13 @@ const AddNewStudentUser = () => {
                       onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
                     />
                   </div>
-                </div>
 
-                {/* Roll Number */}
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-bold uppercase tracking-widest ml-1"
-                    style={{ color: '#1a1a2e' }}
-                  >
-                    Roll Number
-                  </label>
-                  <div className="relative group">
-                    <span
-                      className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-xl"
-                      style={{ color: '#9ca3af' }}
-                    >
-                      badge
-                    </span>
+                  {/* Roll Number */}
+                  <div>
                     <input
-                      className="w-full border rounded-lg py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 transition-all"
-                      style={{
-                        backgroundColor: '#fafaf8',
-                        borderColor: '#e5e1d8',
-                        color: '#1a1a2e',
-                      }}
-                      placeholder="2024CS101"
+                      className={fieldClassName}
+                      style={fieldStyle}
+                      placeholder="Roll Number"
                       type="text"
                       value={form.rollNumber}
                       onChange={(e) => setForm({ ...form, rollNumber: e.target.value })}
@@ -446,30 +455,12 @@ const AddNewStudentUser = () => {
                       onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
                     />
                   </div>
-                </div>
 
-                {/* Department Dropdown */}
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-bold uppercase tracking-widest ml-1"
-                    style={{ color: '#1a1a2e' }}
-                  >
-                    Department
-                  </label>
-                  <div className="relative group">
-                    <span
-                      className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-xl z-10 pointer-events-none"
-                      style={{ color: '#9ca3af' }}
-                    >
-                      account_tree
-                    </span>
+                  {/* Department Dropdown */}
+                  <div>
                     <select
-                      className="w-full appearance-none border rounded-lg py-3.5 pl-12 pr-10 focus:outline-none focus:ring-2 transition-all cursor-pointer"
-                      style={{
-                        backgroundColor: '#fafaf8',
-                        borderColor: '#e5e1d8',
-                        color: '#1a1a2e',
-                      }}
+                      className={`${fieldClassName} cursor-pointer`}
+                      style={{ ...fieldStyle, color: form.department ? '#1a1a2e' : '#9ca3af' }}
                       value={form.department}
                       onChange={(e) => setForm({ ...form, department: e.target.value })}
                       onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
@@ -480,7 +471,7 @@ const AddNewStudentUser = () => {
                         disabled
                         style={{ backgroundColor: '#ffffff', color: '#6b7280' }}
                       >
-                        Select Department
+                        Department
                       </option>
                       <option
                         value="Computer Science & Engineering (CSE)"
@@ -553,38 +544,13 @@ const AddNewStudentUser = () => {
                         Engineering Physics (EP)
                       </option>
                     </select>
-                    <span
-                      className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{ color: '#f5a623' }}
-                    >
-                      expand_more
-                    </span>
                   </div>
-                </div>
 
-                {/* Mobile Number */}
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-bold uppercase tracking-widest ml-1"
-                    style={{ color: '#1a1a2e' }}
-                  >
-                    Batch
-                  </label>
-                  <div className="relative group">
-                    <span
-                      className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-xl"
-                      style={{ color: '#9ca3af' }}
-                    >
-                      groups
-                    </span>
+                  <div>
                     <input
-                      className="w-full border rounded-lg py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 transition-all"
-                      style={{
-                        backgroundColor: '#fafaf8',
-                        borderColor: '#e5e1d8',
-                        color: '#1a1a2e',
-                      }}
-                      placeholder="2023-2027"
+                      className={fieldClassName}
+                      style={fieldStyle}
+                      placeholder="Batch"
                       type="text"
                       value={form.batch}
                       onChange={(e) => setForm({ ...form, batch: e.target.value })}
@@ -592,36 +558,18 @@ const AddNewStudentUser = () => {
                       onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
                     />
                   </div>
-                </div>
 
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-bold uppercase tracking-widest ml-1"
-                    style={{ color: '#1a1a2e' }}
-                  >
-                    Semester
-                  </label>
-                  <div className="relative group">
-                    <span
-                      className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-xl z-10 pointer-events-none"
-                      style={{ color: '#9ca3af' }}
-                    >
-                      calendar_month
-                    </span>
+                  <div>
                     <select
-                      className="w-full appearance-none border rounded-lg py-3.5 pl-12 pr-10 focus:outline-none focus:ring-2 transition-all cursor-pointer"
-                      style={{
-                        backgroundColor: '#fafaf8',
-                        borderColor: '#e5e1d8',
-                        color: '#1a1a2e',
-                      }}
+                      className={`${fieldClassName} cursor-pointer`}
+                      style={{ ...fieldStyle, color: form.semester ? '#1a1a2e' : '#9ca3af' }}
                       value={form.semester}
                       onChange={(e) => setForm({ ...form, semester: e.target.value })}
                       onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
                       onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
                     >
                       <option value="" style={{ backgroundColor: '#ffffff', color: '#6b7280' }}>
-                        Select Semester
+                        Semester
                       </option>
                       <option value="1">1</option>
                       <option value="2">2</option>
@@ -632,38 +580,14 @@ const AddNewStudentUser = () => {
                       <option value="7">7</option>
                       <option value="8">8</option>
                     </select>
-                    <span
-                      className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{ color: '#f5a623' }}
-                    >
-                      expand_more
-                    </span>
                   </div>
-                </div>
 
-                {/* Mobile Number */}
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-bold uppercase tracking-widest ml-1"
-                    style={{ color: '#1a1a2e' }}
-                  >
-                    Mobile Number
-                  </label>
-                  <div className="relative group">
-                    <span
-                      className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-xl"
-                      style={{ color: '#9ca3af' }}
-                    >
-                      call
-                    </span>
+                  {/* Mobile Number */}
+                  <div>
                     <input
-                      className="w-full border rounded-lg py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 transition-all"
-                      style={{
-                        backgroundColor: '#fafaf8',
-                        borderColor: '#e5e1d8',
-                        color: '#1a1a2e',
-                      }}
-                      placeholder="+91 98765 43210"
+                      className={fieldClassName}
+                      style={fieldStyle}
+                      placeholder="Mobile Number"
                       type="tel"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -671,32 +595,18 @@ const AddNewStudentUser = () => {
                       onBlur={(e) => (e.target.style.borderColor = '#e5e1d8')}
                     />
                   </div>
-                </div>
 
-                {/* Email Address */}
-                <div className="flex flex-col gap-2">
-                  <label
-                    className="text-xs font-bold uppercase tracking-widest ml-1"
-                    style={{ color: '#1a1a2e' }}
-                  >
-                    Email Address
-                  </label>
-                  <div className="relative group">
-                    <span
-                      className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 transition-colors text-xl"
-                      style={{ color: '#9ca3af' }}
-                    >
-                      mail
-                    </span>
+                  {/* Email Address */}
+                  <div className="md:col-span-2">
                     <input
-                      className="w-full border rounded-lg py-3.5 pl-12 pr-4 focus:outline-none focus:ring-2 transition-all text-[#1a1a2e]"
-                      style={{
-                        backgroundColor: '#fafaf8',
-                        borderColor: '#e5e1d8',
-                        color: '#1a1a2e',
-                      }}
-                      placeholder="student@nitc.ac.in"
-                      type="email"
+                      className={`${fieldClassName} add-student-email-field`}
+                      style={fieldStyle}
+                      placeholder="Email Address"
+                      type="text"
+                      inputMode="email"
+                      name="studentEmailAddress"
+                      autoComplete="new-email"
+                      spellCheck={false}
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       onFocus={(e) => (e.target.style.borderColor = '#f5a623')}
@@ -704,80 +614,112 @@ const AddNewStudentUser = () => {
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* Activation Toggle */}
-              <div
-                className="pt-4 flex items-center justify-between p-4 rounded-xl border"
-                style={{ backgroundColor: '#fafaf8', borderColor: '#e5e1d8' }}
-              >
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold" style={{ color: '#1a1a2e' }}>
-                    Send Activation Email
-                  </span>
-                  <span className="text-xs" style={{ color: '#6b7280' }}>
-                    Student will receive an email to set their password immediately.
-                  </span>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={sendActivationEmail}
-                    onChange={(e) => setSendActivationEmail(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 rounded-full peer-focus:outline-none peer-checked:bg-[#f5a623] bg-[#d1d5db] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                </label>
-              </div>
-
-              {/* Error Message */}
-              {formError && (
+                {/* Activation Toggle */}
                 <div
-                  data-testid="add-student-error"
+                  className="flex items-center justify-between p-4 border"
                   style={{
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    backgroundColor: '#fef2f2',
-                    border: '1px solid #fecaca',
-                    color: '#dc2626',
-                    fontSize: '0.88rem',
-                    fontWeight: '500',
+                    background: 'rgba(253, 247, 233, 0.48)',
+                    borderColor: '#e5e1d8',
+                    borderRadius: '7px',
+                    backdropFilter: 'blur(8px) saturate(125%)',
+                    WebkitBackdropFilter: 'blur(8px) saturate(125%)',
                   }}
                 >
-                  {formError}
+                  <div className="flex flex-col">
+                    <span className="text-sm" style={{ color: '#1a1a2e', fontWeight: 100 }}>
+                      Send Activation Email
+                    </span>
+                    <span className="text-xs" style={{ color: '#6b7280', fontWeight: 100 }}>
+                      Student will receive an email to set their password immediately.
+                    </span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sendActivationEmail}
+                      onChange={(e) => setSendActivationEmail(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 rounded-full peer-focus:outline-none peer-checked:bg-[#f5a623] bg-[#d1d5db] peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                  </label>
                 </div>
-              )}
 
-              {/* Actions */}
-              <div className="flex items-center gap-4 pt-4">
-                <button
-                  data-testid="add-student-submit"
-                  type="button"
-                  onClick={handleAddStudent}
-                  disabled={submitting}
-                  className="flex-1 text-white font-bold py-4 rounded-lg hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                  style={{
-                    background: 'linear-gradient(135deg, #f5a623 0%, #f7b731 100%)',
-                    boxShadow: '0 4px 15px rgba(245, 166, 35, 0.4)',
-                    opacity: submitting ? 0.7 : 1,
-                    cursor: submitting ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  <span className="material-symbols-outlined">person_add</span>
-                  {submitting ? 'Adding...' : 'Add Student User'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="px-8 py-4 font-bold rounded-lg transition-all hover:brightness-95"
-                  style={{ backgroundColor: '#e5e1d8', color: '#1a1a2e' }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+                {/* Error Message */}
+                {formError && (
+                  <div
+                    data-testid="add-student-error"
+                    style={{
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      backgroundColor: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      color: '#dc2626',
+                      fontSize: '0.88rem',
+                      fontWeight: '100',
+                    }}
+                  >
+                    {formError}
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-4 pt-4">
+                  <button
+                    data-testid="add-student-submit"
+                    type="button"
+                    onClick={handleAddStudent}
+                    disabled={submitting}
+                    className="flex-1 text-black rounded-lg hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                    style={{
+                      background: 'linear-gradient(135deg, #f5a623 0%, #f7b731 100%)',
+                      color: '#111111',
+                      boxShadow: '0 4px 15px rgba(245, 166, 35, 0.4)',
+                      height: controlHeight,
+                      minHeight: controlHeight,
+                      maxHeight: controlHeight,
+                      padding: '0 16px',
+                      boxSizing: 'border-box',
+                      opacity: submitting ? 0.7 : 1,
+                      cursor: submitting ? 'not-allowed' : 'pointer',
+                      fontWeight: 100,
+                    }}
+                  >
+                    <span className="material-symbols-outlined">person_add</span>
+                    {submitting ? 'Adding...' : 'Add Student User'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="flex items-center justify-center gap-2 px-5 text-sm rounded-lg border transition-all"
+                    style={{
+                      border: '1.5px solid #d1d5db',
+                      height: controlHeight,
+                      minHeight: controlHeight,
+                      maxHeight: controlHeight,
+                      boxSizing: 'border-box',
+                      color: '#111827',
+                      background: 'rgba(253, 247, 233, 0.48)',
+                      backdropFilter: 'blur(5px) saturate(125%)',
+                      WebkitBackdropFilter: 'blur(5px) saturate(125%)',
+                      fontWeight: 100,
+                      fontFamily: 'inherit',
+                      transition: 'background-color 0.2s ease',
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f5ab27'
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.background = 'rgba(253, 247, 233, 0.48)'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </SpotlightBackground>
       </main>
     </div>
   )

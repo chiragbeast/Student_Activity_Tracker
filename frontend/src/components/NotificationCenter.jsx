@@ -11,6 +11,7 @@ import {
   Clock,
 } from 'lucide-react'
 import api from '../api'
+import { onNotification, offNotification } from '../services/socket' // [NEW] Import socket listeners
 import styles from './NotificationCenter.module.css'
 
 const TYPE_CONFIG = {
@@ -47,7 +48,21 @@ export default function NotificationCenter({ isPopup = false, onClose }) {
 
     fetchNotifications()
     const interval = setInterval(fetchNotifications, 30000)
-    return () => clearInterval(interval)
+
+    // [NEW] Listen for live notifications
+    const handleLiveNotification = (notification) => {
+      setNotifications((prev) => {
+        if (prev.find((n) => n._id === notification._id)) return prev
+        return [notification, ...prev]
+      })
+    }
+
+    onNotification(handleLiveNotification)
+
+    return () => {
+      clearInterval(interval)
+      offNotification(handleLiveNotification)
+    }
   }, [])
 
   const handleMarkRead = async (id) => {

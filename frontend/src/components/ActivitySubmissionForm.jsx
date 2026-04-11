@@ -40,6 +40,24 @@ export default function ActivitySubmissionForm() {
   const [isEditing, setIsEditing] = useState(false)
   const [loadingDraft, setLoadingDraft] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
+  const [duplicatePopupMessage, setDuplicatePopupMessage] = useState('')
+  const [showDuplicatePopup, setShowDuplicatePopup] = useState(false)
+
+  const isDuplicateSubmissionError = (message = '') => /duplicate/i.test(message)
+
+  const handleSubmissionError = (error, fallbackMessage) => {
+    const message = error.response?.data?.message || fallbackMessage
+
+    if (isDuplicateSubmissionError(message)) {
+      setDuplicatePopupMessage(message)
+      setShowDuplicatePopup(true)
+      setErrorMsg('')
+      return
+    }
+
+    setErrorMsg(message)
+  }
 
   // ── Load existing submission when editing ──
   useEffect(() => {
@@ -102,6 +120,7 @@ export default function ActivitySubmissionForm() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
+    setErrorMsg('')
     try {
       const fd = buildFormData('Pending')
       const config = { headers: { 'Content-Type': 'multipart/form-data' } }
@@ -113,7 +132,7 @@ export default function ActivitySubmissionForm() {
       navigate('/submissions')
     } catch (error) {
       console.error('Failed to submit activity', error)
-      alert('Error submitting activity')
+      handleSubmissionError(error, 'Error submitting activity')
     } finally {
       setSubmitting(false)
     }
@@ -121,6 +140,7 @@ export default function ActivitySubmissionForm() {
 
   const handleSaveDraft = async () => {
     setSubmitting(true)
+    setErrorMsg('')
     try {
       const fd = buildFormData('Draft')
       const config = { headers: { 'Content-Type': 'multipart/form-data' } }
@@ -132,7 +152,7 @@ export default function ActivitySubmissionForm() {
       navigate('/submissions')
     } catch (error) {
       console.error('Failed to save draft', error)
-      alert('Error saving draft')
+      handleSubmissionError(error, 'Error saving draft')
     } finally {
       setSubmitting(false)
     }
@@ -214,6 +234,29 @@ export default function ActivitySubmissionForm() {
         />
       )}
 
+      {showDuplicatePopup && (
+        <div
+          className="duplicate-popup-overlay"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="duplicate-popup-title"
+        >
+          <div className="duplicate-popup-card">
+            <h3 id="duplicate-popup-title" className="duplicate-popup-title">
+              Duplicate Submission
+            </h3>
+            <p className="duplicate-popup-message">{duplicatePopupMessage}</p>
+            <button
+              type="button"
+              className="duplicate-popup-close"
+              onClick={() => setShowDuplicatePopup(false)}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Loading state */}
       {loadingDraft ? (
         <div style={{ padding: '3rem', textAlign: 'center', color: '#6b7280' }}>
@@ -238,6 +281,21 @@ export default function ActivitySubmissionForm() {
               Download Guidelines
             </button>
           </div>
+
+          {errorMsg && (
+            <div
+              style={{
+                backgroundColor: '#fee2e2',
+                color: '#b91c1c',
+                padding: '1rem',
+                borderRadius: '0.5rem',
+                marginBottom: '1.5rem',
+                border: '1px solid #f87171',
+              }}
+            >
+              <strong>Operation Failed:</strong> {errorMsg}
+            </div>
+          )}
 
           <form className="submission-form" onSubmit={handleSubmit}>
             {/* Activity Details Section */}

@@ -2,42 +2,278 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { OAuth2Client } = require('google-auth-library');
 const cloudinary = require('../config/cloudinary');
+const { Resend } = require('resend');
+
+const OTP_EXPIRY_MINUTES = Number(process.env.OTP_EXPIRY_MINUTES || 5);
+const OTP_RESEND_COOLDOWN_SECONDS = Number(process.env.OTP_RESEND_COOLDOWN_SECONDS || 60);
+const googleClient = new OAuth2Client();
+
+const getResendClient = () => {
+    if (!process.env.RESEND_API_KEY) {
+        throw new Error('RESEND_API_KEY is not configured');
+    }
+
+    return new Resend(process.env.RESEND_API_KEY);
+};
+
+const generateOtpCode = () => String(Math.floor(100000 + Math.random() * 900000));
+
+const setOtpForUser = async (user) => {
+    const otpCode = generateOtpCode();
+    user.otpCodeHash = await bcrypt.hash(otpCode, 10);
+    user.otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+    user.otpRequestedAt = new Date();
+    user.otpAttempts = 0;
+    await user.save();
+    return otpCode;
+};
+
+const sendOtpEmail = async (toEmail, otpCode) => {
+    if (!process.env.RESEND_FROM_EMAIL) {
+        throw new Error('RESEND_FROM_EMAIL is not configured');
+    }
+
+    const resend = getResendClient();
+        const expiryText = `${OTP_EXPIRY_MINUTES} minute${OTP_EXPIRY_MINUTES === 1 ? '' : 's'}`;
+        const html = `
+        <div style="margin:0;padding:0;background:#fdf8f0;font-family:Poppins,Segoe UI,Arial,sans-serif;color:#1a1a2e;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fdf8f0;padding:32px 12px;">
+                <tr>
+                    <td align="center">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e5e1d8;border-radius:18px;overflow:hidden;box-shadow:0 8px 26px rgba(26,26,46,0.08);">
+                            <tr>
+                                <td style="padding:24px 28px;background:linear-gradient(135deg,#f5a623 0%,#f7b731 100%);color:#1a1a2e;">
+                                    <h1 style="margin:0;font-size:22px;line-height:1.3;font-weight:800;">SAPT Secure Verification</h1>
+                                    <p style="margin:8px 0 0 0;font-size:14px;line-height:1.5;font-weight:500;">Use this one-time code to finish signing in.</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:28px;">
+                                    <p style="margin:0 0 14px 0;font-size:15px;line-height:1.7;color:#374151;">Hi,</p>
+                                    <p style="margin:0 0 16px 0;font-size:15px;line-height:1.7;color:#374151;">We received a login request for your SAPT account. Enter the verification code below on the MFA page:</p>
+
+                                    <div style="margin:18px 0 8px 0;padding:14px 16px;border:1px dashed #f5a623;border-radius:12px;background:#fff7e8;text-align:center;">
+                                        <span style="font-size:34px;letter-spacing:8px;font-weight:800;color:#1a1a2e;">${otpCode}</span>
+                                    </div>
+
+                                    <p style="margin:14px 0 0 0;font-size:13px;line-height:1.6;color:#6b7280;">This code expires in ${expiryText}. If you did not request this login, please ignore this email.</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:14px 28px 24px 28px;border-top:1px solid #f3efe7;">
+                                    <p style="margin:0;font-size:12px;line-height:1.6;color:#9ca3af;">Student Activity Points Tracker (SAPT)</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>`;
+
+    const { error } = await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL,
+        to: toEmail,
+        subject: 'Your SAPT verification code',
+        text: `Your SAPT verification code is ${otpCode}. It expires in ${expiryText}.`,
+        html,
+    });
+
+    if (error) {
+        console.error('Resend Error in sendOtpEmail:', error);
+        throw new Error(error.message || 'Failed to send OTP email via Resend API');
+    }
+};
 
 // Generate JWT Token
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', {
+    if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET is not configured');
+    }
+
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
         expiresIn: '30d',
     });
 };
+
+const buildAuthPayload = (user) => ({
+    _id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    token: generateToken(user._id),
+});
 
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = asyncHandler(async (req, res) => {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        res.status(400);
+        throw new Error('Email and password are required');
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
 
     // Check for user email
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (user && (await bcrypt.compare(password, user.password))) {
-        // Optional: verify role if requested
-        if (role && user.role !== role) {
-            res.status(401);
-            throw new Error(`Account exists, but not as a ${role}`);
-        }
 
-        res.json({
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user._id),
-        });
+        user.lastLogin = new Date();
+        await user.save();
+
+        res.json(buildAuthPayload(user));
     } else {
         res.status(401);
         throw new Error('Invalid email or password');
     }
+});
+
+// @desc    Google OAuth login (Student/Faculty/Admin)
+// @route   POST /api/auth/google-login
+// @access  Public
+const loginWithGoogle = asyncHandler(async (req, res) => {
+    const { idToken, role } = req.body;
+
+    if (!idToken) {
+        res.status(400);
+        throw new Error('Google ID token is required');
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+        res.status(500);
+        throw new Error('GOOGLE_CLIENT_ID is not configured');
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload?.email || !payload?.email_verified) {
+        res.status(401);
+        throw new Error('Google account email is not verified');
+    }
+
+    const normalizedEmail = String(payload.email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+        res.status(404);
+        throw new Error('No SAPT account exists for this Google email');
+    }
+
+    if (role && user.role !== role) {
+        res.status(403);
+        throw new Error(`This account is not allowed for ${role} login`);
+    }
+
+    if (!user.isActive || user.isLocked) {
+        res.status(401);
+        throw new Error('Not authorized, account disabled or locked');
+    }
+
+    user.lastLogin = new Date();
+    await user.save();
+
+    res.status(200).json(buildAuthPayload(user));
+});
+
+// @desc    Verify OTP for faculty/admin login
+// @route   POST /api/auth/verify-2fa
+// @access  Public
+const verify2FA = asyncHandler(async (req, res) => {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+        res.status(400);
+        throw new Error('Email and verification code are required');
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const otpCode = String(code).trim();
+
+    const user = await User.findOne({ email: normalizedEmail }).select('+otpCodeHash');
+    if (!user) {
+        res.status(401);
+        throw new Error('Invalid verification request');
+    }
+
+    if (user.role !== 'Faculty' && user.role !== 'Admin') {
+        res.status(400);
+        throw new Error('Verification code is not required for this user role');
+    }
+
+    if (!user.otpCodeHash || !user.otpExpiresAt || user.otpExpiresAt.getTime() < Date.now()) {
+        res.status(401);
+        throw new Error('Verification code is invalid or expired');
+    }
+
+    const otpMatches = await bcrypt.compare(otpCode, user.otpCodeHash);
+    if (!otpMatches) {
+        user.otpAttempts = (user.otpAttempts || 0) + 1;
+        await user.save();
+        res.status(401);
+        throw new Error('Verification code is invalid or expired');
+    }
+
+    user.otpCodeHash = null;
+    user.otpExpiresAt = null;
+    user.otpRequestedAt = null;
+    user.otpAttempts = 0;
+    user.lastLogin = new Date();
+    await user.save();
+
+    res.status(200).json({
+        ...buildAuthPayload(user),
+    });
+});
+
+// @desc    Resend OTP for faculty/admin login
+// @route   POST /api/auth/resend-2fa
+// @access  Public
+const resend2FA = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        res.status(400);
+        throw new Error('Email is required');
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+        res.status(401);
+        throw new Error('Invalid verification request');
+    }
+
+    if (user.role !== 'Faculty' && user.role !== 'Admin') {
+        res.status(400);
+        throw new Error('Verification code is not required for this user role');
+    }
+
+    if (user.otpRequestedAt) {
+        const secondsSinceLastRequest = Math.floor((Date.now() - user.otpRequestedAt.getTime()) / 1000);
+        if (secondsSinceLastRequest < OTP_RESEND_COOLDOWN_SECONDS) {
+            res.status(429);
+            throw new Error(`Please wait ${OTP_RESEND_COOLDOWN_SECONDS - secondsSinceLastRequest}s before requesting a new code`);
+        }
+    }
+
+    const otpCode = await setOtpForUser(user);
+    await sendOtpEmail(user.email, otpCode);
+
+    res.status(200).json({
+        message: 'Verification code resent successfully',
+        cooldownSeconds: OTP_RESEND_COOLDOWN_SECONDS,
+    });
 });
 
 // @desc    Register a new user (For testing/seeding purposes right now)
@@ -223,11 +459,157 @@ const changePassword = asyncHandler(async (req, res) => {
     res.status(200).json({ message: 'Password updated successfully' });
 });
 
+// @desc    Forgot Password
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        res.status(400);
+        throw new Error('Email is required');
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+        res.status(404);
+        throw new Error('No account found with that email');
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    // Hash token and save to DB
+    user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+    await user.save({ validateBeforeSave: false });
+
+    // Send email
+    const resetUrl = `${req.protocol}://${req.get('host').replace('5000', '5173')}/reset-password/${resetToken}`;
+    
+    if (!process.env.RESEND_FROM_EMAIL || !process.env.RESEND_API_KEY) {
+        // In local development without email configured, just log the URL
+        console.log('\n--- PASSWORD RESET LINK ---');
+        console.log(resetUrl);
+        console.log('---------------------------\n');
+        
+        return res.status(200).json({ 
+            message: 'Email not configured. Check the server console for your reset link!' 
+        });
+    }
+
+    const resend = getResendClient();
+    const html = `
+    <div style="margin:0;padding:0;background:#fdf8f0;font-family:Poppins,Segoe UI,Arial,sans-serif;color:#1a1a2e;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fdf8f0;padding:32px 12px;">
+            <tr>
+                <td align="center">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e5e1d8;border-radius:18px;overflow:hidden;box-shadow:0 8px 26px rgba(26,26,46,0.08);">
+                        <tr>
+                            <td style="padding:24px 28px;background:linear-gradient(135deg,#f5a623 0%,#f7b731 100%);color:#1a1a2e;">
+                                <h1 style="margin:0;font-size:22px;line-height:1.3;font-weight:800;">Password Reset Request</h1>
+                                <p style="margin:8px 0 0 0;font-size:14px;line-height:1.5;font-weight:500;">Let's get you back into your account.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:28px;">
+                                <p style="margin:0 0 14px 0;font-size:15px;line-height:1.7;color:#374151;">Hi ${user.name},</p>
+                                <p style="margin:0 0 16px 0;font-size:15px;line-height:1.7;color:#374151;">We received a request to reset the password for your SAPT account. Click the button below to reset it:</p>
+
+                                <div style="margin:24px 0;text-align:center;">
+                                    <a href="${resetUrl}" style="display:inline-block;padding:14px 32px;background:#f5a623;color:#ffffff;text-decoration:none;font-weight:700;border-radius:12px;font-size:16px;">Reset Password</a>
+                                </div>
+
+                                <p style="margin:14px 0 0 0;font-size:13px;line-height:1.6;color:#6b7280;">If you didn't request a password reset, you can safely ignore this email. This link will expire in 1 hour.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>`;
+
+    try {
+        const { error } = await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: user.email,
+            subject: 'Password Reset Request - SAPT',
+            text: `Forgot your password? Reset it here: ${resetUrl}. This link expires in 1 hour.`,
+            html,
+        });
+
+        if (error) {
+            console.error('Resend Error in forgotPassword:', error);
+            throw new Error(error.message || 'Failed to send email via Resend API');
+        }
+
+        res.status(200).json({ message: 'Password reset link sent to your email' });
+    } catch (err) {
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        await user.save({ validateBeforeSave: false });
+        
+        console.error('Email sending error:', err);
+        res.status(500);
+        throw new Error(err.message || 'There was an error sending the email. Try again later!');
+    }
+});
+
+// @desc    Reset Password
+// @route   POST /api/auth/reset-password/:token
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+    // Hash the generic token and look for matching user
+    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() },
+    }).select('+password');
+
+    if (!user) {
+        res.status(400);
+        throw new Error('Token is invalid or has expired');
+    }
+
+    const { password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword) {
+        res.status(400);
+        throw new Error('Password and confirm password are required');
+    }
+
+    if (password !== confirmPassword) {
+        res.status(400);
+        throw new Error('Passwords do not match');
+    }
+
+    if (password.length < 6) {
+        res.status(400);
+        throw new Error('Password must be at least 6 characters');
+    }
+
+    // Set new password
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save(); // Model pre-save hook handles hashing
+
+    res.status(200).json({ message: 'Password has been successfully reset' });
+});
+
 module.exports = {
     loginUser,
+    loginWithGoogle,
+    verify2FA,
+    resend2FA,
     registerUser,
     getMe,
     updateMe,
     updateMyProfilePicture,
     changePassword,
+    forgotPassword,
+    resetPassword,
 };

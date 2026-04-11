@@ -65,6 +65,15 @@ export default function Dashboard() {
     }
   }
 
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationApi.markAllRead()
+      fetchNotifications()
+    } catch (err) {
+      console.error('Error marking all notifications as read:', err)
+    }
+  }
+
   useEffect(() => {
     if (activeNav === 'Dashboard') {
       const statsFetchTimer = setTimeout(() => {
@@ -107,7 +116,9 @@ export default function Dashboard() {
         return (
           <>
             <div className={styles.dashHeader}>
-              <h1 className={styles.dashTitle}>Faculty Dashboard</h1>
+              <h1 className={styles.dashTitle} data-testid="faculty-dashboard-title">
+                Faculty Dashboard
+              </h1>
               <div className={styles.notifWrapper}>
                 <button className="notification-btn" onClick={() => setShowNotif(!showNotif)}>
                   <Bell size={22} fill={unreadCount > 0 ? 'currentColor' : 'none'} />
@@ -117,7 +128,27 @@ export default function Dashboard() {
                 {showNotif && (
                   <div className={styles.dropdown}>
                     <div className={styles.dropdownHeader}>
-                      <h3>Notifications</h3>
+                      <div>
+                        <h3>Notifications</h3>
+                        {unreadCount > 0 && (
+                          <button
+                            className={styles.markAllLink}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#f5a623',
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                              padding: '0',
+                              marginTop: '2px',
+                            }}
+                            onClick={handleMarkAllRead}
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                      </div>
                       <button className={styles.closeBtn} onClick={() => setShowNotif(false)}>
                         <X size={16} />
                       </button>
@@ -131,9 +162,9 @@ export default function Dashboard() {
                             onClick={() => handleMarkRead(n._id)}
                           >
                             <div
-                              className={`${styles.iconCircle} ${styles[n.read ? 'info' : 'success']}`}
+                              className={`${styles.iconCircle} ${styles[n.read ? 'success' : 'info']}`}
                             >
-                              {n.read ? <Info size={14} /> : <Check size={14} />}
+                              {n.read ? <Check size={14} /> : <Info size={14} />}
                             </div>
                             <div className={styles.notifContent}>
                               <p

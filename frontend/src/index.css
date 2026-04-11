@@ -51,3 +51,147 @@ body {
   height: 18px;
   flex-shrink: 0;
 }
+
+/* Keep Add New Student form controls visually stable when browser autofill repaints inputs */
+.add-student-form input,
+.add-student-form select {
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+}
+
+.add-student-form input::placeholder {
+  color: #9ca3af !important;
+  font-weight: 100 !important;
+  opacity: 1 !important;
+}
+
+.add-student-form .add-student-email-field {
+  background: rgba(253, 247, 233, 0.48) !important;
+  background-color: rgba(253, 247, 233, 0.48) !important;
+  caret-color: #1a1a2e !important;
+  -webkit-box-shadow: 0 0 0 1000px rgba(253, 247, 233, 0.48) inset !important;
+  box-shadow: 0 0 0 1000px rgba(253, 247, 233, 0.48) inset !important;
+}
+
+.add-student-form input.add-student-email-field,
+.add-student-form input.add-student-email-field:hover,
+.add-student-form input.add-student-email-field:focus,
+.add-student-form input.add-student-email-field:active {
+  background: rgba(253, 247, 233, 0.48) !important;
+  background-color: rgba(253, 247, 233, 0.48) !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  background-size: 0 0 !important;
+  background-position: right center !important;
+  color: #1a1a2e !important;
+}
+
+.add-student-form .add-student-email-field,
+.add-student-form .add-student-email-field:-webkit-autofill,
+.add-student-form .add-student-email-field:-webkit-autofill:hover,
+.add-student-form .add-student-email-field:-webkit-autofill:focus,
+.add-student-form .add-student-email-field:-webkit-autofill:active {
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+  border-radius: 7px !important;
+  background: rgba(253, 247, 233, 0.48) !important;
+  background-color: rgba(253, 247, 233, 0.48) !important;
+  -webkit-text-fill-color: #1a1a2e !important;
+  caret-color: #1a1a2e !important;
+  -webkit-box-shadow: 0 0 0 1000px rgba(253, 247, 233, 0.48) inset !important;
+  box-shadow: 0 0 0 1000px rgba(253, 247, 233, 0.48) inset !important;
+  transition: background-color 99999s ease-in-out 0s !important;
+}
+
+.add-student-form .add-student-email-field::placeholder {
+  color: #9ca3af !important;
+  font-weight: 100 !important;
+}
+
+.add-student-form .add-student-email-field::-webkit-input-placeholder {
+  color: #9ca3af !important;
+  font-weight: 100 !important;
+  opacity: 1 !important;
+}
+
+.add-student-form .add-student-email-field::-moz-placeholder {
+  color: #9ca3af !important;
+  font-weight: 100 !important;
+  opacity: 1 !important;
+}
+
+.add-student-form .add-student-email-field:-ms-input-placeholder {
+  color: #9ca3af !important;
+  font-weight: 100 !important;
+}
+
+.add-student-form .add-student-email-field::-ms-input-placeholder {
+  color: #9ca3af !important;
+  font-weight: 100 !important;
+}
+
+.add-student-form .add-student-email-field:-webkit-autofill::first-line {
+  color: #1a1a2e !important;
+}
+
+.add-student-form .add-student-email-field:-moz-autofill {
+  box-shadow: 0 0 0 1000px rgba(253, 247, 233, 0.48) inset !important;
+  -moz-text-fill-color: #1a1a2e !important;
+}
+
+/* Keep Add Faculty form controls visually stable when browser autofill/extension repaint occurs */
+.add-faculty-form input,
+.add-faculty-form select {
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+}
+
+.add-faculty-form input::placeholder {
+  color: #9ca3af !important;
+  font-weight: 100 !important;
+  opacity: 1 !important;
+}
+
+.add-faculty-form .add-faculty-email-field,
+.add-faculty-form .add-faculty-email-field:hover,
+.add-faculty-form .add-faculty-email-field:focus,
+.add-faculty-form .add-faculty-email-field:active {
+  background: rgba(253, 247, 233, 0.48) !important;
+  background-color: rgba(253, 247, 233, 0.48) !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  background-size: 0 0 !important;
+  border-radius: 7px !important;
+  color: #1a1a2e !important;
+  -webkit-text-fill-color: #1a1a2e !important;
+  caret-color: #1a1a2e !important;
+  -webkit-box-shadow: 0 0 0 1000px rgba(253, 247, 233, 0.48) inset !important;
+  box-shadow: 0 0 0 1000px rgba(253, 247, 233, 0.48) inset !important;
+}
+
+.add-faculty-form .add-faculty-email-field:-webkit-autofill,
+.add-faculty-form .add-faculty-email-field:-webkit-autofill:hover,
+.add-faculty-form .add-faculty-email-field:-webkit-autofill:focus,
+.add-faculty-form .add-faculty-email-field:-webkit-autofill:active {
+  height: 50px !important;
+  min-height: 50px !important;
+  max-height: 50px !important;
+  border-radius: 7px !important;
+  -webkit-text-fill-color: #1a1a2e !important;
+  -webkit-box-shadow: 0 0 0 1000px rgba(253, 247, 233, 0.48) inset !important;
+  box-shadow: 0 0 0 1000px rgba(253, 247, 233, 0.48) inset !important;
+  transition: background-color 99999s ease-in-out 0s !important;
+}
+
+.add-faculty-form .add-faculty-email-field::placeholder,
+.add-faculty-form .add-faculty-email-field::-webkit-input-placeholder,
+.add-faculty-form .add-faculty-email-field::-moz-placeholder,
+.add-faculty-form .add-faculty-email-field:-ms-input-placeholder,
+.add-faculty-form .add-faculty-email-field::-ms-input-placeholder {
+  color: #9ca3af !important;
+  opacity: 1 !important;
+  font-weight: 100 !important;
+}
