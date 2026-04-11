@@ -36,9 +36,14 @@ export default function ReviewDetailPage({ submission: initialSubmission, onBack
   }
 
   const handleApprove = async () => {
+    if (approvedPoints === '' || approvedPoints === null || approvedPoints === undefined) {
+      alert('Approved points cannot be empty.')
+      return
+    }
+
     const points = Number(approvedPoints)
     if (!Number.isFinite(points) || points < 0) {
-      alert('Please enter valid approved points.')
+      alert('Approved points must be greater than or equal to 0.')
       return
     }
 
