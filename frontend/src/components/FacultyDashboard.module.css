@@ -11,13 +11,14 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: #f7f4eb;
 }
 
 .content {
-  flex: 1;
-  overflow-y: auto;
+  min-height: 100%;
+  overflow: visible;
   padding: 0;
 }
 

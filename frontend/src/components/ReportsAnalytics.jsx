@@ -736,7 +736,7 @@ const ReportsAnalytics = () => {
                     <thead>
                       <tr
                         className="text-white text-[10px] font-bold uppercase tracking-widest"
-                        style={{ backgroundColor: '#1a1a2e' }}
+                        style={{ backgroundColor: '#14213d' }}
                       >
                         <th className="py-4 px-6" style={{ borderTopLeftRadius: '10px' }}>
                           Name
