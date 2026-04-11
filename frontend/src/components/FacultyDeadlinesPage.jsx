@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Plus, Calendar, Trash2, Users, Bell, Search, CheckSquare, Square } from 'lucide-react'
+import {
+  Plus,
+  Calendar,
+  Trash2,
+  Users,
+  Bell,
+  Search,
+  CheckSquare,
+  Square,
+  CheckCircle,
+} from 'lucide-react'
 import styles from './FacultyDeadlinesPage.module.css'
 import { deadlineApi, facultyApi } from '../services/api'
 
@@ -8,6 +18,7 @@ export default function FacultyDeadlinesPage() {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
   const [formData, setFormData] = useState({
@@ -49,7 +60,7 @@ export default function FacultyDeadlinesPage() {
       setShowModal(false)
       setFormData({ title: '', description: '', assignedStudents: [] })
       fetchData()
-      alert('Deadline created and notifications sent!')
+      setShowSuccess(true)
     } catch {
       alert('Failed to create deadline')
     }
@@ -266,6 +277,22 @@ export default function FacultyDeadlinesPage() {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {showSuccess && (
+        <div className={styles.successOverlay}>
+          <div className={styles.successCard}>
+            <div className={styles.successIconBox}>
+              <CheckCircle size={52} className={styles.successIcon} />
+            </div>
+            <h2 className={styles.successTitle}>Deadline Created!</h2>
+            <p className={styles.successText}>
+              The deadline has been successfully set and assigned students have been notified.
+            </p>
+            <button className={styles.successCloseBtn} onClick={() => setShowSuccess(false)}>
+              Excellent
+            </button>
           </div>
         </div>
       )}
