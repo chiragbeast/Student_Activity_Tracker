@@ -380,11 +380,64 @@
   .dashboard {
     padding: 20px 16px;
   }
+
+  .dashboard-header {
+    margin-bottom: 20px;
+  }
+
+  .dashboard-title {
+    font-size: 1.4rem;
+  }
+
+  .card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .grad-stats {
+    gap: 20px;
+  }
 }
 
 @media (max-width: 425px) {
   .dashboard-header .notif-wrapper {
     display: none;
+  }
+
+  .card-header-row {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .card-heading {
+    font-size: 1.05rem;
+  }
+
+  .recent-table-header {
+    display: none;
+  }
+
+  .recent-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #f0ede5;
+    border-radius: 10px;
+    background: #fffdf8;
+  }
+
+  .recent-row > *:last-child {
+    justify-self: start;
+  }
+
+  .recent-name {
+    font-size: 0.9rem;
+  }
+
+  .recent-date,
+  .recent-points {
+    font-size: 0.78rem;
   }
 }
 

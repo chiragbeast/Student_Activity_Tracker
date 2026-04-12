@@ -244,9 +244,29 @@
 }
 
 @media (max-width: 768px) {
+  .layout {
+    display: block;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .layout > aside {
+    display: none !important;
+  }
+
+  .main {
+    overflow: visible;
+    padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .content {
+    padding: 0 0 1rem;
+  }
+
   .floatingNotif {
-    top: 1.5rem;
-    right: 1.5rem;
+    top: 0.75rem;
+    right: 0.75rem;
   }
 
   .dashHeader {
