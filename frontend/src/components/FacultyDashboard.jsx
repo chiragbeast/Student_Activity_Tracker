@@ -11,6 +11,7 @@ import DeadlinesPage from './FacultyDeadlinesPage'
 import NotificationCenter from './NotificationCenter'
 import { facultyApi, notificationApi } from '../services/api'
 import SpotlightBackground from './ui/SpotlightBackground'
+import FacultyMobileBottomNav from './FacultyMobileBottomNav'
 import './NotificationPanel.css'
 import styles from './FacultyDashboard.module.css'
 
@@ -251,6 +252,7 @@ export default function Dashboard() {
             <div className={styles.content}>{renderPage()}</div>
           </SpotlightBackground>
         </div>
+        <FacultyMobileBottomNav activeNav={activeNav} onNavChange={setActiveNav} />
       </div>
       {showAllNotif && <NotificationCenter isPopup={true} onClose={() => setShowAllNotif(false)} />}
     </>
