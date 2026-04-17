@@ -3,6 +3,7 @@
   padding: 36px 40px 0;
   max-width: 1100px;
   margin: 0 auto;
+  font-family: 'Poppins', sans-serif;
   animation: fadeIn 0.4s ease;
 }
 
@@ -26,7 +27,8 @@
 
 .title {
   font-family: 'Poppins', sans-serif;
-  font-size: 1.85rem;
+  font-size: 32px;
+  line-height: 1.15;
   font-weight: 800;
   color: #1a1a2e;
   margin: 0 0 6px;
@@ -36,6 +38,7 @@
   font-size: 0.92rem;
   color: #6b7280;
   margin: 0;
+  font-weight: 100;
 }
 
 /* ========== Grid ========== */
@@ -48,10 +51,13 @@
 
 /* ========== Profile Card ========== */
 .profileCard {
-  background: #fff;
+  background: rgba(253, 247, 233, 0.62);
   border-radius: 16px;
   padding: 32px 28px 28px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  border: 1.5px solid #e5e1d8;
+  box-shadow: 0 14px 40px rgba(26, 26, 46, 0.08);
+  backdrop-filter: blur(5px) saturate(135%);
+  -webkit-backdrop-filter: blur(5px) saturate(135%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -159,9 +165,10 @@
 /* ── Profile info ── */
 .name {
   font-family: 'Poppins', sans-serif;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-size: 1.75rem;
+  line-height: 1.15;
+  font-weight: 100;
+  color: #111827;
   margin: 0 0 4px;
 }
 
@@ -179,13 +186,14 @@
 
 .changePicBtn {
   width: 100%;
-  padding: 12px;
+  height: 42px;
+  padding: 10px 16px;
   border: none;
   border-radius: 10px;
   background: #f5a623;
   color: #1a1a2e;
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
   font-family: inherit;
   transition:
@@ -232,7 +240,7 @@
 
 .completionTrack {
   height: 6px;
-  background: #e5e1d8;
+  background: #e8dfd2;
   border-radius: 999px;
   overflow: hidden;
 }
@@ -253,16 +261,18 @@
 
 /* ========== Accordion Cards ========== */
 .accordionCard {
-  background: #fff;
+  background: rgba(253, 247, 233, 0.62);
   border-radius: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 14px 40px rgba(26, 26, 46, 0.08);
   overflow: hidden;
   transition: box-shadow 0.2s;
-  border: 1px solid transparent;
+  border: 1.5px solid #e5e1d8;
+  backdrop-filter: blur(5px) saturate(135%);
+  -webkit-backdrop-filter: blur(5px) saturate(135%);
 }
 
 .accordionOpen {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 28px rgba(13, 18, 30, 0.1);
   border-color: #e5e1d8;
 }
 
@@ -273,12 +283,12 @@
   padding: 22px 28px;
   cursor: pointer;
   user-select: none;
-  background: #fff;
+  background: rgba(253, 247, 233, 0.48);
   transition: background 0.2s;
 }
 
 .accordionHeader:hover {
-  background: #fafaf8;
+  background: rgba(253, 247, 233, 0.68);
 }
 
 .accordionTitle {
@@ -307,8 +317,8 @@
 
 .accordionContent {
   padding: 0 28px 28px;
-  background: #fff;
-  border-top: 1px solid #f0ede5;
+  background: rgba(253, 247, 233, 0.48);
+  border-top: 1px solid #efe5d8;
   margin-top: 4px;
   padding-top: 24px;
 }
@@ -343,7 +353,7 @@
 .infoValue {
   font-size: 0.95rem;
   color: #1a1a2e;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* ========== Settings Text ========== */
@@ -389,20 +399,27 @@
 
 .fieldInput {
   width: 100%;
-  padding: 12px 44px 12px 16px;
+  height: 50px;
+  padding: 0 78px 0 16px;
   border: 1.5px solid #e5e1d8;
-  border-radius: 10px;
-  font-size: 0.92rem;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  font-weight: 100;
   color: #1a1a2e;
-  background: #fafaf8;
+  background: rgba(253, 247, 233, 0.48);
+  backdrop-filter: blur(8px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
   font-family: inherit;
   outline: none;
-  transition: border-color 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   box-sizing: border-box;
 }
 
 .fieldInput:focus {
   border-color: #f5a623;
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.12);
 }
 
 .togglePw {
@@ -414,7 +431,10 @@
   border: none;
   cursor: pointer;
   color: #9ca3af;
-  font-size: 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 100;
+  font-family: inherit;
+  color: #111111;
   display: flex;
   align-items: center;
 }
@@ -443,12 +463,13 @@
 }
 
 .discardBtn {
-  padding: 10px 24px;
+  height: 42px;
+  padding: 0 24px;
   border: none;
   background: transparent;
   color: #1a1a2e;
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
   font-family: inherit;
   transition: color 0.2s;
@@ -459,24 +480,25 @@
 }
 
 .saveBtn {
-  padding: 10px 28px;
+  height: 42px;
+  padding: 0 28px;
   border: none;
   border-radius: 10px;
-  background: #1a1a2e;
-  color: #fff;
+  background: #f5a623;
+  color: #1a1a2e;
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
   font-family: inherit;
   transition:
     transform 0.15s,
     box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(26, 26, 46, 0.2);
+  box-shadow: 0 2px 8px rgba(245, 166, 35, 0.3);
 }
 
 .saveBtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(26, 26, 46, 0.3);
+  box-shadow: 0 4px 14px rgba(245, 166, 35, 0.4);
 }
 
 /* ========== Notification Row ========== */

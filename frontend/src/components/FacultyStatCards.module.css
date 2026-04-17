@@ -6,33 +6,106 @@
 }
 
 .card {
-  background: var(--white);
+  background: #ffffff;
   border-radius: 14px;
   padding: 28px 32px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   border: 1px solid var(--border);
-  transition: box-shadow 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 .card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.09);
+  box-shadow: 0 10px 26px rgba(13, 18, 30, 0.1);
+  transform: translateY(-2px);
+}
+
+.strip {
+  margin-bottom: 28px;
+  border-radius: 24px;
+  background: rgba(253, 247, 233, 0.62);
+  border: 1.5px solid #e5e1d8;
+  backdrop-filter: blur(5px) saturate(135%);
+  -webkit-backdrop-filter: blur(5px) saturate(135%);
+  box-shadow: 0 14px 40px rgba(26, 26, 46, 0.08);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.segmentWrap {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.segment {
+  width: 100%;
+  padding: 26px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.segmentWrap + .segmentWrap .segment {
+  padding-left: 34px;
+}
+
+.segmentWrap + .segmentWrap::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 18px;
+  bottom: 18px;
+  width: 1.5px;
+  background-color: #e5e1d8;
 }
 
 .label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  color: #6b7280;
   text-transform: uppercase;
-  color: var(--text-gray);
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  font-weight: 500;
 }
 
 .value {
-  font-family: 'Sora', sans-serif;
-  font-size: 42px;
-  font-weight: 700;
-  color: var(--text-dark);
-  line-height: 1;
+  color: #15173d;
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.05rem;
+  line-height: 1.15;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .strip {
+    border-radius: 18px;
+    margin-bottom: 18px;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .segment {
+    padding: 18px;
+  }
+
+  .segmentWrap + .segmentWrap .segment {
+    padding-left: 18px;
+  }
+
+  .segmentWrap + .segmentWrap::before {
+    display: none;
+  }
+
+  .segmentWrap + .segmentWrap {
+    border-top: 1.5px solid #e5e1d8;
+  }
 }

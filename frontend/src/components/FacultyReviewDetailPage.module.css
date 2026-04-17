@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  font-family: 'Poppins', sans-serif;
 }
 
 /* ── Breadcrumb ── */
@@ -75,10 +76,13 @@
 
 /* ── Card ── */
 .card {
-  background: white;
+  background: rgba(252, 245, 231, 0.72);
   border-radius: 14px;
   padding: 24px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 14px 40px rgba(26, 26, 46, 0.08);
+  border: 1.5px solid #e5e1d8;
+  backdrop-filter: blur(5px) saturate(135%);
+  -webkit-backdrop-filter: blur(5px) saturate(135%);
   margin-bottom: 20px;
 }
 
@@ -117,6 +121,7 @@
   font-weight: 800;
   color: var(--text-dark);
   letter-spacing: -0.4px;
+  font-family: 'Poppins', sans-serif;
 }
 
 .studentMeta {
@@ -129,9 +134,10 @@
   display: inline-block;
   margin-top: 4px;
   padding: 4px 12px;
-  background: #fff8ec;
-  color: var(--amber);
-  border-radius: 6px;
+  background: transparent;
+  color: #9a6200;
+  border: 1.5px solid #9a6200;
+  border-radius: 7px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.6px;
@@ -185,6 +191,7 @@
   color: var(--text-dark);
   margin-bottom: 10px;
   letter-spacing: -0.3px;
+  font-family: 'Poppins', sans-serif;
 }
 
 .activityDesc {
@@ -195,8 +202,9 @@
 }
 
 .categoryBox {
-  background: #f8f8f8;
+  background: #f5ead5;
   border-radius: 10px;
+  border: 2px solid #e5e1d8;
   padding: 14px 18px;
   margin-bottom: 20px;
   display: flex;
@@ -228,9 +236,9 @@
 
 /* ── Proof Box ── */
 .proofBox {
-  border: 2px dashed #d8dde6;
+  border: 2px solid #e5e1d8;
   border-radius: 12px;
-  background: #f4f6f9;
+  background: #f5ead5;
   padding: 48px 24px;
 }
 
@@ -267,7 +275,7 @@
   color: white;
   border: none;
   border-radius: 9px;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -312,10 +320,11 @@
 .pointsInputWrapper {
   display: flex;
   align-items: center;
-  border: 1.5px solid #ddd;
+  width: 100%;
+  border: 2px solid #e5e1d8;
   border-radius: 10px;
   overflow: hidden;
-  background: white;
+  background: transparent;
   transition: border-color 0.15s;
 }
 
@@ -325,41 +334,55 @@
 
 .pointsInput {
   flex: 1;
+  min-width: 0;
   padding: 11px 14px;
   border: none;
   outline: none;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: var(--text-dark);
-  background: white;
+  background: transparent;
+  appearance: textfield;
 }
 
 .pointsInput:focus {
-  background: #fff8ec;
+  background: transparent;
+}
+
+.pointsInput::-webkit-outer-spin-button,
+.pointsInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .ptsSuffix {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
   padding: 0 14px;
   font-size: 12px;
-  font-weight: 600;
-  color: #bbb;
+  font-weight: 700;
+  color: #4b5563;
   letter-spacing: 0.5px;
-  border-left: 1px solid #eee;
+  border-left: 2px solid #9ca3af;
+  white-space: nowrap;
 }
 
 .feedbackTextarea {
   width: 100%;
   padding: 12px 14px;
-  border: 1.5px solid #ddd;
+  border: 2px solid #e5e1d8;
   border-radius: 10px;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif;
   font-size: 13px;
   color: var(--text-dark);
   resize: vertical;
   outline: none;
   transition: border-color 0.15s;
   line-height: 1.5;
+  background: transparent;
 }
 
 .feedbackTextarea::placeholder {
@@ -387,7 +410,7 @@
   gap: 10px;
   padding: 14px;
   border-radius: 11px;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -400,26 +423,29 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 13px;
+  padding: 14px;
+  height: auto;
   border-radius: 11px;
-  font-family: var(--font);
+  font-family: 'Poppins', sans-serif;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 100;
   cursor: pointer;
-  transition: all 0.15s;
-  background: #fff8ec;
-  color: var(--amber-dark);
-  border: 1.5px solid #f0d7a8;
+  transition: background-color 0.2s ease;
+  background: rgba(253, 247, 233, 0.48);
+  color: #111111;
+  border: 2px solid #e5e1d8;
+  backdrop-filter: blur(8px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
 }
 
 .downloadGuidelinesBtn:hover:not(:disabled) {
-  background: #ffeecf;
-  transform: translateY(-1px);
+  background: #f5ab27;
+  transform: none;
 }
 
 .approveBtn {
   background: var(--amber);
-  color: white;
+  color: #111111;
   border: none;
 }
 
@@ -433,7 +459,7 @@
 }
 
 .rejectBtn {
-  background: white;
+  background: transparent;
   color: #e05252;
   border: 2px solid #e05252;
 }
@@ -464,4 +490,24 @@
   font-size: 11px;
   color: #bbb;
   font-style: italic;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 18px;
+  }
+
+  .studentRow {
+    flex-wrap: wrap;
+  }
+
+  .submittedOn {
+    align-items: flex-start;
+  }
 }

@@ -10,6 +10,8 @@ import ProfilePage from './FacultyProfilePage'
 import DeadlinesPage from './FacultyDeadlinesPage'
 import NotificationCenter from './NotificationCenter'
 import { facultyApi, notificationApi } from '../services/api'
+import SpotlightBackground from './ui/SpotlightBackground'
+import FacultyMobileBottomNav from './FacultyMobileBottomNav'
 import './NotificationPanel.css'
 import styles from './FacultyDashboard.module.css'
 
@@ -119,6 +121,24 @@ export default function Dashboard() {
               <h1 className={styles.dashTitle} data-testid="faculty-dashboard-title">
                 Faculty Dashboard
               </h1>
+            </div>
+            <StatCards
+              assignedStudents={stats.assignedStudents}
+              pendingReviews={stats.pendingReviews}
+            />
+            <PendingSubmissions onReviewClick={openReview} />
+          </>
+        )
+    }
+  }
+
+  return (
+    <>
+      <div className={styles.layout}>
+        <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
+        <div className={styles.main}>
+          {activeNav === 'Dashboard' && (
+            <div className={styles.floatingNotif}>
               <div className={styles.notifWrapper}>
                 <button className="notification-btn" onClick={() => setShowNotif(!showNotif)}>
                   <Bell size={22} fill={unreadCount > 0 ? 'currentColor' : 'none'} />
@@ -227,23 +247,12 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-            <StatCards
-              assignedStudents={stats.assignedStudents}
-              pendingReviews={stats.pendingReviews}
-            />
-            <PendingSubmissions onReviewClick={openReview} />
-          </>
-        )
-    }
-  }
-
-  return (
-    <>
-      <div className={styles.layout}>
-        <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
-        <div className={styles.main}>
-          <div className={styles.content}>{renderPage()}</div>
+          )}
+          <SpotlightBackground className="admin-spotlight-surface">
+            <div className={styles.content}>{renderPage()}</div>
+          </SpotlightBackground>
         </div>
+        <FacultyMobileBottomNav activeNav={activeNav} onNavChange={setActiveNav} />
       </div>
       {showAllNotif && <NotificationCenter isPopup={true} onClose={() => setShowAllNotif(false)} />}
     </>

@@ -16,6 +16,7 @@
   font-size: 1.2rem;
   color: #f4ad39;
   cursor: pointer;
+  overflow: visible;
   transition:
     background 0.2s,
     border-color 0.2s,
@@ -29,20 +30,21 @@
 
 .notif-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -6px;
+  right: -7px;
   background: #ef4444;
   color: #fff;
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
+  min-width: 22px;
+  height: 20px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
+  padding: 0 5px;
   line-height: 1;
+  z-index: 2;
 }
 
 /* ── Panel ── */

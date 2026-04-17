@@ -507,7 +507,7 @@ export default function AdminDashboard() {
                     display: 'grid',
                     gridTemplateColumns: '2fr 1fr 1fr 1fr',
                     padding: '16px 24px',
-                    backgroundColor: '#1a1a2e',
+                    backgroundColor: '#14213d',
                     color: '#fff',
                     fontSize: '0.76rem',
                     fontWeight: '600',

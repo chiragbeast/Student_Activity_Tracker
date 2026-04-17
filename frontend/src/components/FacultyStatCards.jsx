@@ -7,13 +7,17 @@ export default function StatCards({ assignedStudents, pendingReviews }) {
   ]
 
   return (
-    <div className={styles.grid}>
-      {stats.map(({ label, value }) => (
-        <div key={label} className={styles.card}>
-          <span className={styles.label}>{label}</span>
-          <span className={styles.value}>{value}</span>
-        </div>
-      ))}
+    <div className={styles.strip}>
+      <div className={styles.row}>
+        {stats.map(({ label, value }) => (
+          <div key={label} className={styles.segmentWrap}>
+            <div className={styles.segment}>
+              <span className={styles.label}>{label}</span>
+              <span className={styles.value}>{value}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

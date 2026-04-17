@@ -1,9 +1,12 @@
 .container {
-  background: var(--white);
-  border-radius: 14px;
-  padding: 24px 28px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 24px 22px;
+  background: rgba(253, 247, 233, 0.62);
+  border: 1.5px solid #e5e1d8;
+  backdrop-filter: blur(5px) saturate(135%);
+  -webkit-backdrop-filter: blur(5px) saturate(135%);
+  box-shadow: 0 14px 40px rgba(26, 26, 46, 0.08);
+  font-family: 'Poppins', sans-serif;
 }
 
 .header {
@@ -14,25 +17,25 @@
 }
 
 .title {
-  font-family: 'Sora', sans-serif;
-  font-size: 17px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #000;
+  color: #1a1a2e;
 }
 
 .viewAll {
   background: none;
   border: none;
-  color: var(--amber);
-  font-family: 'DM Sans', sans-serif;
+  color: #111111;
+  font-family: 'Poppins', sans-serif;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .viewAll:hover {
-  color: var(--amber-dark);
+  color: #111111;
 }
 
 /* -- Search Group -- */
@@ -51,36 +54,48 @@
 
 .searchIcon {
   position: absolute;
-  left: 14px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: #aaa;
+  color: #9ca3af;
   pointer-events: none;
 }
 
 .searchInput {
   width: 100%;
-  padding: 12px 14px 12px 42px;
-  border: 1.5px solid #eee;
-  border-radius: 10px;
-  font-size: 14px;
+  height: 50px;
+  padding: 0 16px;
+  border: 1.5px solid #e5e1d8;
+  border-radius: 7px;
+  font-size: 0.9rem;
+  font-weight: 100;
   outline: none;
-  transition: all 0.2s;
-  background: white;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  background: rgba(253, 247, 233, 0.48);
+  backdrop-filter: blur(8px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+  color: #1a1a2e;
+}
+
+.searchInput::placeholder {
+  font-size: 0.8rem;
+  font-weight: 100;
+  color: #9ca3af;
 }
 
 .searchInput:focus {
-  border-color: var(--amber);
-  box-shadow: 0 0 0 4px var(--amber-light);
+  border-color: #f5a623;
+  box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.12);
 }
 
 .searchBtn {
-  background: #ffb800;
-  /* Yellow */
-  color: #000;
+  background: var(--amber);
+  color: #1a1a2e;
   border: none;
   padding: 12px 24px;
-  border-radius: 10px;
+  border-radius: 7px;
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
@@ -88,15 +103,15 @@
 }
 
 .searchBtn:hover {
-  background: #e6a600;
+  background: var(--amber-dark);
   transform: translateY(-1px);
 }
 
 .tableWrapper {
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--white);
+  border: 1px solid #e5e1d8;
+  background: rgba(255, 255, 255, 0.82);
 }
 
 .table {
@@ -109,7 +124,7 @@
 }
 
 .table th {
-  background: #000;
+  background: #14213d;
   color: #fff;
   text-align: left;
   font-size: 11px;
@@ -128,16 +143,20 @@
 }
 
 .table tbody tr {
-  border-bottom: 1px solid var(--border);
-  transition: background 0.12s;
+  border-bottom: 1px solid #e8e2d8;
+  transition: none;
 }
 
-.table tbody tr:hover {
-  background: #fffbf2;
+.table tbody tr:nth-child(odd) {
+  background: #f5ead5;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #fff8e2;
 }
 
 .table td {
-  padding: 20px 24px;
+  padding: 18px 22px;
   font-size: 14px;
   color: var(--text-dark);
   vertical-align: middle;
@@ -168,22 +187,21 @@
 .badge {
   display: inline-block;
   padding: 4px 13px;
-  border-radius: 50px;
+  border-radius: 7px;
   font-size: 12px;
   font-weight: 600;
   border: 1.5px solid;
+  background: transparent;
 }
 
 .badge.institute {
   color: var(--blue);
   border-color: var(--blue);
-  background: var(--blue-light);
 }
 
 .badge.department {
   color: var(--pink);
   border-color: var(--pink);
-  background: var(--pink-light);
 }
 
 .points {
@@ -231,13 +249,13 @@
 
 .reviewBtn {
   background: var(--amber);
-  color: white;
+  color: #1a1a2e;
   border: none;
   padding: 8px 18px;
   border-radius: 8px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition:
     background 0.18s,
@@ -251,4 +269,27 @@
 
 .reviewBtn:active {
   transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .searchGroup {
+    flex-wrap: wrap;
+  }
+
+  .searchWrapper {
+    max-width: none;
+    min-width: 100%;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 720px;
+  }
 }

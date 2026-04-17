@@ -13,12 +13,15 @@
 :root {
   --amber: #f5a623;
   --amber-dark: #e09510;
+  --amber-light: rgba(245, 166, 35, 0.12);
   --cream: #fdf6ec;
   --sidebar-bg: #141414;
   --sidebar-text: #ffffff;
   --text-dark: #1a1a2e;
   --text-gray: #8a8fa8;
   --border: #ede8e0;
+  --shadow: 0 6px 22px rgba(13, 18, 30, 0.06);
+  --font: 'Poppins', sans-serif;
   --white: #ffffff;
   --red: #e05252;
   --blue: #4a90d9;

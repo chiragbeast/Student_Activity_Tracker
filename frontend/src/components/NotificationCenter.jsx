@@ -81,15 +81,7 @@ export default function NotificationCenter({ isPopup = false, onClose }) {
   )
 
   const content = (
-    <div
-      className={isPopup ? styles.popupContainer : styles.container}
-      style={isPopup ? { backgroundColor: '#ffffff' } : {}}
-    >
-      {isPopup && (
-        <button className={styles.closePopupBtn} onClick={onClose}>
-          <X size={20} />
-        </button>
-      )}
+    <div className={isPopup ? styles.popupContainer : styles.container}>
       <header className={styles.header}>
         <div className={styles.titleSection}>
           <Bell color="#f5a623" size={24} />
@@ -105,6 +97,15 @@ export default function NotificationCenter({ isPopup = false, onClose }) {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        {isPopup && (
+          <button
+            className={styles.closePopupBtn}
+            onClick={onClose}
+            aria-label="Close notifications"
+          >
+            <X size={20} />
+          </button>
+        )}
       </header>
 
       <section className={styles.feedWrapper}>

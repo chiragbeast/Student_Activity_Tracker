@@ -206,9 +206,10 @@
   align-items: center;
   justify-content: center;
   padding: 4px 14px;
-  border-radius: 999px;
+  border-radius: 7px;
   font-size: 0.76rem;
   font-weight: 600;
+  background: transparent;
 }
 
 .category-badge.institute {
@@ -227,9 +228,10 @@
   align-items: center;
   gap: 6px;
   padding: 5px 14px;
-  border-radius: 999px;
+  border-radius: 7px;
   font-size: 0.78rem;
   font-weight: 600;
+  background: transparent;
 }
 
 .status-dot-inline {
@@ -240,8 +242,7 @@
 
 .status-approved {
   color: #16a34a;
-  border: 1.5px solid #bbf7d0;
-  background: #f0fdf4;
+  border: 1.5px solid #16a34a;
 }
 
 .status-approved .status-dot-inline {
@@ -250,8 +251,7 @@
 
 .status-denied {
   color: #dc2626;
-  border: 1.5px solid #fecaca;
-  background: #fef2f2;
+  border: 1.5px solid #dc2626;
 }
 
 .status-denied .status-dot-inline {
@@ -260,8 +260,7 @@
 
 .status-pending {
   color: #d97706;
-  border: 1.5px solid #fde68a;
-  background: #fffbeb;
+  border: 1.5px solid #d97706;
 }
 
 .status-pending .status-dot-inline {

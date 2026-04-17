@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { FiEye, FiEyeOff, FiCamera } from 'react-icons/fi'
+import { FiCamera } from 'react-icons/fi'
 import { Loader2 } from 'lucide-react'
 import { facultyApi } from '../services/api'
 import api from '../api'
@@ -280,12 +280,11 @@ export default function FacultyProfilePage() {
                 </p>
 
                 <form onSubmit={handleSave} className={styles.passwordForm}>
-                  <label className={styles.fieldLabel}>Current Password</label>
                   <div className={styles.inputWrapper}>
                     <input
                       type={showCurrent ? 'text' : 'password'}
                       className={styles.fieldInput}
-                      placeholder="••••••••••"
+                      placeholder="Current Password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
                     />
@@ -293,19 +292,19 @@ export default function FacultyProfilePage() {
                       type="button"
                       className={styles.togglePw}
                       onClick={() => setShowCurrent(!showCurrent)}
+                      aria-label={showCurrent ? 'Hide password' : 'Show password'}
                     >
-                      {showCurrent ? <FiEyeOff /> : <FiEye />}
+                      {showCurrent ? 'Hide' : 'Show'}
                     </button>
                   </div>
 
                   <div className={styles.passwordRow}>
                     <div className={styles.passwordCol}>
-                      <label className={styles.fieldLabel}>New Password</label>
                       <div className={styles.inputWrapper}>
                         <input
                           type={showNew ? 'text' : 'password'}
                           className={styles.fieldInput}
-                          placeholder="••••••••••"
+                          placeholder="New Password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                         />
@@ -313,18 +312,18 @@ export default function FacultyProfilePage() {
                           type="button"
                           className={styles.togglePw}
                           onClick={() => setShowNew(!showNew)}
+                          aria-label={showNew ? 'Hide password' : 'Show password'}
                         >
-                          {showNew ? <FiEyeOff /> : <FiEye />}
+                          {showNew ? 'Hide' : 'Show'}
                         </button>
                       </div>
                     </div>
                     <div className={styles.passwordCol}>
-                      <label className={styles.fieldLabel}>Confirm Password</label>
                       <div className={styles.inputWrapper}>
                         <input
                           type={showConfirm ? 'text' : 'password'}
                           className={styles.fieldInput}
-                          placeholder="••••••••••"
+                          placeholder="Confirm Password"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                         />
@@ -332,8 +331,9 @@ export default function FacultyProfilePage() {
                           type="button"
                           className={styles.togglePw}
                           onClick={() => setShowConfirm(!showConfirm)}
+                          aria-label={showConfirm ? 'Hide password' : 'Show password'}
                         >
-                          {showConfirm ? <FiEyeOff /> : <FiEye />}
+                          {showConfirm ? 'Hide' : 'Show'}
                         </button>
                       </div>
                     </div>
