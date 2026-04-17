@@ -68,12 +68,6 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      // Use mock data for demo login
-      if (user.email === 'student@nitc.ac.in') {
-        setDashboardData(MOCK_DATA)
-        setLoading(false)
-        return
-      }
       try {
         const response = await api.get('/student/dashboard')
         setDashboardData(response.data)

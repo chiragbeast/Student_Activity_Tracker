@@ -33,9 +33,20 @@ const getDashboard = asyncHandler(async (req, res) => {
         isActive: true,
         date: { $gte: currentDate },
         visibleToRoles: 'Student',
-        $or: [
-            { department: req.user.department },
-            { department: null }
+        $and: [
+            {
+                $or: [
+                    { department: req.user.department },
+                    { department: null }
+                ]
+            },
+            {
+                $or: [
+                    { assignedStudents: { $exists: false } },
+                    { assignedStudents: { $size: 0 } },
+                    { assignedStudents: studentId }
+                ]
+            }
         ]
     }).sort({ date: 1 }).limit(5);
 
