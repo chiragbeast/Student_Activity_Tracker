@@ -192,10 +192,69 @@ const reviewSubmission = asyncHandler(async (req, res) => {
     socketUtils.sendNotification(submission.student, notif);
 
     if (student.emailNotifications) {
+        console.log(`[EMAIL] Sending review email to: ${student.email} | emailNotifications: ${student.emailNotifications} | status: ${status}`);
+        const statusColors = {
+            Approved: '#16a34a',
+            Denied: '#dc2626',
+            Returned: '#ea580c'
+        };
+
+        const html = `
+        <div style="margin:0;padding:0;background-color:#f8fafc;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1e293b;line-height:1.6;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;padding:40px 10px;">
+                <tr>
+                    <td align="center">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+                            <tr>
+                                <td style="padding:30px 40px;background-color:${statusColors[status] || '#2563eb'};color:#ffffff;">
+                                    <h1 style="margin:0;font-size:24px;font-weight:700;">Submission ${status}</h1>
+                                    <p style="margin:8px 0 0 0;font-size:16px;opacity:0.9;">Student Activity Points Tracker</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:40px;">
+                                    <p style="margin:0 0 20px 0;font-size:16px;">Dear ${student.name},</p>
+                                    <p style="margin:0 0 25px 0;font-size:16px;">Your submission for the activity "<strong>${submission.activityName}</strong>" has been <strong>${status.toLowerCase()}</strong> by your Faculty Advisor.</p>
+                                    
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f1f5f9;border-radius:8px;padding:20px;margin-bottom:30px;">
+                                        <tr>
+                                            <td style="padding-bottom:12px;font-weight:600;width:140px;">Outcome:</td>
+                                            <td style="padding-bottom:12px;color:${statusColors[status] || '#1e293b'};font-weight:700;">${status}</td>
+                                        </tr>
+                                        ${status === 'Approved' ? `
+                                        <tr>
+                                            <td style="padding-bottom:12px;font-weight:600;">Points Approved:</td>
+                                            <td style="padding-bottom:12px;">${pointsApproved || submission.pointsRequested}</td>
+                                        </tr>` : ''}
+                                        <tr>
+                                            <td style="font-weight:600;vertical-align:top;">Comments:</td>
+                                            <td>${reviewComments || 'No specific comments provided.'}</td>
+                                        </tr>
+                                    </table>
+
+                                    ${status === 'Returned' ? `
+                                    <p style="margin:0 0 20px 0;font-size:16px;color:#ea580c;font-weight:600;">Action Required:</p>
+                                    <p style="margin:0 0 20px 0;font-size:16px;">Please review the faculty comments above, make the necessary changes to your submission, and resubmit it for review.</p>` : ''}
+
+                                    <p style="margin:0 0 20px 0;font-size:16px;">You can view the full details and your updated points tally in your student dashboard.</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:20px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
+                                    <p style="margin:0;font-size:14px;color:#64748b;">&copy; ${new Date().getFullYear()} Student Activity Points Tracker (SAPT)</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>`;
+
         await sendEmail({
             to: student.email,
-            subject: `Submission ${status}: ${submission.activityName}`,
-            text: `Your submission for "${submission.activityName}" has been ${status.toLowerCase()}.`,
+            subject: `SAPT: Activity Submission ${status} - ${submission.activityName}`,
+            text: `Your submission for "${submission.activityName}" has been ${status.toLowerCase()}. ${reviewComments ? `Comments: ${reviewComments}` : ''}`,
+            html,
         });
     }
 
@@ -301,6 +360,68 @@ const bulkReviewSubmissions = asyncHandler(async (req, res) => {
 
             // Emit live notification
             socketUtils.sendNotification(submission.student, notif);
+
+            if (student.emailNotifications) {
+                const statusColors = {
+                    Approved: '#16a34a',
+                    Denied: '#dc2626',
+                    Returned: '#ea580c'
+                };
+
+                const html = `
+                <div style="margin:0;padding:0;background-color:#f8fafc;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1e293b;line-height:1.6;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;padding:40px 10px;">
+                        <tr>
+                            <td align="center">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+                                    <tr>
+                                        <td style="padding:30px 40px;background-color:${statusColors[status] || '#2563eb'};color:#ffffff;">
+                                            <h1 style="margin:0;font-size:24px;font-weight:700;">Submission Update (Bulk Review)</h1>
+                                            <p style="margin:8px 0 0 0;font-size:16px;opacity:0.9;">Student Activity Points Tracker</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:40px;">
+                                            <p style="margin:0 0 20px 0;font-size:16px;">Dear ${student.name},</p>
+                                            <p style="margin:0 0 25px 0;font-size:16px;">Your submission for "<strong>${submission.activityName}</strong>" has been processed during a bulk review by your Faculty Advisor.</p>
+                                            
+                                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f1f5f9;border-radius:8px;padding:20px;margin-bottom:30px;">
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;width:140px;">Status:</td>
+                                                    <td style="padding-bottom:12px;color:${statusColors[status] || '#1e293b'};font-weight:700;">${status}</td>
+                                                </tr>
+                                                ${status === 'Approved' ? `
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;">Points Approved:</td>
+                                                    <td style="padding-bottom:12px;">${submission.pointsApproved}</td>
+                                                </tr>` : ''}
+                                                <tr>
+                                                    <td style="font-weight:600;vertical-align:top;">Comments:</td>
+                                                    <td>${submission.reviewComments}</td>
+                                                </tr>
+                                            </table>
+
+                                            <p style="margin:0 0 20px 0;font-size:16px;">You can view the full details and your updated points tally in your dashboard.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:20px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
+                                            <p style="margin:0;font-size:14px;color:#64748b;">&copy; ${new Date().getFullYear()} Student Activity Points Tracker (SAPT)</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>`;
+
+                await sendEmail({
+                    to: student.email,
+                    subject: `SAPT Update: Activity Submission ${status} (Bulk Review)`,
+                    text: `Your submission for "${submission.activityName}" has been ${status.toLowerCase()} during bulk review. Comments: ${submission.reviewComments}`,
+                    html,
+                });
+            }
 
             results.processed++;
         } catch (err) {

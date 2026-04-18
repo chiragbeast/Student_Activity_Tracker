@@ -71,10 +71,49 @@ const getDashboard = asyncHandler(async (req, res) => {
 
                 const user = await User.findById(studentId);
                 if (user && user.emailNotifications) {
+                    const html = `
+                    <div style="margin:0;padding:0;background-color:#fff5f5;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1e293b;line-height:1.6;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#fff5f5;padding:40px 10px;">
+                            <tr>
+                                <td align="center">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background-color:#ffffff;border:1px solid #fee2e2;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+                                        <tr>
+                                            <td style="padding:30px 40px;background-color:#dc2626;color:#ffffff;">
+                                                <h1 style="margin:0;font-size:24px;font-weight:700;">Deadline Approaching</h1>
+                                                <p style="margin:8px 0 0 0;font-size:16px;opacity:0.9;">Student Activity Points Tracker</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:40px;">
+                                                <p style="margin:0 0 20px 0;font-size:16px;">Dear ${user.name},</p>
+                                                <p style="margin:0 0 25px 0;font-size:16px;">This is a reminder that an important deadline is approaching for your activities:</p>
+                                                
+                                                <div style="background-color:#fef2f2;border-left:4px solid #dc2626;padding:20px;margin-bottom:30px;">
+                                                    <p style="margin:0;font-size:18px;font-weight:700;color:#991b1b;">${deadline.title}</p>
+                                                    <p style="margin:10px 0 0 0;font-size:16px;color:#b91c1c;"><strong>Due Date:</strong> ${deadline.date.toLocaleDateString()}</p>
+                                                </div>
+
+                                                <p style="margin:0 0 20px 0;font-size:16px;">Please ensure that all your related activity submissions are completed and submitted before the deadline to avoid any points loss.</p>
+                                                
+                                                <p style="margin:0 0 20px 0;font-size:16px;">You can check your status and submit pending activities via your dashboard.</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:20px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
+                                                <p style="margin:0;font-size:14px;color:#64748b;">&copy; ${new Date().getFullYear()} Student Activity Points Tracker (SAPT)</p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>`;
+
                     await sendEmail({
                         to: user.email,
-                        subject: `Deadline Approaching: ${title}`,
-                        text: `The deadline for "${title}" is on ${deadline.date.toLocaleDateString()}.`,
+                        subject: `SAPT Alert: Deadline Approaching - ${deadline.title}`,
+                        text: `The deadline for "${deadline.title}" is on ${deadline.date.toLocaleDateString()}. Please ensure your submissions are complete.`,
+                        html,
                     });
                 }
             }
