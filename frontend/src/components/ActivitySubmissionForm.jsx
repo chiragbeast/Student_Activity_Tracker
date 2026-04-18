@@ -43,6 +43,7 @@ export default function ActivitySubmissionForm() {
   const [errorMsg, setErrorMsg] = useState('')
   const [duplicatePopupMessage, setDuplicatePopupMessage] = useState('')
   const [showDuplicatePopup, setShowDuplicatePopup] = useState(false)
+  const [duplicateError, setDuplicateError] = useState('')
 
   const isDuplicateSubmissionError = (message = '') => /duplicate/i.test(message)
 
@@ -80,6 +81,32 @@ export default function ActivitySubmissionForm() {
       })
       .finally(() => setLoadingDraft(false))
   }, [id])
+
+  // ── Smart Similarity Check (AI-like duplicate prevention) ──
+  useEffect(() => {
+    if (!activityName.trim() || activityName.length < 3) {
+      setDuplicateError('')
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await api.post('/submissions/check-duplicate', {
+          activityName,
+          submissionId: id,
+        })
+        if (data.isDuplicate) {
+          setDuplicateError(data.message)
+        } else {
+          setDuplicateError('')
+        }
+      } catch (err) {
+        console.error('Check duplicate failed', err)
+      }
+    }, 600) // 600ms debounce
+
+    return () => clearTimeout(timer)
+  }, [activityName, id])
 
   const handleDrag = (e) => {
     e.preventDefault()
@@ -310,6 +337,26 @@ export default function ActivitySubmissionForm() {
                 value={activityName}
                 onChange={(e) => setActivityName(e.target.value)}
               />
+              {duplicateError && (
+                <div
+                  className="duplicate-alert"
+                  style={{
+                    backgroundColor: '#fee2e2',
+                    color: '#b91c1c',
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    marginTop: '8px',
+                    fontSize: '0.88rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    border: '1px solid #fecaca',
+                  }}
+                >
+                  <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                  <span>{duplicateError}</span>
+                </div>
+              )}
 
               <label className="field-label">Activity Level</label>
               <div className="level-toggle">
@@ -460,7 +507,12 @@ export default function ActivitySubmissionForm() {
 
             {/* Actions */}
             <div className="form-actions">
-              <button type="submit" className="submit-btn" disabled={submitting}>
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={submitting || !!duplicateError}
+                style={duplicateError ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+              >
                 {submitting
                   ? 'Uploading...'
                   : isEditing
@@ -472,7 +524,8 @@ export default function ActivitySubmissionForm() {
                   type="button"
                   className="draft-btn"
                   onClick={handleSaveDraft}
-                  disabled={submitting}
+                  disabled={submitting || !!duplicateError}
+                  style={duplicateError ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
                 >
                   {submitting ? 'Saving...' : isEditing ? 'Update Draft' : 'Save as Draft'}
                 </button>

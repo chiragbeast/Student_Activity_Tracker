@@ -9,6 +9,7 @@ const {
     downloadReceipt,
     deleteDocument,
     exportMySubmissionsExcel,
+    checkDuplicateActivity, // Added
 } = require('../controllers/submissionController');
 const { protect, role } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -26,6 +27,8 @@ router.route('/:id')
     .get(getSubmissionById)
     .put(upload.array('files', 5), updateSubmission)
     .delete(withdrawSubmission);
+
+router.post('/check-duplicate', checkDuplicateActivity);
 
 router.get('/:id/receipt', downloadReceipt);
 

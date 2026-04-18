@@ -5,19 +5,11 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const cloudinary = require('../config/cloudinary');
-const { Resend } = require('resend');
+const { sendEmail } = require('../utils/mailer');
 
 const OTP_EXPIRY_MINUTES = Number(process.env.OTP_EXPIRY_MINUTES || 5);
 const OTP_RESEND_COOLDOWN_SECONDS = Number(process.env.OTP_RESEND_COOLDOWN_SECONDS || 60);
 const googleClient = new OAuth2Client();
-
-const getResendClient = () => {
-    if (!process.env.RESEND_API_KEY) {
-        throw new Error('RESEND_API_KEY is not configured');
-    }
-
-    return new Resend(process.env.RESEND_API_KEY);
-};
 
 const generateOtpCode = () => String(Math.floor(100000 + Math.random() * 900000));
 
@@ -32,58 +24,51 @@ const setOtpForUser = async (user) => {
 };
 
 const sendOtpEmail = async (toEmail, otpCode) => {
-    if (!process.env.RESEND_FROM_EMAIL) {
-        throw new Error('RESEND_FROM_EMAIL is not configured');
-    }
+    const expiryText = `${OTP_EXPIRY_MINUTES} minute${OTP_EXPIRY_MINUTES === 1 ? '' : 's'}`;
+    const html = `
+    <div style="margin:0;padding:0;background:#fdf8f0;font-family:Poppins,Segoe UI,Arial,sans-serif;color:#1a1a2e;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fdf8f0;padding:32px 12px;">
+            <tr>
+                <td align="center">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e5e1d8;border-radius:18px;overflow:hidden;box-shadow:0 8px 26px rgba(26,26,46,0.08);">
+                        <tr>
+                            <td style="padding:24px 28px;background:linear-gradient(135deg,#f5a623 0%,#f7b731 100%);color:#1a1a2e;">
+                                <h1 style="margin:0;font-size:22px;line-height:1.3;font-weight:800;">SAPT Secure Verification</h1>
+                                <p style="margin:8px 0 0 0;font-size:14px;line-height:1.5;font-weight:500;">Use this one-time code to finish signing in.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:28px;">
+                                <p style="margin:0 0 14px 0;font-size:15px;line-height:1.7;color:#374151;">Hi,</p>
+                                <p style="margin:0 0 16px 0;font-size:15px;line-height:1.7;color:#374151;">We received a login request for your SAPT account. Enter the verification code below on the MFA page:</p>
 
-    const resend = getResendClient();
-        const expiryText = `${OTP_EXPIRY_MINUTES} minute${OTP_EXPIRY_MINUTES === 1 ? '' : 's'}`;
-        const html = `
-        <div style="margin:0;padding:0;background:#fdf8f0;font-family:Poppins,Segoe UI,Arial,sans-serif;color:#1a1a2e;">
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fdf8f0;padding:32px 12px;">
-                <tr>
-                    <td align="center">
-                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e5e1d8;border-radius:18px;overflow:hidden;box-shadow:0 8px 26px rgba(26,26,46,0.08);">
-                            <tr>
-                                <td style="padding:24px 28px;background:linear-gradient(135deg,#f5a623 0%,#f7b731 100%);color:#1a1a2e;">
-                                    <h1 style="margin:0;font-size:22px;line-height:1.3;font-weight:800;">SAPT Secure Verification</h1>
-                                    <p style="margin:8px 0 0 0;font-size:14px;line-height:1.5;font-weight:500;">Use this one-time code to finish signing in.</p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding:28px;">
-                                    <p style="margin:0 0 14px 0;font-size:15px;line-height:1.7;color:#374151;">Hi,</p>
-                                    <p style="margin:0 0 16px 0;font-size:15px;line-height:1.7;color:#374151;">We received a login request for your SAPT account. Enter the verification code below on the MFA page:</p>
+                                <div style="margin:18px 0 8px 0;padding:14px 16px;border:1px dashed #f5a623;border-radius:12px;background:#fff7e8;text-align:center;">
+                                    <span style="font-size:34px;letter-spacing:8px;font-weight:800;color:#1a1a2e;">${otpCode}</span>
+                                </div>
 
-                                    <div style="margin:18px 0 8px 0;padding:14px 16px;border:1px dashed #f5a623;border-radius:12px;background:#fff7e8;text-align:center;">
-                                        <span style="font-size:34px;letter-spacing:8px;font-weight:800;color:#1a1a2e;">${otpCode}</span>
-                                    </div>
+                                <p style="margin:14px 0 0 0;font-size:13px;line-height:1.6;color:#6b7280;">This code expires in ${expiryText}. If you did not request this login, please ignore this email.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:14px 28px 24px 28px;border-top:1px solid #f3efe7;">
+                                <p style="margin:0;font-size:12px;line-height:1.6;color:#9ca3af;">Student Activity Points Tracker (SAPT)</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>`;
 
-                                    <p style="margin:14px 0 0 0;font-size:13px;line-height:1.6;color:#6b7280;">This code expires in ${expiryText}. If you did not request this login, please ignore this email.</p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="padding:14px 28px 24px 28px;border-top:1px solid #f3efe7;">
-                                    <p style="margin:0;font-size:12px;line-height:1.6;color:#9ca3af;">Student Activity Points Tracker (SAPT)</p>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </div>`;
-
-    const { error } = await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL,
+    const success = await sendEmail({
         to: toEmail,
         subject: 'Your SAPT verification code',
         text: `Your SAPT verification code is ${otpCode}. It expires in ${expiryText}.`,
         html,
     });
 
-    if (error) {
-        console.error('Resend Error in sendOtpEmail:', error);
-        throw new Error(error.message || 'Failed to send OTP email via Resend API');
+    if (!success) {
+        throw new Error('Failed to send OTP email via SendGrid');
     }
 };
 
@@ -488,19 +473,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
     // Send email
     const resetUrl = `${req.protocol}://${req.get('host').replace('5000', '5173')}/reset-password/${resetToken}`;
-    
-    if (!process.env.RESEND_FROM_EMAIL || !process.env.RESEND_API_KEY) {
-        // In local development without email configured, just log the URL
-        console.log('\n--- PASSWORD RESET LINK ---');
-        console.log(resetUrl);
-        console.log('---------------------------\n');
-        
-        return res.status(200).json({ 
-            message: 'Email not configured. Check the server console for your reset link!' 
-        });
-    }
 
-    const resend = getResendClient();
     const html = `
     <div style="margin:0;padding:0;background:#fdf8f0;font-family:Poppins,Segoe UI,Arial,sans-serif;color:#1a1a2e;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fdf8f0;padding:32px 12px;">
@@ -532,17 +505,15 @@ const forgotPassword = asyncHandler(async (req, res) => {
     </div>`;
 
     try {
-        const { error } = await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL,
+        const success = await sendEmail({
             to: user.email,
             subject: 'Password Reset Request - SAPT',
             text: `Forgot your password? Reset it here: ${resetUrl}. This link expires in 1 hour.`,
             html,
         });
 
-        if (error) {
-            console.error('Resend Error in forgotPassword:', error);
-            throw new Error(error.message || 'Failed to send email via Resend API');
+        if (!success) {
+            throw new Error('Failed to send email via SendGrid');
         }
 
         res.status(200).json({ message: 'Password reset link sent to your email' });
