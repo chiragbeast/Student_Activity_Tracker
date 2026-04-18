@@ -8,9 +8,11 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const ActivityPoints = require('../models/ActivityPoints');
 const { sendEmail } = require('../utils/mailer');
-const socketUtils = require('../utils/socket'); // [NEW] Import socketUtils
-const cloudinary = require('../config/cloudinary');
 const { Readable } = require('stream');
+const socketUtils = require('../utils/socket');
+const cloudinary = require('../config/cloudinary');
+// ── Helper: Normalize activity name for comparison ──
+const normalizeName = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/0+(\d)/g, '$1');
 
 // ── Helper: Upload a buffer to Cloudinary ──
 function uploadToCloudinary(fileBuffer, options = {}) {
@@ -227,7 +229,7 @@ async function processUploadedFiles(files, res) {
         }
 
         const result = await uploadToCloudinary(file.buffer, {
-            public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`,
+            public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '').trim()}`,
         });
         docs.push({
             fileName: file.originalname,
@@ -261,6 +263,16 @@ const createSubmission = asyncHandler(async (req, res) => {
     if (!activityName || !activityLevel || pointsRequested === undefined) {
         res.status(400);
         throw new Error('Please provide at least activityName, activityLevel, and pointsRequested');
+    }
+
+    // ── Check for duplicates ──
+    const normalizedNew = normalizeName(activityName);
+    const existingSubmissions = await Submission.find({ student: req.user._id });
+    const isDuplicate = existingSubmissions.some(sub => normalizeName(sub.activityName) === normalizedNew);
+
+    if (isDuplicate) {
+        res.status(400);
+        throw new Error(`You have already submitted an activity with the name or similar to "${activityName}". Duplicate submissions are not allowed.`);
     }
 
     // Upload files to Cloudinary
@@ -299,10 +311,65 @@ const createSubmission = asyncHandler(async (req, res) => {
 
             const facultyAdvisor = await User.findById(student.facultyAdvisor);
             if (facultyAdvisor && facultyAdvisor.emailNotifications) {
+                const html = `
+                <div style="margin:0;padding:0;background-color:#f8fafc;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1e293b;line-height:1.6;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;padding:40px 10px;">
+                        <tr>
+                            <td align="center">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+                                    <tr>
+                                        <td style="padding:30px 40px;background-color:#2563eb;color:#ffffff;">
+                                            <h1 style="margin:0;font-size:24px;font-weight:700;">New Submission for Review</h1>
+                                            <p style="margin:8px 0 0 0;font-size:16px;opacity:0.9;">Student Activity Points Tracker</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:40px;">
+                                            <p style="margin:0 0 20px 0;font-size:16px;">Dear ${facultyAdvisor.name},</p>
+                                            <p style="margin:0 0 25px 0;font-size:16px;">A student assigned to you has submitted a new activity for review. Please find the details below:</p>
+                                            
+                                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f1f5f9;border-radius:8px;padding:20px;margin-bottom:30px;">
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;width:140px;">Student Name:</td>
+                                                    <td style="padding-bottom:12px;">${student.name}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;">Roll Number:</td>
+                                                    <td style="padding-bottom:12px;">${student.rollNumber || 'N/A'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;">Activity Name:</td>
+                                                    <td style="padding-bottom:12px;">${activityName}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;">Points Requested:</td>
+                                                    <td style="padding-bottom:12px;">${pointsRequested}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-weight:600;">Semester:</td>
+                                                    <td>${student.semester || 'N/A'} (AY: ${student.academicYear || 'N/A'})</td>
+                                                </tr>
+                                            </table>
+
+                                            <p style="margin:0 0 20px 0;font-size:16px;">You can review this submission and provide your decision by logging into the SAPT Faculty Dashboard.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:20px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
+                                            <p style="margin:0;font-size:14px;color:#64748b;">&copy; ${new Date().getFullYear()} Student Activity Points Tracker (SAPT)</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>`;
+
                 await sendEmail({
                     to: facultyAdvisor.email,
-                    subject: 'New Submission for Review',
-                    text: `${student.name} has submitted a new activity: ${activityName}`,
+                    subject: `SAPT: New Activity Submission for Review - ${student.name}`,
+                    text: `${student.name} has submitted a new activity "${activityName}" for review in the SAPT system.`,
+                    html,
                 });
             }
         }
@@ -376,6 +443,21 @@ const updateSubmission = asyncHandler(async (req, res) => {
         }
     });
 
+    // ── Check for duplicates if name changed ──
+    if (req.body.activityName) {
+        const normalizedNew = normalizeName(req.body.activityName);
+        const others = await Submission.find({ 
+            student: req.user._id, 
+            _id: { $ne: submission._id } 
+        });
+        const isDuplicate = others.some(sub => normalizeName(sub.activityName) === normalizedNew);
+
+        if (isDuplicate) {
+            res.status(400);
+            throw new Error(`You already have another submission with the name or similar to "${req.body.activityName}".`);
+        }
+    }
+
     // Upload and append any new files
     const newDocs = await processUploadedFiles(req.files, res);
     if (newDocs.length > 0) {
@@ -404,6 +486,70 @@ const updateSubmission = asyncHandler(async (req, res) => {
 
             // Emit live notification
             socketUtils.sendNotification(student.facultyAdvisor, notif);
+
+            const facultyAdvisor = await User.findById(student.facultyAdvisor);
+            if (facultyAdvisor && facultyAdvisor.emailNotifications) {
+                const html = `
+                <div style="margin:0;padding:0;background-color:#f8fafc;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#1e293b;line-height:1.6;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f8fafc;padding:40px 10px;">
+                        <tr>
+                            <td align="center">
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+                                    <tr>
+                                        <td style="padding:30px 40px;background-color:#0f172a;color:#ffffff;">
+                                            <h1 style="margin:0;font-size:24px;font-weight:700;">Submission Updated</h1>
+                                            <p style="margin:8px 0 0 0;font-size:16px;opacity:0.9;">Student Activity Points Tracker</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:40px;">
+                                            <p style="margin:0 0 20px 0;font-size:16px;">Dear ${facultyAdvisor.name},</p>
+                                            <p style="margin:0 0 25px 0;font-size:16px;">A student assigned to you has updated and <strong>resubmitted</strong> an activity that was previously reviewed or held. Please find the updated details below:</p>
+                                            
+                                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f1f5f9;border-radius:8px;padding:20px;margin-bottom:30px;">
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;width:140px;">Student Name:</td>
+                                                    <td style="padding-bottom:12px;">${student.name}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;">Roll Number:</td>
+                                                    <td style="padding-bottom:12px;">${student.rollNumber || 'N/A'}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;">Activity Name:</td>
+                                                    <td style="padding-bottom:12px;">${submission.activityName}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding-bottom:12px;font-weight:600;">Points Requested:</td>
+                                                    <td style="padding-bottom:12px;">${submission.pointsRequested}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-weight:600;">Semester:</td>
+                                                    <td>${student.semester || 'N/A'} (AY: ${student.academicYear || 'N/A'})</td>
+                                                </tr>
+                                            </table>
+
+                                            <p style="margin:0 0 20px 0;font-size:16px;">The student may have made changes based on your previous feedback. You can review the updated submission in your dashboard.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:20px 40px;background-color:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
+                                            <p style="margin:0;font-size:14px;color:#64748b;">&copy; ${new Date().getFullYear()} Student Activity Points Tracker (SAPT)</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>`;
+
+                await sendEmail({
+                    to: facultyAdvisor.email,
+                    subject: `SAPT Alert: Submission Resubmitted - ${student.name}`,
+                    text: `${student.name} has resubmitted the activity "${submission.activityName}" for your review.`,
+                    html,
+                });
+            }
         }
     }
 
@@ -606,6 +752,35 @@ const exportMySubmissionsExcel = asyncHandler(async (req, res) => {
     res.end();
 });
 
+// @desc    Check if activity name is a duplicate (Real-time check)
+// @route   POST /api/submissions/check-duplicate
+// @access  Private/Student
+const checkDuplicateActivity = asyncHandler(async (req, res) => {
+    const { activityName, submissionId } = req.body;
+
+    if (!activityName) {
+        return res.json({ isDuplicate: false });
+    }
+
+    const normalizedNew = normalizeName(activityName);
+    const query = { student: req.user._id };
+    if (submissionId) {
+        query._id = { $ne: submissionId };
+    }
+
+    const existing = await Submission.find(query);
+    const duplicate = existing.find(sub => normalizeName(sub.activityName) === normalizedNew);
+
+    if (duplicate) {
+        return res.json({
+            isDuplicate: true,
+            message: `A similar activity ("${duplicate.activityName}") has been previously submitted. This will not be allowed.`,
+        });
+    }
+
+    res.json({ isDuplicate: false });
+});
+
 module.exports = {
     createSubmission,
     getMySubmissions,
@@ -615,4 +790,5 @@ module.exports = {
     downloadReceipt,
     deleteDocument,
     exportMySubmissionsExcel,
+    checkDuplicateActivity, // Exported
 };
