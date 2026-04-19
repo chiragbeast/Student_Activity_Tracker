@@ -2,6 +2,7 @@ import { useState, useEffect, Fragment } from 'react'
 import { Mail } from 'lucide-react'
 import { facultyApi } from '../services/api'
 import styles from './FacultyAssignedStudentsPage.module.css'
+import MailModal from './FacultyMailModal'
 
 const PAGE_SIZE = 5
 
@@ -12,6 +13,7 @@ export default function AssignedStudentsPage() {
   const [expandedStudentId, setExpandedStudentId] = useState(null)
   const [history, setHistory] = useState({}) // { studentId: [submissions] }
   const [historyState, setHistoryState] = useState({}) // { studentId: { loading: bool, error: string } }
+  const [mailModal, setMailModal] = useState({ isOpen: false, student: null })
 
   useEffect(() => {
     fetchStudents()
@@ -104,15 +106,15 @@ export default function AssignedStudentsPage() {
     }
   }
 
-  const handleMailClick = (e, studentEmail) => {
+  const handleMailClick = (e, student) => {
     e.stopPropagation()
 
-    if (!studentEmail || studentEmail === 'N/A') {
+    if (!student.email || student.email === 'N/A') {
       alert('No valid email found for this student.')
       return
     }
 
-    window.location.href = `mailto:${studentEmail}`
+    setMailModal({ isOpen: true, student })
   }
 
   const filtered = allStudents.filter(
@@ -212,10 +214,7 @@ export default function AssignedStudentsPage() {
                     </td>
                     <td>
                       <div className={styles.actionGroup}>
-                        <button
-                          className={styles.mailBtn}
-                          onClick={(e) => handleMailClick(e, s.email)}
-                        >
+                        <button className={styles.mailBtn} onClick={(e) => handleMailClick(e, s)}>
                           <Mail size={16} />
                         </button>
                         <button
@@ -363,6 +362,14 @@ export default function AssignedStudentsPage() {
           </button>
         </div>
       </div>
+
+      <MailModal
+        isOpen={mailModal.isOpen}
+        onClose={() => setMailModal({ isOpen: false, student: null })}
+        studentId={mailModal.student?.id}
+        studentName={mailModal.student?.name}
+        studentEmail={mailModal.student?.email}
+      />
     </div>
   )
 }

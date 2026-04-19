@@ -705,7 +705,7 @@ const exportAllPDFs = asyncHandler(async (req, res) => {
 // @access  Private/Faculty
 const notifyStudentOfEmail = asyncHandler(async (req, res) => {
     const { studentId } = req.params;
-    const { reason } = req.body;
+    const { reason, subject, htmlContent } = req.body;
 
     const student = await User.findById(studentId);
     if (!student || String(student.facultyAdvisor) !== String(req.user._id)) {
@@ -713,20 +713,31 @@ const notifyStudentOfEmail = asyncHandler(async (req, res) => {
         throw new Error('Not authorized to notify this student');
     }
 
-    const Notification = require('../models/Notification');
     const msg = reason === 'meeting' ? 'Your Faculty Advisor has requested a meeting with you. Please check your email for details.' : 'Your Faculty Advisor has sent you a message regarding your semester points. Please check your email for details.';
 
     const notif = await Notification.create({
         user: studentId,
         type: 'info',
         title: reason === 'meeting' ? 'Meeting Request from FA' : 'Message regarding Activity Points',
-        message: msg
+        message: msg,
+        sender: req.user.name,
+        senderRole: 'Faculty'
     });
 
     // Emit live notification
     socketUtils.sendNotification(studentId, notif);
 
-    res.status(200).json({ success: true, message: 'Student notified' });
+    // Send real external email if content provided
+    if (htmlContent && subject) {
+        await sendEmail({
+            to: student.email,
+            subject: subject,
+            text: msg,
+            html: htmlContent
+        });
+    }
+
+    res.status(200).json({ success: true, message: 'Student notified and email sent' });
 });
 
 // @desc    Upload/update faculty profile picture
