@@ -322,7 +322,16 @@ export default function ReviewDetailPage({ submission: initialSubmission, onBack
                   step="1"
                   className={styles.pointsInput}
                   value={approvedPoints}
-                  onChange={(e) => setApprovedPoints(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (val === '') {
+                      setApprovedPoints(0)
+                    } else {
+                      // Remove leading zeros if any, unless the value is just "0"
+                      const numericVal = parseInt(val, 10)
+                      setApprovedPoints(isNaN(numericVal) ? 0 : numericVal)
+                    }
+                  }}
                 />
                 <span className={styles.ptsSuffix}>PTS</span>
               </div>

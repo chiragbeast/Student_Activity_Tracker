@@ -85,11 +85,21 @@ export default function MailModal({ isOpen, onClose, studentId, studentName, stu
         reason: selectedTemplate.id,
         subject: subject,
         htmlContent: `
-          <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
-            <h2 style="color: #f5a623;">SAPT: Faculty Communication</h2>
-            <p style="font-size: 16px; line-height: 1.6;">${body.replace(/\n/g, '<br/>')}</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #999;">Sent via Student Activity Points Tracker (SAPT)</p>
+          <div style="background-color: #fdf7e9; padding: 40px 20px; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-top: 5px solid #f5a623; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(26, 26, 46, 0.05);">
+              <div style="padding: 40px;">
+                <h2 style="color: #1a1a2e; margin-top: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em;">SAPT: Faculty Communication</h2>
+                <div style="height: 1px; background: #e2e8f0; margin: 24px 0;"></div>
+                <p style="font-size: 16px; line-height: 1.8; color: #475569; white-space: pre-wrap;">${body}</p>
+                <div style="margin-top: 40px; text-align: center;">
+                  <a href="http://localhost:5173" style="display: inline-block; background-color: #f5a623; color: #1a1a2e; padding: 14px 32px; border-radius: 12px; font-weight: 800; text-decoration: none; font-size: 14px; box-shadow: 0 4px 12px rgba(245, 166, 35, 0.2);">Login to Dashboard</a>
+                </div>
+              </div>
+              <div style="background-color: #f1f5f9; padding: 24px; font-size: 12px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="margin: 0;">This is an automated communication from the Student Activity Points Tracker.</p>
+                <p style="margin: 4px 0 0 0;">Please do not reply directly to this system email address.</p>
+              </div>
+            </div>
           </div>
         `,
       })
