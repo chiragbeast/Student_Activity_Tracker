@@ -10,6 +10,7 @@ import {
   Square,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
 } from 'lucide-react'
 import styles from './FacultyDeadlinesPage.module.css'
 import { deadlineApi, facultyApi } from '../services/api'
@@ -22,6 +23,8 @@ export default function FacultyDeadlinesPage() {
   const [showSuccess, setShowSuccess] = useState(false)
   const [errorMsg, setErrorMsg] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [idToDelete, setIdToDelete] = useState(null)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -68,13 +71,20 @@ export default function FacultyDeadlinesPage() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this deadline?')) return
+  const handleDelete = (id) => {
+    setIdToDelete(id)
+    setShowDeleteConfirm(true)
+  }
+
+  const confirmDelete = async () => {
     try {
-      await deadlineApi.deleteDeadline(id)
+      await deadlineApi.deleteDeadline(idToDelete)
+      setShowDeleteConfirm(false)
+      setIdToDelete(null)
       fetchData()
     } catch {
-      alert('Failed to delete deadline')
+      setErrorMsg('Failed to delete deadline. Please try again.')
+      setShowDeleteConfirm(false)
     }
   }
 
@@ -298,9 +308,40 @@ export default function FacultyDeadlinesPage() {
           </div>
         </div>
       )}
+      {showDeleteConfirm && (
+        <div className={styles.successOverlay}>
+          <div className={`${styles.successCard} ${styles.deleteCard}`}>
+            <div className={`${styles.successIconBox} ${styles.deleteIconBox}`}>
+              <AlertTriangle size={52} className={styles.deleteIcon} />
+            </div>
+            <h2 className={styles.successTitle}>Remove Deadline?</h2>
+            <p className={styles.successText}>
+              This action cannot be undone. All assigned students will lose access to this
+              notification.
+            </p>
+            <div className={styles.modalBtnGroup}>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => {
+                  setShowDeleteConfirm(false)
+                  setIdToDelete(null)
+                }}
+              >
+                No, Keep it
+              </button>
+              <button
+                className={`${styles.successCloseBtn} ${styles.deleteBtn}`}
+                onClick={confirmDelete}
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {errorMsg && (
         <div className={styles.successOverlay}>
-          <div className={`${styles.successCard} ${styles.errorCard}`}>
+          <div className={`${styles.successCard} ${styles.errorCard} ${styles.errorShake}`}>
             <div className={`${styles.successIconBox} ${styles.errorIconBox}`}>
               <AlertCircle size={52} className={styles.errorIcon} />
             </div>
