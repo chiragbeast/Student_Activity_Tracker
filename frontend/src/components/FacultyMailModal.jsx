@@ -1,7 +1,17 @@
 import React, { useState } from 'react'
 import { facultyApi } from '../services/api'
 import styles from './FacultyMailModal.module.css'
-import { X, Send, Award, AlertCircle, Calendar, Clock, CheckCircle2 } from 'lucide-react'
+import {
+  X,
+  Send,
+  Award,
+  AlertCircle,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  MessageSquare,
+  AlertTriangle,
+} from 'lucide-react'
 
 const MAIL_TEMPLATES = [
   {
@@ -36,12 +46,29 @@ const MAIL_TEMPLATES = [
     body: (name) =>
       `Dear ${name},\n\nThis is a reminder that the semester deadline for submitting activity points is approaching. Ensure all your activities are uploaded and verified before the cutoff date to earn full credits.`,
   },
+  {
+    id: 'custom',
+    title: 'Custom Message',
+    icon: <MessageSquare size={18} />,
+    subject: '',
+    body: (name) => `Dear ${name},\n\n`,
+  },
 ]
 
 export default function MailModal({ isOpen, onClose, studentId, studentName, studentEmail }) {
   const [selectedTemplate, setSelectedTemplate] = useState(MAIL_TEMPLATES[0])
+  const [subject, setSubject] = useState(MAIL_TEMPLATES[0].subject)
+  const [body, setBody] = useState(MAIL_TEMPLATES[0].body(studentName || 'Student'))
   const [isSending, setIsSending] = useState(false)
   const [isSent, setIsSent] = useState(false)
+  const [emailError, setEmailError] = useState(null)
+
+  const handleTemplateSelect = (tpl) => {
+    setSelectedTemplate(tpl)
+    setSubject(tpl.subject)
+    setBody(tpl.body(studentName || 'Student'))
+    setEmailError(null)
+  }
 
   if (!isOpen) return null
 
@@ -52,24 +79,36 @@ export default function MailModal({ isOpen, onClose, studentId, studentName, stu
     }
 
     setIsSending(true)
+    setEmailError(null)
     try {
-      await facultyApi.notifyEmail(studentId, {
+      const res = await facultyApi.notifyEmail(studentId, {
         reason: selectedTemplate.id,
-        subject: selectedTemplate.subject,
+        subject: subject,
         htmlContent: `
           <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
             <h2 style="color: #f5a623;">SAPT: Faculty Communication</h2>
-            <p style="font-size: 16px; line-height: 1.6;">${selectedTemplate.body(studentName).replace(/\n/g, '<br/>')}</p>
+            <p style="font-size: 16px; line-height: 1.6;">${body.replace(/\n/g, '<br/>')}</p>
             <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
             <p style="font-size: 12px; color: #999;">Sent via Student Activity Points Tracker (SAPT)</p>
           </div>
         `,
       })
-      setIsSent(true)
-      setIsSending(false)
+
+      if (res.data.success) {
+        if (res.data.emailSent === false) {
+          setEmailError(
+            res.data.emailError || 'Email delivery failed. Please check your SendGrid settings.'
+          )
+          setIsSending(false)
+        } else {
+          setIsSent(true)
+          setIsSending(false)
+        }
+      }
     } catch (err) {
       console.error('Failed to send mail:', err)
-      alert('Failed to send email. Please try again.')
+      const msg = err.response?.data?.message || 'Failed to send email. Please try again.'
+      alert(msg)
       setIsSending(false)
     }
   }
@@ -117,13 +156,23 @@ export default function MailModal({ isOpen, onClose, studentId, studentName, stu
         </div>
 
         <div className={styles.content}>
-          <p className={styles.label}>Select a prestructured template:</p>
+          {emailError && (
+            <div className={styles.errorBox}>
+              <AlertTriangle className={styles.errorIcon} size={20} color="#ef4444" />
+              <div className={styles.errorText}>
+                <span className={styles.errorTitle}>Delivery Issue:</span>
+                {emailError}
+              </div>
+            </div>
+          )}
+
+          <p className={styles.label}>Select a template or Write Custom:</p>
           <div className={styles.templatesGrid}>
             {MAIL_TEMPLATES.map((tpl) => (
               <button
                 key={tpl.id}
                 className={`${styles.templateCard} ${selectedTemplate.id === tpl.id ? styles.active : ''}`}
-                onClick={() => setSelectedTemplate(tpl)}
+                onClick={() => handleTemplateSelect(tpl)}
               >
                 <div className={styles.templateIcon}>{tpl.icon}</div>
                 <div className={styles.templateTitle}>{tpl.title}</div>
@@ -131,11 +180,27 @@ export default function MailModal({ isOpen, onClose, studentId, studentName, stu
             ))}
           </div>
 
-          <p className={styles.label}>Message Preview:</p>
+          <p className={styles.label}>Compose Email:</p>
           <div className={styles.previewArea}>
-            <div className={styles.previewHeader}>Subject:</div>
-            <div className={styles.previewSubject}>{selectedTemplate.subject}</div>
-            <div className={styles.previewBody}>{selectedTemplate.body(studentName)}</div>
+            <div className={styles.editorGroup}>
+              <label className={styles.editorLabel}>Subject</label>
+              <input
+                type="text"
+                className={styles.subjectInput}
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Enter email subject..."
+              />
+            </div>
+            <div className={styles.editorGroup}>
+              <label className={styles.editorLabel}>Message Body</label>
+              <textarea
+                className={styles.bodyTextarea}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                placeholder="Write your message here..."
+              />
+            </div>
           </div>
         </div>
 
