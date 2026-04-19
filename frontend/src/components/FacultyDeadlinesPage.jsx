@@ -301,10 +301,10 @@ export default function FacultyDeadlinesPage() {
       {errorMsg && (
         <div className={styles.successOverlay}>
           <div className={`${styles.successCard} ${styles.errorCard}`}>
-            <div className={styles.successIconBox}>
+            <div className={`${styles.successIconBox} ${styles.errorIconBox}`}>
               <AlertCircle size={52} className={styles.errorIcon} />
             </div>
-            <h2 className={styles.successTitle}>Wait a second!</h2>
+            <h2 className={styles.successTitle}>Hold On...</h2>
             <p className={styles.successText}>{errorMsg}</p>
             <button
               className={`${styles.successCloseBtn} ${styles.errorCloseBtn}`}
