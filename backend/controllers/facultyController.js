@@ -729,15 +729,26 @@ const notifyStudentOfEmail = asyncHandler(async (req, res) => {
 
     // Send real external email if content provided
     if (htmlContent && subject) {
-        await sendEmail({
+        const mailResult = await sendEmail({
             to: student.email,
             subject: subject,
             text: msg,
-            html: htmlContent
+            html: htmlContent,
+            fromName: req.user.name,
+            replyTo: req.user.email
         });
+
+        if (!mailResult.success) {
+            return res.status(200).json({ 
+                success: true, 
+                message: 'System notification sent, but external email failed.',
+                emailSent: false,
+                emailError: mailResult.message
+            });
+        }
     }
 
-    res.status(200).json({ success: true, message: 'Student notified and email sent' });
+    res.status(200).json({ success: true, message: 'Student notified and email sent', emailSent: true });
 });
 
 // @desc    Upload/update faculty profile picture

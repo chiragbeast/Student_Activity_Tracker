@@ -364,6 +364,7 @@ export default function AssignedStudentsPage() {
       </div>
 
       <MailModal
+        key={mailModal.student?.id || 'none'}
         isOpen={mailModal.isOpen}
         onClose={() => setMailModal({ isOpen: false, student: null })}
         studentId={mailModal.student?.id}

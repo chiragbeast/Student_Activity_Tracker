@@ -6,14 +6,14 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
  * Real email service using SendGrid.
  * Send emails from the address/domain verified in the SendGrid dashboard.
  */
-const sendEmail = async ({ to, subject, text, html }) => {
+const sendEmail = async ({ to, subject, text, html, fromName, replyTo }) => {
     try {
         const fromEmail = process.env.SENDGRID_FROM_EMAIL;
-        const fromBrand = 'Student Activity Tracker';
+        const fromBrand = fromName ? `${fromName} via SAPT` : 'Student Activity Tracker';
 
         if (!fromEmail) {
             console.error('--- EMAIL CONFIG ERROR: SENDGRID_FROM_EMAIL is missing ---');
-            return false;
+            return { success: false, message: 'Server email configuration error' };
         }
 
         const msg = {
@@ -22,6 +22,7 @@ const sendEmail = async ({ to, subject, text, html }) => {
                 email: fromEmail,
                 name: fromBrand
             },
+            replyTo: replyTo || fromEmail,
             subject: subject,
             text: text,
             html: html || `<p>${text}</p>`,
@@ -30,18 +31,18 @@ const sendEmail = async ({ to, subject, text, html }) => {
         await sgMail.send(msg);
 
         console.log('--- EMAIL SENT SUCCESSFULLY (SendGrid) ---');
-        console.log(`To: ${to}, Subject: ${subject}`);
-        return true;
+        console.log(`To: ${to}, From: ${fromBrand}, Subject: ${subject}`);
+        return { success: true };
     } catch (err) {
         console.error('--- EMAIL EXCEPTION (SendGrid) ---');
-        console.error(`To: ${to}, Subject: ${subject}`);
-        if (err.response) {
-            console.error('Status:', err.code || err.response.statusCode);
-            console.error('Body:', JSON.stringify(err.response.body, null, 2));
-        } else {
-            console.error('Error:', err.message);
+        let errorMsg = err.message;
+
+        if (err.response && err.response.body && err.response.body.errors) {
+            errorMsg = err.response.body.errors[0].message;
+            console.error('SendGrid Error Body:', JSON.stringify(err.response.body, null, 2));
         }
-        return false;
+
+        return { success: false, message: errorMsg };
     }
 };
 
