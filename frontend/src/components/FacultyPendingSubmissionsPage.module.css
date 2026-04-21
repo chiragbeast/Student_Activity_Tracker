@@ -468,27 +468,53 @@
   background: #c0392b;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .statsGrid {
     grid-template-columns: 1fr;
   }
 
   .tableWrapper {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
 
   .table {
-    min-width: 980px;
+    min-width: 850px;
   }
-}
 
-@media (max-width: 768px) {
   .page {
     gap: 18px;
+    padding: 0 1rem;
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .actionBtn {
+    flex: 1;
+    justify-content: center;
+    font-size: 13px;
   }
 
   .pageTitle {
-    font-size: 1.55rem;
+    font-size: 24px;
+  }
+
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
   }
 
   .searchGroup {
@@ -499,15 +525,56 @@
     max-width: none;
   }
 
-  .filterRow {
-    align-items: stretch;
+  .table thead tr th {
+    padding: 12px 16px;
+    font-size: 10px;
+  }
+
+  .table tbody tr td {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+
+  .badge {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .points {
+    font-size: 13px;
   }
 
   .bulkActions {
     width: calc(100% - 24px);
     border-radius: 16px;
     padding: 14px 16px;
-    gap: 14px;
-    justify-content: space-between;
+    gap: 10px;
+    bottom: 20px;
+  }
+
+  .bulkCount {
+    font-size: 12px;
+  }
+
+  .bulkBtnGroup {
+    gap: 8px;
+  }
+
+  .bulkApproveBtn,
+  .bulkRejectBtn {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsValue {
+    font-size: 36px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
   }
 }

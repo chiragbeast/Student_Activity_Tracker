@@ -7,6 +7,7 @@ import SpotlightBackground from './ui/SpotlightBackground'
 export default function AdminDashboard() {
   const navigate = useNavigate()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const profileMenuRef = useRef(null)
   const [adminUser, setAdminUser] = useState({
     name: '',
@@ -109,16 +110,24 @@ export default function AdminDashboard() {
     >
       {/* Sidebar */}
       <aside
-        className="w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5"
+        className={`admin-sidebar w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5 z-50 ${isMobileMenuOpen ? 'open' : ''}`}
         style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
       >
-        <div className="px-2 mb-9 flex items-center gap-2.5">
+        <div className="px-2 mb-9 flex items-center justify-between">
           <span
             className="text-white text-[1.2rem] font-bold tracking-[0.3px]"
             style={{ fontFamily: 'Poppins, sans-serif' }}
           >
             SAPT
           </span>
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         <nav className="flex-1 flex flex-col gap-1">
@@ -374,25 +383,43 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
       <main
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto p-4 md:p-8"
         style={{ backgroundColor: '#f7f4eb', fontFamily: 'Poppins, sans-serif' }}
       >
         <SpotlightBackground className="admin-spotlight-surface">
           {/* Header */}
           <header className="flex justify-between items-center mb-10">
-            <div>
-              <h1
-                data-testid="admin-dashboard-title"
-                className="text-[#111827]"
-                style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-2 rounded-lg bg-white/10 text-gray-700 hover:bg-white/20"
               >
-                Welcome back, Admin
-              </h1>
-              <p className="text-[0.92rem] text-gray-500 mt-1" style={{ fontWeight: 100 }}>
-                Monitor and manage your institution's activities.
-              </p>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <div>
+                <h1
+                  data-testid="admin-dashboard-title"
+                  className="text-[#111827]"
+                  style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                >
+                  Welcome back, Admin
+                </h1>
+                <p className="text-[0.92rem] text-gray-500 mt-1" style={{ fontWeight: 100 }}>
+                  Monitor and manage your institution's activities.
+                </p>
+              </div>
             </div>
             <NotificationPanel />
           </header>
@@ -503,8 +530,8 @@ export default function AdminDashboard() {
 
                 {/* Table Header */}
                 <div
+                  className="hidden md:grid"
                   style={{
-                    display: 'grid',
                     gridTemplateColumns: '2fr 1fr 1fr 1fr',
                     padding: '16px 24px',
                     backgroundColor: '#14213d',
@@ -547,21 +574,15 @@ export default function AdminDashboard() {
                     admins.map((admin, index) => (
                       <div
                         key={admin._id}
+                        className="md:grid md:grid-cols-4 p-4 md:p-6 border-b border-gray-200 last:border-b-0"
                         style={{
-                          display: 'grid',
-                          gridTemplateColumns: '2fr 1fr 1fr 1fr',
-                          padding: '18px 24px',
-                          alignItems: 'center',
                           backgroundColor: '#f5ead5',
                           backdropFilter: 'blur(5px) saturate(125%)',
                           WebkitBackdropFilter: 'blur(5px) saturate(125%)',
-                          borderBottom: index === admins.length - 1 ? 'none' : '1px solid #f0ede5',
-                          fontSize: '0.88rem',
-                          color: '#1a1a2e',
                         }}
                       >
-                        {/* Admin Column with Avatar */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {/* Desktop View */}
+                        <div className="hidden md:flex md:items-center md:gap-3">
                           {admin.profilePicture ? (
                             <img
                               src={admin.profilePicture}
@@ -571,7 +592,6 @@ export default function AdminDashboard() {
                                 height: '40px',
                                 borderRadius: '50%',
                                 objectFit: 'cover',
-                                flexShrink: 0,
                               }}
                             />
                           ) : (
@@ -580,86 +600,71 @@ export default function AdminDashboard() {
                                 width: '40px',
                                 height: '40px',
                                 borderRadius: '50%',
-                                background: 'linear-gradient(135deg, #f5a623, #f7b731)',
+                                backgroundColor: '#e5e7eb',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                fontWeight: '700',
-                                fontSize: '1rem',
-                                color: '#1a1a2e',
-                                flexShrink: 0,
+                                fontSize: '1.2rem',
+                                fontWeight: '600',
+                                color: '#6b7280',
                               }}
                             >
-                              {initialsFromName(admin.name)}
+                              {(admin.name || 'A').charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <div>
-                            <p
-                              style={{
-                                fontSize: '0.96rem',
-                                fontWeight: '600',
-                                color: '#1a1a2e',
-                                marginBottom: '2px',
-                              }}
-                            >
-                              {admin.name}
-                            </p>
-                            <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>{admin.email}</p>
-                          </div>
-                        </div>
-
-                        {/* Role Column */}
-                        <div>
-                          <span
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              padding: '4px 14px',
-                              borderRadius: '999px',
-                              fontSize: '0.76rem',
-                              fontWeight: '600',
-                              color: '#f5a623',
-                              border: '1.5px solid #f5a623',
-                            }}
-                          >
-                            {admin.role}
+                          <span style={{ fontWeight: '500', color: '#1a1a2e' }}>
+                            {admin.name || 'Unknown'}
                           </span>
                         </div>
 
-                        {/* Status Column */}
-                        <div>
+                        <span className="hidden md:block text-sm text-gray-600">
+                          {admin.role || 'Admin'}
+                        </span>
+
+                        <span className="hidden md:block">
                           <span
                             style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              padding: '5px 14px',
-                              borderRadius: '999px',
-                              fontSize: '0.78rem',
+                              padding: '4px 12px',
+                              borderRadius: '20px',
+                              fontSize: '0.75rem',
                               fontWeight: '600',
-                              color: admin.isActive ? '#16a34a' : '#6b7280',
-                              border: admin.isActive
-                                ? '1.5px solid #bbf7d0'
-                                : '1.5px solid #e5e7eb',
-                              backgroundColor: admin.isActive ? '#f0fdf4' : '#f9fafb',
+                              backgroundColor: '#10b981',
+                              color: '#fff',
                             }}
                           >
-                            <span
-                              style={{
-                                width: '7px',
-                                height: '7px',
-                                borderRadius: '50%',
-                                backgroundColor: admin.isActive ? '#16a34a' : '#9ca3af',
-                              }}
-                            ></span>
-                            {admin.isActive ? 'Active' : 'Inactive'}
+                            Active
                           </span>
-                        </div>
+                        </span>
 
-                        {/* Last Login Column */}
-                        <div style={{ textAlign: 'right', fontSize: '0.88rem', color: '#6b7280' }}>
+                        <span className="hidden md:block text-sm text-gray-600 text-right">
                           {formatLastLogin(admin.lastLogin)}
+                        </span>
+
+                        {/* Mobile View */}
+                        <div className="md:hidden space-y-3">
+                          <div className="flex items-center gap-3">
+                            {admin.profilePicture ? (
+                              <img
+                                src={admin.profilePicture}
+                                alt={admin.name || 'Admin'}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold text-gray-600">
+                                {(admin.name || 'A').charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <div className="font-medium text-gray-900">{admin.name || 'Unknown'}</div>
+                              <div className="text-sm text-gray-500">{admin.role || 'Admin'}</div>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Active
+                            </span>
+                            <span className="text-sm text-gray-500">{formatLastLogin(admin.lastLogin)}</span>
+                          </div>
                         </div>
                       </div>
                     ))

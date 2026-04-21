@@ -1,0 +1,127 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: white;
+  background: linear-gradient(135deg, #ffffff, #fdfbf7);
+  border-radius: 24px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --- Sizes --- */
+.sm {
+  max-width: 400px;
+}
+.md {
+  max-width: 600px;
+}
+.lg {
+  max-width: 800px;
+}
+.xl {
+  max-width: 1000px;
+}
+.full {
+  max-width: 95vw;
+  height: 95vh;
+}
+
+/* --- Header --- */
+.header {
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.05);
+  background: rgba(253, 247, 233, 0.4);
+}
+
+.titleWrapper {
+  flex: 1;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: -0.4px;
+}
+
+.closeBtn {
+  background: rgba(0, 0, 0, 0.04);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* --- Body --- */
+.body {
+  padding: 32px;
+  overflow-y: auto;
+  flex: 1;
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+/* --- Footer --- */
+.footer {
+  padding: 20px 32px;
+  border-top: 1.5px solid rgba(0, 0, 0, 0.05);
+  background: rgba(253, 247, 233, 0.2);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

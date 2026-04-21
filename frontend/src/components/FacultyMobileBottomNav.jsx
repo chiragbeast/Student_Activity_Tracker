@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './FacultyMobileBottomNav.css'
 
 const navItems = [
@@ -64,26 +66,99 @@ const navItems = [
 ]
 
 export default function FacultyMobileBottomNav({ activeNav, onNavChange }) {
+  const navigate = useNavigate()
+  const [showMenu, setShowMenu] = useState(false)
+  const menuRef = useRef(null)
+
+  // Map sub-pages to their parent nav keys to keep highlighting consistent
+  const getCleanActiveKey = (nav) => {
+    if (nav === 'Review Detail') return 'Pending Submissions'
+    return nav
+  }
+
+  const cleanActiveNav = getCleanActiveKey(activeNav)
+
   const activeIndex = Math.max(
     0,
-    navItems.findIndex((item) => item.key === activeNav)
+    navItems.findIndex((item) => item.key === cleanActiveNav)
   )
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleNavClick = (key) => {
+    if (key === 'Profile') {
+      setShowMenu(!showMenu)
+    } else {
+      setShowMenu(false)
+      onNavChange(key)
+    }
+  }
+
+  const handleLogout = () => {
+    setShowMenu(false)
+    localStorage.clear()
+    navigate('/login')
+  }
 
   return (
     <nav className="faculty-mobile-bottom-nav" aria-label="Faculty mobile navigation">
       <div className="faculty-mobile-bottom-nav-surface" style={{ '--active-index': activeIndex }}>
         <span className="faculty-mobile-nav-slider" aria-hidden="true" />
         {navItems.map((item) => (
-          <button
+          <div
             key={item.key}
-            type="button"
-            className={`faculty-mobile-nav-btn ${activeNav === item.key ? 'active' : ''}`}
-            onClick={() => onNavChange(item.key)}
-            aria-label={item.key}
-            title={item.key}
+            className="faculty-mobile-nav-item"
+            ref={item.key === 'Profile' ? menuRef : null}
           >
-            {item.icon}
-          </button>
+            {item.key === 'Profile' && showMenu && (
+              <div className="mobile-profile-dropdown">
+                <button
+                  className="mobile-dropdown-item"
+                  onClick={() => {
+                    setShowMenu(false)
+                    onNavChange('Profile')
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span>View Profile</span>
+                </button>
+                <div className="dropdown-divider" />
+                <button className="mobile-dropdown-item logout" onClick={handleLogout}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
+            <button
+              type="button"
+              className={`faculty-mobile-nav-btn ${cleanActiveNav === item.key ? 'active' : ''}`}
+              onClick={() => handleNavClick(item.key)}
+              aria-label={item.key}
+              title={item.key}
+            >
+              {item.icon}
+            </button>
+          </div>
         ))}
       </div>
     </nav>

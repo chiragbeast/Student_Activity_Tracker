@@ -27,8 +27,7 @@ export const facultyApi = {
     api.get(`/faculty/students/${studentId}/export-excel`, { responseType: 'blob' }),
   exportAllPDFs: () => api.get('/faculty/students/export-all-pdf', { responseType: 'blob' }),
   exportAllExcel: () => api.get('/faculty/export-all-excel', { responseType: 'blob' }),
-  notifyEmail: (studentId, reason) =>
-    api.post(`/faculty/students/${studentId}/notify-email`, { reason }),
+  notifyEmail: (studentId, data) => api.post(`/faculty/students/${studentId}/notify-email`, data),
 }
 
 export const notificationApi = {

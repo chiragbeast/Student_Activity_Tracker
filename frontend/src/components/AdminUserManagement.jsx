@@ -8,6 +8,7 @@ const AdminUserManagement = () => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const profileMenuRef = useRef(null)
   const [adminUser, setAdminUser] = useState({
     name: 'Admin User',
@@ -315,16 +316,24 @@ const AdminUserManagement = () => {
     >
       {/* Sidebar */}
       <aside
-        className="w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5"
+        className={`admin-sidebar w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5 z-50 ${isMobileMenuOpen ? 'open' : ''}`}
         style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
       >
-        <div className="px-2 mb-9 flex items-center gap-2.5">
+        <div className="px-2 mb-9 flex items-center justify-between">
           <span
             className="text-white text-[1.2rem] font-bold tracking-[0.3px]"
             style={{ fontFamily: 'Poppins, sans-serif' }}
           >
             SAPT
           </span>
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         <nav className="flex-1 flex flex-col gap-1">
@@ -575,6 +584,14 @@ const AdminUserManagement = () => {
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
       <main
         className="flex-1 overflow-y-auto"
@@ -582,20 +599,30 @@ const AdminUserManagement = () => {
       >
         <SpotlightBackground className="admin-spotlight-surface">
           {/* Header */}
-          <header className="flex justify-between items-center mb-10">
-            <div>
-              <h1
-                className="text-[#111827]"
-                style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-2 rounded-lg bg-white/10 text-gray-700 hover:bg-white/20"
               >
-                Student Management
-              </h1>
-              <p className="text-gray-500 mt-1" style={{ fontWeight: 100, fontSize: '0.92rem' }}>
-                Manage access and assignments for {loading ? '...' : `${students.length} active`}{' '}
-                students.
-              </p>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <div>
+                <h1
+                  className="text-[#111827]"
+                  style={{ fontWeight: 100, fontSize: '2.05rem', lineHeight: 1.15 }}
+                >
+                  Student Management
+                </h1>
+                <p className="text-gray-500 mt-1" style={{ fontWeight: 100, fontSize: '0.92rem' }}>
+                  Manage access and assignments for {loading ? '...' : `${students.length} active`}{' '}
+                  students.
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
               <Link
                 to="/add_new_student"
                 data-testid="create-new-student-btn"
@@ -693,7 +720,7 @@ const AdminUserManagement = () => {
               }}
             >
               <div className="p-8">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
                   <h4
                     className="text-[#111827]"
                     style={{ fontWeight: 100, fontSize: '1.75rem', lineHeight: 1.15 }}
@@ -713,10 +740,10 @@ const AdminUserManagement = () => {
                   </button>
                 </div>
                 <div
-                  className="overflow-hidden rounded-[10px]"
+                  className="overflow-x-auto rounded-[10px]"
                   style={{ border: '1px solid #f3f4f6' }}
                 >
-                  <table className="w-full text-left">
+                  <table className="w-full text-left min-w-[800px]">
                     <thead>
                       <tr
                         className="text-white text-[10px] font-bold uppercase tracking-widest"

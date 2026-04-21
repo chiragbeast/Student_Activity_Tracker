@@ -115,7 +115,7 @@ const EditStudent = () => {
 
   return (
     <div
-      className="min-h-screen flex font-display p-6 relative overflow-hidden"
+      className="min-h-screen flex font-display p-6 relative overflow-y-auto overflow-x-hidden"
       style={{ backgroundColor: '#FFFBF2', fontFamily: 'Poppins, sans-serif', fontWeight: 100 }}
     >
       {loading ? (

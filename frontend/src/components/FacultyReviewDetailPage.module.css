@@ -505,6 +505,45 @@
 
   .studentRow {
     flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .studentAvatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .studentName {
+    font-size: 18px;
+  }
+
+  .activityTitle {
+    font-size: 17px;
+  }
+
+  .submittedOn {
+    width: 100%;
+    align-items: flex-start;
+    padding-top: 8px;
+    border-top: 1px dashed #e5e1d8;
+  }
+
+  .proofBox {
+    padding: 32px 16px;
+  }
+
+  .requestedPoints {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 18px;
+  }
+
+  .studentRow {
+    flex-wrap: wrap;
   }
 
   .submittedOn {

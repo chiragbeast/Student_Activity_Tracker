@@ -400,6 +400,12 @@
 }
 
 @media (max-width: 425px) {
+  .dashboard {
+    padding: 12px 8px;
+  }
+  .card {
+    padding: 14px 12px;
+  }
   .dashboard-header .notif-wrapper {
     display: none;
   }

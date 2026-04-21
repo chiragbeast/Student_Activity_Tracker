@@ -1,0 +1,76 @@
+.card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 1px solid #e5e1d8;
+  height: 100%;
+}
+
+/* --- Variants --- */
+.default {
+  background: rgba(253, 247, 233, 0.62);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  box-shadow: 0 12px 36px rgba(16, 21, 31, 0.08);
+}
+
+.dark {
+  background: #000000;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.amber {
+  background: linear-gradient(135deg, #fffcf5, #fff8e2);
+  border: 1px solid rgba(245, 166, 35, 0.2);
+}
+
+/* --- Interactive Features --- */
+.hoverable:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 48px rgba(16, 21, 31, 0.14);
+  border-color: rgba(245, 166, 35, 0.4);
+}
+
+/* --- Slots --- */
+.cardHeader {
+  padding: 24px 28px;
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.05);
+}
+
+.dark .cardHeader {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.cardContent {
+  padding: 28px;
+  flex: 1;
+}
+
+.noPadding {
+  padding: 0;
+}
+
+.cardFooter {
+  padding: 20px 28px;
+  background: rgba(0, 0, 0, 0.02);
+  border-top: 1.5px solid rgba(0, 0, 0, 0.05);
+}
+
+.dark .cardFooter {
+  background: rgba(255, 255, 255, 0.02);
+  border-top-color: rgba(255, 255, 255, 0.1);
+}

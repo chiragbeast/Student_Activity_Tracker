@@ -6,6 +6,7 @@ const AssignStudents = () => {
   const navigate = useNavigate()
   const { id } = useParams()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const profileMenuRef = useRef(null)
   const [adminUser, setAdminUser] = useState({
     name: 'Admin User',
@@ -201,16 +202,24 @@ const AssignStudents = () => {
     >
       {/* Sidebar */}
       <aside
-        className="w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5"
+        className={`admin-sidebar w-[260px] flex flex-col shrink-0 h-screen sticky top-0 px-4 pt-7 pb-5 z-50 ${isMobileMenuOpen ? 'open' : ''}`}
         style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
       >
-        <div className="px-2 mb-9 flex items-center gap-2.5">
+        <div className="px-2 mb-9 flex items-center justify-between">
           <span
             className="text-white text-[1.2rem] font-bold tracking-[0.3px]"
             style={{ fontFamily: 'Poppins, sans-serif' }}
           >
             SAPT
           </span>
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="md:hidden text-white p-2 hover:bg-white/10 rounded-lg"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         <nav className="flex-1 flex flex-col gap-1">
@@ -461,6 +470,14 @@ const AssignStudents = () => {
         </div>
       </aside>
 
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
       <main
         className="flex-1 flex flex-col overflow-y-auto"
@@ -477,9 +494,19 @@ const AssignStudents = () => {
               WebkitBackdropFilter: 'blur(5px) saturate(120%)',
             }}
           >
-            <h2 className="text-3xl" style={{ color: '#1f2937', fontWeight: 400 }}>
-              Assign Students
-            </h2>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <h2 className="text-3xl" style={{ color: '#1f2937', fontWeight: 400 }}>
+                Assign Students
+              </h2>
+            </div>
             <p className="mt-2 text-sm" style={{ color: '#6b7280', fontWeight: 300 }}>
               Review unassigned students and attach them to the selected faculty advisor.
             </p>
@@ -554,7 +581,8 @@ const AssignStudents = () => {
               </section>
 
               {/* Assignment Split Pane */}
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 flex-grow min-h-[500px]">
+              <div className="overflow-x-auto w-full pb-4">
+                <div className="grid grid-cols-[1fr_auto_1fr] gap-6 flex-grow min-h-[500px] min-w-[800px]">
                 {/* Left Pane: Unassigned Students */}
                 <div
                   className={`rounded-xl flex flex-col overflow-hidden shadow-xl border`}
@@ -711,7 +739,7 @@ const AssignStudents = () => {
                 </div>
 
                 {/* Central Column: Action Buttons */}
-                <div className="flex lg:flex-col justify-center gap-4 items-center">
+                <div className="flex flex-col justify-center gap-4 items-center">
                   <button
                     className="w-14 h-14 rounded-xl border flex items-center justify-center hover:scale-105 active:scale-95 transition-all group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     style={{
@@ -902,6 +930,7 @@ const AssignStudents = () => {
                       {selectedAssigned.length} selected
                     </span>
                   </div>
+                </div>
                 </div>
               </div>
 

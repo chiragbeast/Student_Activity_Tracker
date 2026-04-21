@@ -1,0 +1,154 @@
+.internalBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  outline: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* --- Sizes --- */
+.sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 13px;
+  gap: 8px;
+}
+
+.md {
+  height: 44px;
+  padding: 0 24px;
+  font-size: 14px;
+  gap: 10px;
+}
+
+.lg {
+  height: 52px;
+  padding: 0 32px;
+  font-size: 16px;
+  gap: 12px;
+}
+
+.xl {
+  height: 60px;
+  padding: 0 40px;
+  font-size: 18px;
+  gap: 14px;
+}
+
+/* --- Variants --- */
+.primary {
+  background: #f5a623;
+  color: #1a1a2e;
+  box-shadow: 0 4px 14px rgba(245, 166, 35, 0.25);
+}
+
+.primary:hover:not(.disabled) {
+  background: #e09510;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 166, 35, 0.35);
+}
+
+.secondary {
+  background: #1a1a2e;
+  color: #f5a623;
+  border: 1.5px solid rgba(245, 166, 35, 0.3);
+}
+
+.secondary:hover:not(.disabled) {
+  background: #252545;
+  border-color: #f5a623;
+}
+
+.danger {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
+}
+
+.danger:hover:not(.disabled) {
+  background: #dc2626;
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.3);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.glow {
+  background: #000000;
+  color: #f5a623;
+  border: 1px solid #f5a623;
+  box-shadow: 0 0 10px rgba(245, 166, 35, 0.2);
+}
+
+.glow:hover:not(.disabled) {
+  box-shadow: 0 0 20px rgba(245, 166, 35, 0.4);
+  background: rgba(245, 166, 35, 0.05);
+}
+
+/* --- States --- */
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.loading {
+  cursor: wait;
+}
+
+.hiddenContent {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.iconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 1.5em;
+  height: 1.5em;
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
