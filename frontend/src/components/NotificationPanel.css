@@ -53,11 +53,10 @@
   top: calc(100% + 10px);
   right: 0;
   width: 380px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(0, 0, 0, 0.04);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 14px 34px rgba(16, 21, 31, 0.14);
+  border: 1px solid #ebe4d8;
   z-index: 100;
   overflow: hidden;
   animation: notifSlideIn 0.2s ease;
@@ -80,7 +79,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 18px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  background: #fbf6e8;
+  border-bottom: 1px solid #e5e1d8;
 }
 
 .notif-panel-title {
@@ -118,18 +118,24 @@
   cursor: pointer;
   transition: background 0.15s;
   position: relative;
+  background: #f5ead5;
+  border-bottom: 1px solid #e5e1d8;
+}
+
+.notif-item:nth-child(even) {
+  background: #fff8e2;
 }
 
 .notif-item:hover {
-  background: #f9fafb;
+  background: inherit;
 }
 
-.notif-item.unread {
-  background: #f0f7ff;
+.notif-item:hover:nth-child(odd) {
+  background: #f5ead5;
 }
 
-.notif-item.unread:hover {
-  background: #e4f0fd;
+.notif-item:hover:nth-child(even) {
+  background: #fff8e2;
 }
 
 /* ── Icon ── */
