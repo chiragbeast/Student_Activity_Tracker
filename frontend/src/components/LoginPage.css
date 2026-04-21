@@ -12,6 +12,25 @@
   padding: 56px 72px 56px 232px;
 }
 
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .login-page {
+    padding: 20px;
+    justify-items: center;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 16px 0;
+    background-size: cover;
+    width: 100%;
+  }
+}
+
 .login-content {
   width: 100%;
   max-width: 560px;
@@ -30,12 +49,32 @@
   box-shadow: 0 14px 40px rgba(26, 26, 46, 0.08);
 }
 
+/* Mobile adjustments for signin card */
+@media (max-width: 768px) {
+  .signin-card {
+    padding: 40px 30px 30px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signin-card {
+    padding: 32px 20px 20px;
+  }
+}
+
 .login-title {
   font-size: 2.05rem;
   font-weight: 400;
   text-align: center;
   color: #1a1a2e;
   margin: 0 0 10px;
+}
+
+@media (max-width: 480px) {
+  .login-title {
+    font-size: 1.75rem;
+  }
 }
 
 .login-subtitle {
@@ -45,6 +84,12 @@
   text-align: center;
   color: #6b7280;
   margin: 0 0 26px;
+}
+
+@media (max-width: 480px) {
+  .login-subtitle {
+    font-size: 0.8rem;
+  }
 }
 
 .login-form {
@@ -233,15 +278,19 @@
 @media (max-width: 480px) {
   .login-page {
     justify-items: center;
-    padding: 20px 16px;
+    padding: 20px 0;
+    width: 100%;
   }
 
   .signin-card {
     min-height: auto;
-    padding: 34px 20px 26px;
+    padding: 34px 16px 26px;
+    width: 90%;
+    max-width: 350px;
+    box-sizing: border-box;
   }
 
   .login-title {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
   }
 }
